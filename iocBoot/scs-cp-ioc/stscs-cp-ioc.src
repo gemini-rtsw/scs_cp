@@ -1,0 +1,16 @@
+$(LINUX_ONLY)#!${INSTALL}/bin/${ARCH}/scs-cp-ioc
+
+cd ${INSTALL}
+
+## Register all support components
+dbLoadDatabase("dbd/scs-cp-ioc.dbd")
+scs_cp_ioc_registerRecordDeviceDriver(pdbbase)
+
+## Load record instances
+#dbLoadTemplate("db/scs-cp-ioc.substitutions")
+#dbLoadRecords("db/scs-cp-ioc.db", "user=mikew")
+
+iocInit
+
+## Start any sequence programs
+#seq(sncxxx, "user=mikew")
