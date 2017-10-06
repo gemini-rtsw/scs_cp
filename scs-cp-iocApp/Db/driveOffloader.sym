@@ -1,0 +1,9 @@
+[symbol2]
+bbox -160 -176 160 176
+uniq 112
+[tools]
+[attributes]
+[layers]
+<symbol>
+r 0 -160 -176 160 176
+l 100 0 0 -84 -5 driveOffloader

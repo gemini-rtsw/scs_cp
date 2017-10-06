@@ -1,0 +1,17 @@
+[symbol2]
+bbox -320 128 32 288
+port -304 160 100 0 SLNK symbol 1 -320 160 0
+port -304 256 100 0 select symbol 1 -320 256 0
+port -304 224 100 0 enable symbol 1 -320 224 0
+port -96 256 100 0 inposition symbol 2 32 256 0
+port -48 224 100 0 demand symbol 2 32 224 0
+port -80 192 100 0 position symbol 2 32 192 0
+port -32 160 100 0 FLNK symbol 2 32 160 0
+uniq 11
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 -224 160 mechanism
+r 0 -320 128 32 288
+[comments]

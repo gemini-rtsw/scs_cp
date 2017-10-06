@@ -1,0 +1,10 @@
+[symbol2]
+bbox -256 -96 288 224
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 400 0 0 -192 32 guideSad
+r 0 -256 -96 288 224
+[comments]

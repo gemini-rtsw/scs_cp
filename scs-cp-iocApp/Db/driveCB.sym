@@ -1,0 +1,9 @@
+[symbol2]
+bbox -160 -160 160 160
+uniq 112
+[tools]
+[attributes]
+[layers]
+<symbol>
+r 0 -160 -160 160 160
+l 100 0 0 -42 -5 driveCB

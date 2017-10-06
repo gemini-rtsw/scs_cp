@@ -1,0 +1,15 @@
+[symbol2]
+bbox 64 32 192 192
+port 96 160 100 1792 STIN symbol 1 64 160 0
+port 96 128 100 1792 SPIN symbol 1 64 128 0
+port 96 96 100 1792 STAT symbol 1 64 96 0
+port 160 160 100 1792 STID symbol 2 192 160 0
+port 160 128 100 1792 SPID symbol 2 192 128 0
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 96 48 cadplus
+r 0 64 32 192 192
+[comments]

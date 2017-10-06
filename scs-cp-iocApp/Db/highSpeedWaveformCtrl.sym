@@ -1,0 +1,35 @@
+[symbol2]
+bbox -512 144 32 368
+port -32 328 100 0 FLNK symbol 2 32 320 0
+port -32 264 100 0 VAL symbol 2 32 256 0
+port -488 328 100 0 SRATE symbol 1 -512 320 0
+port -480 200 100 0 SLNK symbol 1 -512 192 0
+uniq 1
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 -312 328 HighSpeed WF Control
+l 100 0 0 -360 160 Set waveform DISV=0
+l 100 0 0 -400 192 waveform record SDIS input
+l 100 0 0 -368 224 by connecting VAL to
+l 100 0 0 -400 248 Control Waveform Processing
+r 0 -416 144 -64 368
+v 0 -64 320
+32 320
+_
+v 0 -384 320
+-368 352
+-336 288
+-320 320
+_
+v 0 -64 256
+32 256
+_
+v 0 -512 320
+-416 320
+_
+v 0 -512 192
+-416 192
+_
+[comments]

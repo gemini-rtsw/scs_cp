@@ -1,0 +1,10 @@
+[symbol2]
+bbox 320 384 736 640
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 432 512 timeSeq records
+r 0 320 640 736 384
+[comments]

@@ -1,0 +1,141 @@
+[schematic2]
+uniq 181
+[tools]
+[detail]
+w 2482 619 100 0 n#180 egenSubC.act3Diag.SLNK 2240 1184 2208 1184 2208 608 2816 608 2816 400 2784 400 ecalcs.posDrift1.FLNK
+w 2146 1963 100 0 n#179 ecalcs.posDrift2.FLNK 3536 928 3536 1120 2816 1120 2816 1952 1536 1952 1536 2048 1600 2048 eais.fol0.SLNK
+w 2970 1067 100 0 n#178 egenSubC.act3Diag.VALD 2528 1792 2752 1792 2752 1056 3248 1056 ecalcs.posDrift2.INPB
+w 2986 1099 100 0 n#177 egenSubC.act3Diag.VALA 2528 1888 2784 1888 2784 1088 3248 1088 ecalcs.posDrift2.INPA
+w 2858 715 100 0 n#176 egenSubC.act3Diag.FLNK 2528 1152 2528 704 3248 704 ecalcs.posDrift2.SLNK
+w 2298 539 100 0 n#175 egenSubC.act2Diag.VALD 2048 1728 2160 1728 2160 528 2496 528 ecalcs.posDrift1.INPB
+w 2306 571 100 0 n#174 egenSubC.act2Diag.VALA 2048 1824 2176 1824 2176 560 2496 560 ecalcs.posDrift1.INPA
+w 2322 187 100 0 n#172 egenSubC.act2Diag.FLNK 2048 1088 2080 1088 2080 512 2208 512 2208 176 2496 176 ecalcs.posDrift1.SLNK
+w 1730 411 100 0 n#169 egenSubC.act1Diag.VALD 1536 1664 1664 1664 1664 400 1856 400 ecalcs.posDrift0.INPB
+w 1586 1771 100 0 n#168 egenSubC.act1Diag.VALA 1536 1760 1696 1760 1696 432 1856 432 ecalcs.posDrift0.INPA
+w 1906 491 100 0 n#167 ecalcs.posDrift0.FLNK 2144 272 2144 480 1728 480 1728 1120 1760 1120 egenSubC.act2Diag.SLNK
+w 1698 59 100 0 n#166 egenSubC.act1Diag.FLNK 1536 1024 1600 1024 1600 48 1856 48 ecalcs.posDrift0.SLNK
+w 2562 2091 100 0 n#164 eais.fol2.INP 2624 2080 2560 2080 2560 1856 2528 1856 egenSubC.act3Diag.VALB
+w 2082 2091 100 0 n#163 eais.fol1.INP 2144 2080 2080 2080 2080 1792 2048 1792 egenSubC.act2Diag.VALB
+w 1522 2091 100 0 n#162 eais.fol0.INP 1600 2080 1504 2080 1504 1920 1568 1920 1568 1728 1536 1728 egenSubC.act1Diag.VALB
+w 2530 2059 100 0 n#161 eais.fol1.FLNK 2400 2064 2496 2064 2496 2048 2624 2048 eais.fol2.SLNK
+w 1898 2075 100 0 n#160 eais.fol0.FLNK 1856 2064 2000 2064 2000 2048 2144 2048 eais.fol1.SLNK
+w 578 1003 100 0 n#153 embbis.initializationString.FLNK 352 1408 512 1408 512 992 704 992 egenSubC.sysDiag.SLNK
+w -30 1195 100 0 n#152 egenSub.readRmDiags.FLNK -64 1184 64 1184 64 1392 96 1392 embbis.initializationString.SLNK
+w 18 1435 100 0 n#151 egenSub.readRmDiags.VALJ -64 1344 0 1344 0 1424 96 1424 embbis.initializationString.INP
+w 1042 971 100 0 n#146 egenSubC.sysDiag.FLNK 992 960 1152 960 1152 1056 1248 1056 egenSubC.act1Diag.SLNK
+w 1058 1899 100 0 n#143 egenSubC.act3Diag.A 2240 1888 -64 1888 egenSub.readRmDiags.OUTA
+w 818 1835 100 0 n#141 egenSubC.act2Diag.A 1760 1824 -64 1824 egenSub.readRmDiags.OUTB
+w 562 1771 100 0 n#140 egenSubC.act1Diag.A 1248 1760 -64 1760 egenSub.readRmDiags.OUTC
+w 290 1707 100 0 n#139 egenSubC.sysDiag.A 704 1696 -64 1696 egenSub.readRmDiags.OUTD
+s 128 2176 500 0 SCS - Display M2 system engineering data
+s 2464 -704 500 512 showEng.sch
+[cell use]
+use ecalcs 1856 -41 100 0 posDrift0
+xform 0 2000 224
+p 1952 144 100 0 1 CALC:A-B
+use ecalcs 2496 87 100 0 posDrift1
+xform 0 2640 352
+p 2608 288 100 0 1 CALC:A-B
+use ecalcs 3248 615 100 0 posDrift2
+xform 0 3392 880
+p 3344 768 100 0 1 CALC:A-B
+use eais 2624 1975 100 0 fol2
+xform 0 2752 2048
+p 2368 1886 100 0 0 PREC:4
+p 2704 2128 100 0 1 PV:$(top)
+use eais 2144 1975 100 0 fol1
+xform 0 2272 2048
+p 1888 1630 100 0 0 HYST:0.000000000000000e+00
+p 1888 1886 100 0 0 PREC:4
+p 2240 2128 100 0 1 PV:$(top)
+use eais 1600 1975 100 0 fol0
+xform 0 1728 2048
+p 1568 1982 100 0 0 HIGH:0.0000000e+00
+p 1568 1886 100 0 0 HSV:NO_ALARM
+p 1344 1886 100 0 0 PREC:4
+p 1680 2128 100 0 1 PV:$(top)
+use embbis 96 1319 100 0 initializationString
+xform 0 224 1392
+p 224 1310 100 0 0 FRST:Switching to uEs
+p 224 1278 100 0 0 FVST:Init XY stage
+p 224 1406 100 0 0 ONST:Init Mir Control
+p 224 1246 100 0 0 SXST:Init Complete
+p 224 1342 100 0 0 THST:Init Followers
+p 224 1374 100 0 0 TWST:Init Offloaders
+p 224 1438 100 0 0 ZRST:Init Idle
+use ecad2 -352 -185 100 0 primitive
+xform 0 -192 128
+p -288 -256 100 0 1 DESC:Issue M2 Primitive Command
+p -256 128 100 0 1 FTVA:LONG
+p -256 96 100 0 1 FTVB:STRING
+p -288 -320 100 0 1 SCAN:Passive
+p -288 -288 100 0 1 SNAM:issueM2Primitive
+use egenSubC 2240 1095 100 0 act3Diag
+xform 0 2384 1520
+p 2304 1040 100 0 1 DESC:Display M2 actuator 1 data
+p 2304 1008 100 0 1 INAM:
+p 2320 1872 100 0 1 NOA:21
+p 1952 1646 100 0 0 PREC:4
+p 2304 944 100 0 1 PV:$(top)
+p 2304 912 100 0 1 SCAN:Passive
+p 2304 976 100 0 1 SNAM:gensubFanDoubles
+use egenSubC 1760 1031 100 0 act2Diag
+xform 0 1904 1456
+p 1824 976 100 0 1 DESC:Display M2 actuator 2 data
+p 1824 944 100 0 1 INAM:
+p 1840 1808 100 0 1 NOA:21
+p 1472 1582 100 0 0 PREC:4
+p 1824 880 100 0 1 PV:$(top)
+p 1824 848 100 0 1 SCAN:Passive
+p 1824 912 100 0 1 SNAM:gensubFanDoubles
+use egenSubC 1248 967 100 0 act1Diag
+xform 0 1392 1392
+p 1312 912 100 0 1 DESC:Display M2 actuator 3 data
+p 1312 880 100 0 1 INAM:
+p 1328 1744 100 0 1 NOA:21
+p 960 1518 100 0 0 PREC:4
+p 1312 816 100 0 1 PV:$(top)
+p 1312 784 100 0 1 SCAN:Passive
+p 1312 848 100 0 1 SNAM:gensubFanDoubles
+use egenSubC 704 903 100 0 sysDiag
+xform 0 848 1328
+p 768 848 100 0 1 DESC:Display M2 system data
+p 768 816 100 0 1 INAM:
+p 784 1680 100 0 1 NOA:21
+p 416 1454 100 0 0 PREC:4
+p 768 752 100 0 1 PV:$(top)
+p 768 720 100 0 1 SCAN:Passive
+p 768 784 100 0 1 SNAM:gensubFanDoubles
+use egenSub -352 1127 100 0 readRmDiags
+xform 0 -208 1552
+p -288 1072 100 0 1 DESC:Read M2 diagnostics from reflective memory
+p -272 1392 100 0 0 FTJ:DOUBLE
+p -256 1648 100 0 1 FTVE:LONG
+p -575 741 100 0 0 FTVF:LONG
+p -575 741 100 0 0 FTVG:LONG
+p -575 709 100 0 0 FTVH:LONG
+p -575 677 100 0 0 FTVI:LONG
+p -272 1360 100 0 1 FTVJ:LONG
+p -288 1040 100 0 1 INAM:
+p -272 1328 100 0 0 NOJ:1
+p -256 1888 100 0 1 NOVA:21
+p -256 1856 100 0 1 NOVB:21
+p -256 1824 100 0 1 NOVC:21
+p -256 1792 100 0 1 NOVD:21
+p -272 1296 100 0 0 NOVJ:1
+p -640 1678 100 0 0 PREC:4
+p -288 976 100 0 1 PV:$(top)
+p -288 944 100 0 1 SCAN:.2 second
+p -288 1008 100 0 1 SNAM:readM2Diagnostics
+p -64 1322 75 0 -1 pproc(OUTJ):NPP
+use bd200tr -1024 -920 -100 0 frame
+xform 0 1616 784
+p 2608 -688 200 0 1 author:D.Kotturi
+p 3120 -720 100 0 0 border:D
+p 2608 -768 200 0 1 checked:D.Kotturi
+p 3120 -784 200 0 -1 date:$Date: 2008/09/24 01:15:47 $
+p 2576 2320 200 0 -1 id:$Id: showEng.sch,v 1.7 2008/09/24 01:15:47 mrippa Exp $
+p 3120 -432 200 0 -1 project:Gemini Wavefront Sensing System
+p 2608 -496 200 0 -1 revision:$Revision: 1.7 $
+p 3120 -560 200 0 -1 title:M2 Engineering Data Records
+[comments]

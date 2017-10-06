@@ -1,0 +1,11 @@
+[symbol2]
+bbox -224 -112 96 256
+uniq 1
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 300 0 0 -192 -80 convert
+l 300 0 0 -192 -32 frame
+r 0 -224 -96 96 256
+[comments]

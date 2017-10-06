@@ -1,0 +1,9 @@
+[symbol2]
+bbox 32 32 576 400
+uniq 384
+[tools]
+[attributes]
+[layers]
+<symbol>
+r 0 32 32 576 400
+l 100 0 0 208 211 clearGuideFocusP

@@ -1,0 +1,12 @@
+[symbol2]
+bbox -288 -272 288 256
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+a 0 0 0 0 -64 360
+a 0 0 0 32 -224 360
+l 300 0 0 176 -240 SCS
+r 0 -288 -256 288 256
+[comments]

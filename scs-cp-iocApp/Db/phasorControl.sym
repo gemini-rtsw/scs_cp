@@ -1,0 +1,14 @@
+[symbol2]
+bbox -448 -96 256 192
+port -448 70 100 0 axisIn symbol 1 -448 64 0
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 200 0 0 -160 32 phasorControl
+r 0 -352 -96 256 192
+v 0 -448 64
+-352 64
+_
+[comments]

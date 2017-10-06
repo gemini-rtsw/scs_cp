@@ -1,0 +1,11 @@
+[symbol2]
+bbox -288 96 -160 192
+port -256 128 100 0 slnk symbol 1 -288 128 0
+port -256 160 100 0 input symbol 1 -288 160 0
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+r 0 -288 96 -160 192
+[comments]

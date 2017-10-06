@@ -1,0 +1,21 @@
+[symbol2]
+bbox -256 -32 -32 288
+port -80 32 100 0 b7 symbol 2 -32 32 0
+port -224 0 100 0 slnk symbol 1 -256 0 0
+port -224 256 100 0 select symbol 1 -256 256 0
+port -96 0 100 0 flnk symbol 2 -32 0 0
+port -80 64 100 0 b6 symbol 2 -32 64 0
+port -80 96 100 0 b5 symbol 2 -32 96 0
+port -80 128 100 0 b4 symbol 2 -32 128 0
+port -80 160 100 0 b3 symbol 2 -32 160 0
+port -80 192 100 0 b2 symbol 2 -32 192 0
+port -80 224 100 0 b1 symbol 2 -32 224 0
+port -80 256 100 0 bo symbol 2 -32 256 0
+uniq 9
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 -224 160 selector
+r 0 -256 -32 -32 288
+[comments]

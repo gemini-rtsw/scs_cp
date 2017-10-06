@@ -1,0 +1,10 @@
+[symbol2]
+bbox -224 -112 112 256
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 300 0 0 -144 -80 control
+r 0 -224 -96 96 256
+[comments]
