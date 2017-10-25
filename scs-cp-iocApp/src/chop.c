@@ -285,22 +285,15 @@ long CADchopConfig (struct cadRecord * pcad)
            writeCommand(SYNC_SOURCE_SCS);
            errlogMessage("CADchopConfig - telling M2 sync source is external to M2\n");
        }
-       /* write chop parameters to reflective memory */
 
-       if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-       {
-           scsPtr->page0.chopFrequency = (float)frequency;
-           scsPtr->page0.chopProfile   = (long)profile;
-           scsPtr->page0.chopDutyCycle = (float)dutyCycle;
-           semGive(refMemFree);
-       }
-       else
-       {
-           errorLog("CADchopConfig - timeout on refMemFree", 1, ON);
-       }
+       /* write chop parameters to reflective memory */
+       epicsMutexLock(refMemFree);
+       scsPtr->page0.chopFrequency = (float)frequency;
+       scsPtr->page0.chopProfile   = (long)profile;
+       scsPtr->page0.chopDutyCycle = (float)dutyCycle;
+       epicsMutexUnlock(refMemFree);
 
        /* flag that chop configuration has been changed */
-
        writeCommand(CHOP_CHANGE);
        printf
       ("CADchopConfig - telling M2 chop config has changed to freq=%f, dutyCycle=%f\n", 
@@ -747,62 +740,48 @@ long    calcEnvelope (struct genSubRecord * pgsub)
 
 double  percentCalc (struct subRecord * psub)
 {
-    static  int oldBeam = 0;
-    static  int sampleCount = 0;
-    static  int coincidence = 0;
-    static  double percentage = 0;
-    int inPos, beamNow;
+   static  int oldBeam = 0;
+   static  int sampleCount = 0;
+   static  int coincidence = 0;
+   static  double percentage = 0;
+   int inPos, beamNow;
 
-    /* if not chopping, set to 100% and exit */
+   /* if not chopping, set to 100% and exit */
+   if(chopIsOn != 1)
+   {
+      psub->val = 100.0;
+      return(OK);
+   }   
+  
+   epicsMutexLock(refMemFree);
 
-    if(chopIsOn != 1)
-    {
-        psub->val = 100.0;
-        return(OK);
-    }   
+   /* grab in position and beam position */
+   beamNow = scsPtr->page1.beamPosition;
+   /*NEW (srp) invert sense of inPosition */
+   /*inPos = scsPtr->page1.inPosition;*/
+   inPos = !scsPtr->page1.inPosition;
 
-    if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-    {
-        /* grab in position and beam position */
+   epicsMutexUnlock(refMemFree);
 
-        beamNow = scsPtr->page1.beamPosition;
-        /*NEW (srp) invert sense of inPosition */
-        /*inPos = scsPtr->page1.inPosition;*/
-        inPos = !scsPtr->page1.inPosition;
+   /* check if beam has chopped */
+   if (beamNow != oldBeam)
+   {
+      /* calculate statistics for the last cycle */
+      /* guard for divide by zero error */
+      if(sampleCount > 0)
+         percentage = 100 * ((double) coincidence / (double) sampleCount);
 
-        semGive(refMemFree);
+      oldBeam = beamNow;
+      coincidence = 0;
+      sampleCount = 0;
+      psub->val = percentage;
+   }
 
-        /* check if beam has chopped */
+   /* if no transition just increment counts */
+   sampleCount++;
+   if (inPos == 0)
+      coincidence++;
 
-        if (beamNow != oldBeam)
-        {
-            /* calculate statistics for the last cycle */
-            /* guard for divide by zero error */
-
-            if(sampleCount > 0)
-                percentage = 100 * ((double) coincidence / (double) sampleCount);
-
-            oldBeam = beamNow;
-
-            coincidence = 0;
-            sampleCount = 0;
-
-            psub->val = percentage;
-        }
-
-        /* if no transition just increment counts */
-
-        sampleCount++;
-    
-        if (inPos == 0)
-            coincidence++;
-
-        return(OK);
-    }
-    else
-    {
-        logMsg("percent in position - semtimeout\n", 0, 0, 0, 0, 0, 0);
-        return(ERROR);
-    }
+   return(OK);
 }
 

@@ -1,6 +1,4 @@
-/* $Id: control.c,v 1.28 2015/05/01 00:01:21 mrippa Exp $ */
 /* ===================================================================== */
-/* INDENT OFF */
 /*+
  *
  * FILENAME
@@ -74,35 +72,28 @@
  * 19-Oct-2017: Begin conversion to EPIS OSI (mdw)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
+#include <string.h>     /* For strncpy */
+#include <stdio.h>      /* For printf */
+#include <math.h>       /* For abs */
 
+#include <timeLib.h>    /* For timeNow */
+//#include <vmi5578.h>    /* For rmIntSend */
+#include <vmi5588.h>    /* For rmIntSend */
+
+
+#include "utilities.h"  /* For debugLevel, ag2m2 */
 #include "archive.h"    /* For refMemFree */
 #include "chop.h"       /* For jogBeam, chopIsOn */
 #include "control.h"    /* For logThreshold, SYSTEM_CLOCK_RATE */
 #include "elgLib.h"     /* For data logging routine */
 #include "guide.h"      /* For updateInterval, guideOn, guideOnA, guideOnB,
-                           guideOnC, setPoint, setPointFree, filter, 
                            weight */
 #include "interlock.h"  /* For lockPosition, scsState */
 #include "interp.h"     /* For AX, AY, ..., Z axis identifiers */
 #include "m2Log.h"
-#include "utilities.h"  /* For debugLevel, ag2m2 */
 #include "xycom.h"      /* For ports[7] (tests only), ticksToWait (temp) */
-
-#include <sysLib.h>     /* For sysClkRateGet */
-#include <taskLib.h>     /* For taskDelay */
-
-#include <tickLib.h>    /* For tickGet */
-#include <timeLib.h>    /* For timeNow */
-#include <logLib.h>     /* For logMsg */
-#include <string.h>     /* For strncpy */
-#include <stdio.h>      /* For printf */
-#include <math.h>       /* For abs */
-
-#include <timers.h>   /* For VxWorks clockLib,timespec,... */
-#include <vmi5578.h>    /* For rmIntSend */
-#include <interp.h>     /* For getInterpolation */
+#include "interp.h"     /* For getInterpolation */
 
  /* Define limits for incremental steps */
 #define TILT_GUIDE_STEP_LIMIT   32.0   /* arcsec  */
@@ -118,7 +109,8 @@
 #define COVAR_MIN        0.01
 #define COVAR_MAX        100
 
-#define RECEIVE_TIMEOUT         100     /* 1 second * system clock rate */
+//#define RECEIVE_TIMEOUT         100     /* 1 second * system clock rate */
+#define RECEIVE_TIMEOUT         1.0       /* 1 second */
 
 #define MAGIC_NUMBER            1958    /* magic number so sequences don't
                                            all start at zero    */
@@ -330,16 +322,18 @@ long servoInPosition;
 /* function prototypes */
 static int  frameConvert (converted *result, frameChange *f, const double x, 
       const double y, const double z);
+
+
 void phasorShow(void);
 int flipGuide = 0;
 int simLevel = 0;
 memMap *scsPtr = NULL;
 memMap *scsBase = NULL;
 memMap *m2Ptr = NULL;
-epicsEventId m2MemFree = NULL;
+epicsMutexId m2MemFree = NULL;
 epicsEventId slowUpdate = NULL;
-SEM_ID wfsFree[MAX_SOURCES];
-SEM_ID diagnosticsAvailable = NULL;
+epicsMutexId wfsFree[MAX_SOURCES];
+epicsEventId diagnosticsAvailable = NULL;
 SEM_ID guideUpdateNow = NULL;
 SEM_ID scsDataAvailable = NULL;
 SEM_ID scsReceiveNow = NULL;
@@ -479,7 +473,6 @@ void setNS(int value)
    local.NS = value;
 }
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * projectSource
@@ -523,7 +516,6 @@ void setNS(int value)
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 void projectSource (void)
@@ -616,7 +608,6 @@ void projectSource (void)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * blendSources
@@ -661,7 +652,6 @@ void projectSource (void)
  *              AUTOGUIDE to use projected guide values
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 void blendSources (void)
@@ -829,7 +819,6 @@ static void reportTimes() {
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * fireLoops
@@ -866,7 +855,6 @@ static void reportTimes() {
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 void fireLoops (int param)
 {
@@ -913,7 +901,6 @@ void rmISR3 (int node)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * processGuides
@@ -956,7 +943,6 @@ void rmISR3 (int node)
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 int rxwaitticks = 0;
@@ -2153,7 +2139,6 @@ void slowTransmit (void)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * tiltReceive
@@ -2196,7 +2181,6 @@ void slowTransmit (void)
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 void tiltReceive (void) 
@@ -2210,58 +2194,60 @@ void tiltReceive (void)
 
 
    for (;;) {
-      if (semTake (scsDataAvailable, RECEIVE_TIMEOUT) == OK) {
-         if (semTake (m2MemFree, SEM_TIMEOUT) == OK) {
-            scsCheck = checkSum ((void *) &m2Ptr->page0.NS, 
-                  COMMAND_BLOCK_SIZE);
+      if (epicsEventWaitWithTimeout(scsDataAvailable, RECEIVE_TIMEOUT) == epicsEventWaitOK) {
 
-            if (scsCheck == m2Ptr->page0.checksum) {
+         epicsMutexMustLock(m2MemFree);
 
-               if (oldHeartbeat == m2Ptr->page0.heartbeat) {
-                  errorLog ("tiltReceive - SCS heartbeat stuck", 1, ON);
-                  if (myTiltRxErrcount++ < 100) printf("tiltReceive - SCS heartbeat stuck\n");
-               }
+         scsCheck = checkSum ((void *) &m2Ptr->page0.NS, COMMAND_BLOCK_SIZE);
 
-               oldHeartbeat = m2Ptr->page0.heartbeat;
+         if (scsCheck == m2Ptr->page0.checksum) {
 
-               /* copy command into local buffer */
-               localCommandCode = m2Ptr->page0.commandCode;
-
-               /*
-                * place command into FIFO buffer for slower reading from
-                * state code
-                */
-               if (localCommandCode != FAST_ONLY) {
-                  if (msgQSend (receiveQId, (char *) &localCommandCode,
-                           sizeof (long), SEM_TIMEOUT, 
-                           MSG_PRI_NORMAL) == ERROR)
-                  {
-                     errorLog ("timeout appending command to receiveQId", 1, ON);
-                     if (myTiltRxErrcount++ < 100) printf("timeout appending command to receiveQId\n");
-                  }
-               }
-
-               /*
-                * block received without error so update sequence
-                * counter
-                */
-
-               m2Ptr->page1.NR = m2Ptr->page0.NS;
-            }
-            else {
-               errorLog ("tiltReceive - checksums fail", 1, ON);
-               if (myTiltRxErrcount++ < 100) printf ("tiltReceive - checksums fail\n");
+            if (oldHeartbeat == m2Ptr->page0.heartbeat) {
+               errorLog ("tiltReceive - SCS heartbeat stuck", 1, ON);
+               if (myTiltRxErrcount++ < 100) printf("tiltReceive - SCS heartbeat stuck\n");
             }
 
-            /* package status data to return to SCS */
-            m2Ptr->page1.heartbeat = m2Heartbeat++;
-            m2Ptr->page1.checksum = checkSum ((void *) &m2Ptr->page1.NR, 
-                  STATUS_BLOCK_SIZE);
+            oldHeartbeat = m2Ptr->page0.heartbeat;
 
-            semGive (m2MemFree);
+            /* copy command into local buffer */
+            localCommandCode = m2Ptr->page0.commandCode;
 
-            /* flag status data available */
-            semGive (scsReceiveNow);
+            /*
+             * place command into FIFO buffer for slower reading from
+             * state code
+             */
+             if (localCommandCode != FAST_ONLY) {
+                if (msgQSend (receiveQId, (char *) &localCommandCode,
+                              sizeof (long), SEM_TIMEOUT, 
+                              MSG_PRI_NORMAL) == ERROR)
+                {
+                   errorLog ("timeout appending command to receiveQId", 1, ON);
+                   if (myTiltRxErrcount++ < 100) 
+                      printf("timeout appending command to receiveQId\n");
+                }
+             }
+
+             /*
+              * block received without error so update sequence
+              * counter
+              */
+              m2Ptr->page1.NR = m2Ptr->page0.NS;
+           }
+           else {
+              errorLog ("tiltReceive - checksums fail", 1, ON);
+              if (myTiltRxErrcount++ < 100) 
+                 printf ("tiltReceive - checksums fail\n");
+           }
+
+           /* package status data to return to SCS */
+           m2Ptr->page1.heartbeat = m2Heartbeat++;
+           m2Ptr->page1.checksum = checkSum ((void *) &m2Ptr->page1.NR, 
+                 STATUS_BLOCK_SIZE);
+
+           semGive (m2MemFree);
+
+           /* flag status data available */
+           semGive (scsReceiveNow);
 
             /* print command to screen for testing */
             if ((localCommandCode > POSITION) & 
@@ -2273,11 +2259,6 @@ void tiltReceive (void)
                      0, 0, 0, 0);
             }
          }
-         else {
-            errorLog ("tiltReceive - m2MemFree timeout", 1, ON);
-            if (myTiltRxErrcount++ < 100) printf("tiltReceive - scsDataAvailable timeout\n");
-         }
-      }
       else {
          if(simLevel != 0) {
             errorLog ("tiltReceive - scsDataAvailable timeout", 1, ON);
@@ -2288,7 +2269,6 @@ void tiltReceive (void)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * scsReceive
@@ -2326,7 +2306,6 @@ void tiltReceive (void)
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 void scsReceive (void)
@@ -2424,7 +2403,7 @@ void scsReceive (void)
                {
                   *(diagBlock *) & scsPtr->testResults = 
                      *(diagBlock *) & m2Ptr->testResults;
-                  semGive (diagnosticsAvailable);
+                  epicsEventSignal(diagnosticsAvailable);
                }
 
                local.testRequest = 
@@ -2451,7 +2430,6 @@ void scsReceive (void)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * checkTiltStatus
@@ -2492,7 +2470,6 @@ void scsReceive (void)
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 int checkTiltStatus (void)
@@ -2636,7 +2613,6 @@ int checkTiltStatus (void)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * updateEventPage 
@@ -2675,7 +2651,6 @@ int checkTiltStatus (void)
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 int updateEventPage (int scsInPosition, int scsPresentBeam)
 {
@@ -2727,7 +2702,6 @@ int updateEventPage (int scsInPosition, int scsPresentBeam)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * writeCommand
@@ -2766,7 +2740,6 @@ int updateEventPage (int scsInPosition, int scsPresentBeam)
  * 05-Dec-1997: Original(srp)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long writeCommand (const long command)
@@ -2796,7 +2769,6 @@ long writeCommand (const long command)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * frameConvert
@@ -2835,7 +2807,6 @@ long writeCommand (const long command)
  * 24-Nov-1998: Adapt to SCS usage
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 static int frameConvert (converted *result, 
                 frameChange *f, 
@@ -2870,7 +2841,6 @@ static int frameConvert (converted *result,
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * iir_filter
@@ -2908,7 +2878,6 @@ static int frameConvert (converted *result,
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 double iir_filter (const double input, MATLAB * iir)

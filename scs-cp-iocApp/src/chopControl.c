@@ -43,7 +43,7 @@
 #include "chopControl.h"
 #include "interlock.h"  /* For eventConnect */
 #include "utilities.h"  /* For errorLog, debugLevel */
-//#include "xycom.h"      /* For eventHandler */
+#include "xycom.h"      /* For eventHandler */
 
 
 /* Declare external variables */
@@ -116,17 +116,17 @@ int chopInit (void)
 
    eventSem = epicsEventMustCreate(epicsEventEmpty);
 
-   /* Spawn the task to watch for the event semaphore to be given */
+   //* Spawn the task to watch for the event semaphore to be given */
    if (!(tid = epicsThreadCreate("tWatchEvents", epicsThreadPriorityMedium,
                            epicsThreadGetStackSize(epicsThreadStackMedium), 
-                           eventHandler, NULL)))
+                           (EPICSTHREADFUNC)eventHandler, (void *)NULL)))
    {
       errlogMessage("Cannot watch for events\n");
       return ERROR;
    }
 
    /* Create semaphore to trigger tasks */
-   chopEventSem = epicsEventMustCreate(epicsEventEmpty)
+   chopEventSem = epicsEventMustCreate(epicsEventEmpty);
 
    return (OK);
 }

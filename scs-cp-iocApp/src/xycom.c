@@ -39,20 +39,11 @@
 /* INDENT ON */
 /* ===================================================================== */
 
-#include <vxWorks.h>		/* General vxworks stuff */
-#include <intLib.h>		/* For intConnect */
-#include <iv.h>			/* For interrupt vector stuff */
-#include <logLib.h>		/* For logMsg */
 #include <math.h>               /* For round */
-#include <msgQLib.h>		/* For message queues */
-#include <semLib.h>		/* For semaphores */
 #include <stdio.h>		/* printf and friends */
-#include <sysLib.h>		/* For sysXXX */
-#include <taskLib.h>		/* Spawning and deleting tasks */
-#include <tickLib.h>            /* For tickGet */
 #include <timeLib.h>            /* For timeNow */
-#include <vxLib.h>		/* For vxMemProbe */
 
+#include "utilities.h"
 #include "xycom.h"		
 #include "chop.h"               /* For getChopDuty, getChopFreq, chopIsPending,
 				   decsIsPending */
@@ -637,7 +628,7 @@ void xyIntHandler (void) {
 
 /* INDENT ON */
 /* ===================================================================== */
-void eventHandler (void) 
+void eventHandler (void *p) 
 {
    double dutyCycle;
    double frequency;
