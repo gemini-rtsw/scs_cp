@@ -1,7 +1,4 @@
-/* $Id: scs.c,v 1.10 2008/09/24 01:15:48 mrippa Exp $ */
-/* ===================================================================== */
-/* INDENT OFF */
-/*+
+/*
  *
  * FILENAME
  * -------- 
@@ -57,8 +54,10 @@
  *              Add cjm's technique to limit demands on fine control servos
  * 02-Jun-1999: Expanded tabs to blanks
  *
+ * 06-Oct-2017: Conversion to EPICS OSI started. (MDW)
+ *
  */
-/* INDENT ON */
+
 /* ===================================================================== */
 
 #include "scs.h"
@@ -76,7 +75,10 @@
 
 #include <logLib.h>         /* For logMsg */
 #include <timeLib.h>        /* For timeNow */
-#include <wdLib.h>
+
+//#include <wdLib.h>
+#include <epicsTimer.h>
+#include <epicsThread.h>
 
 #include <math.h>
 #include <string.h>
@@ -98,9 +100,14 @@
 
 #define ALWAYS 1
 
-
+#if 0    FIX THIS
 /* Declare in file globals */
-static WDOG_ID timeoutId;
+//static WDOG_ID timeoutId;
+epicsTimerQueueId tqid = epicsTimerQueueAllocate(1, epicsThreadPriorityScanLow);
+epicsTimerId timeoutId = epicsTimerQueueCreateTimer(tqid, 
+#endif
+
+
 static int first = TRUE; 
 int badBeamCount = 0;    /* accessible from VxWorks prompt */
 
@@ -108,7 +115,6 @@ int badBeamCount = 0;    /* accessible from VxWorks prompt */
 static void tcsTimeout (void);
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * receiveTcsDemand
@@ -163,7 +169,6 @@ static void tcsTimeout (void);
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long initFollowGenSub (struct genSubRecord * pgsub)
@@ -177,31 +182,35 @@ long initFollowGenSub (struct genSubRecord * pgsub)
         if (ag2m2[source] == NULL)
         {
             if ((ag2m2[source] = (frameChange *) calloc 
-			(1, sizeof (frameChange))) == NULL)
+            (1, sizeof (frameChange))) == NULL)
             {
                 logMsg ("Unable to calloc frameChange for source %d\n", 
-			(int) source, 0, 0, 0, 0, 0);
+            (int) source, 0, 0, 0, 0, 0);
                 return (ERROR);
             }
             else
             {
                 if ((ag2m2[source]->access = semMCreate (SEM_Q_PRIORITY | 
-		        SEM_DELETE_SAFE | SEM_INVERSION_SAFE)) == NULL)
+                SEM_DELETE_SAFE | SEM_INVERSION_SAFE)) == NULL)
                 {
                     logMsg ("Unable to create mutex for conversion source %d\n",
-			(int) source, 0, 0, 0, 0, 0);
+            (int) source, 0, 0, 0, 0, 0);
                 }
                 else
                 {
                     /* initialise structure with default values */
 
                     modifyFrame (ag2m2[source], 0.0, DEFAULT_TILT_SCALE, 
-			DEFAULT_TILT_SCALE, DEFAULT_FOCUS_SCALE, 0.0, 0.0);
+            DEFAULT_TILT_SCALE, DEFAULT_FOCUS_SCALE, 0.0, 0.0);
                 }
             }
         }
     }
 
+
+
+// Why has the following been commented out? (MDW)
+//
     /* create and start watchdog timer for follow updates */
 
     /* if ((timeoutId = wdCreate ()) == NULL)
@@ -265,13 +274,14 @@ long receiveTcsDemand (struct genSubRecord * pgsub)
 
     double zStep;                         /* Max change in z demand (mm) */
     double tiltStep;                      /* Max change in tilt demand */
-    double tmp;				  /* temp value to hold z guide */
-    int    beam;			  /* Current beam as M2 sees */
-    int    beamCompare;			  /* Current beam as SCS sees */
+    double tmp;                  /* temp value to hold z guide */
+    int    beam;              /* Current beam as M2 sees */
+    int    beamCompare;              /* Current beam as SCS sees */
     int    currFrame;
 
     static int beamDiscrepancy = FALSE;   /* Flag that M2 beam != SCS beam */
 
+// Why has the following been commented out? (MDW)
     /* Restart watchdog timeout when routine called */
 
     /* wdStart (timeoutId, FOLLOW_TIMEOUT, (FUNCPTR) tcsTimeout, 0);  */
@@ -298,256 +308,256 @@ long receiveTcsDemand (struct genSubRecord * pgsub)
 
       if (timeNow (&scsTimeNow) != OK)
         {
-	  /*            logMsg ("receiveTcsDemand - error reading timestamp\n", 0, 0, 0, 0, 0, 0);
-			return (ERROR); */
+      /*            logMsg ("receiveTcsDemand - error reading timestamp\n", 0, 0, 0, 0, 0, 0);
+            return (ERROR); */
         }
 
       /* compare time sent for late arrival and sanity check all demands */
 
       if ((scsTimeNow - tcsUpdate[0]) > TCS_COMMAND_TIMEOUT)
         {
-	  arrayS = 2;
+      arrayS = 2;
         }
       else if (fabs (tcsUpdate[3]) > X_TILT_LIMIT)    /* BEAM A */
         {
-	  arrayS = 1;
+      arrayS = 1;
         }
       else if (fabs (tcsUpdate[4]) > Y_TILT_LIMIT)
         {
-	  arrayS = 1;
+      arrayS = 1;
         }
       else if (fabs (tcsUpdate[5]) > X_TILT_LIMIT)    /* BEAM B */
         {
-	  arrayS = 1;
+      arrayS = 1;
         }
       else if (fabs (tcsUpdate[6]) > Y_TILT_LIMIT)
         {
-	  arrayS = 1;
+      arrayS = 1;
         }
       else if (fabs (tcsUpdate[7]) > X_TILT_LIMIT)    /* BEAM C */
         {
-	  arrayS = 1;
+      arrayS = 1;
         }
       else if (fabs (tcsUpdate[8]) > Y_TILT_LIMIT)
         {
-	  arrayS = 1;
+      arrayS = 1;
         }
       else if (fabs (tcsUpdate[11]) > Z_FOCUS_LIMIT)
         {
-	  arrayS = 1;
+      arrayS = 1;
         }
       /* let it be an unbounded box
-	 else if (fabs (tcsUpdate[9]) > X_POSITION_LIMIT)
-	 {
-	 arrayS = 1;
-	 }
-	 else if (tcsUpdate[10] > Y_POSITION_LIMIT_MAX)
-	 {
-	 arrayS = 1;
-	 }
-	 else if (tcsUpdate[10] < Y_POSITION_LIMIT_MIN)
-	 {
-	 arrayS = 1;
-	 }*/
+     else if (fabs (tcsUpdate[9]) > X_POSITION_LIMIT)
+     {
+     arrayS = 1;
+     }
+     else if (tcsUpdate[10] > Y_POSITION_LIMIT_MAX)
+     {
+     arrayS = 1;
+     }
+     else if (tcsUpdate[10] < Y_POSITION_LIMIT_MIN)
+     {
+     arrayS = 1;
+     }*/
 
 
       /* if the command was sent recently and values are in absolute range */
 
       if (arrayS == 0) {
 
-	beam = (int)(scsPtr->page1.beamPosition);
+    beam = (int)(scsPtr->page1.beamPosition);
 
-	/* Inspect "beam" */
-	if ((beam != BEAMA) && (beam != BEAMB) && (beam != BEAMC)) {
-	  logMsg("receiveTcsDemand - unknown beam = %d\n",beam,0,0,0,0,0);
-	  printf("receiveTcsDemand - unknown beam = %d\n",beam);
-	  beam = BEAMA; 
-	} /***/
+    /* Inspect "beam" */
+    if ((beam != BEAMA) && (beam != BEAMB) && (beam != BEAMC)) {
+      logMsg("receiveTcsDemand - unknown beam = %d\n",beam,0,0,0,0,0);
+      printf("receiveTcsDemand - unknown beam = %d\n",beam);
+      beam = BEAMA; 
+    } /***/
 
-	else {
-
-
-	  beamDiscrepancy = FALSE;
-
-	  currFrame = (int) scsPtr->page1.NR;
-	  currFocus = scsPtr->page1.zFocus;
-	  currXtilt = scsPtr->page1.xTilt;
-	  currYtilt = scsPtr->page1.yTilt;
+    else {
 
 
-	  /* "first" gets reset to TRUE each time follow is turned ON */
-	  if (first) {
-	    lastDmdX = tcsUpdate[3];
-	    lastDmdY = tcsUpdate[4];
-	    lastDmdZ = tcsUpdate[11];
+      beamDiscrepancy = FALSE;
 
-	    prevFocus = currFocus;
-	    prevXtilt[beam] = currXtilt;
-	    prevYtilt[beam] = currYtilt;
-	    badFrames = 0;
-	    first = FALSE;
-	    printf ("receiveTcsDemand - current pos beam %c at start of follow (frame %d) = %f %f %f\n", 
-		    ((beam == 0) ? 'A':'B'), currFrame, currXtilt, currYtilt, currFocus);
-	    printf("receiveTcsDemand - setting lastDmds to %f %f %f\n",
-		   lastDmdX, lastDmdY, lastDmdZ);
-	  }
+      currFrame = (int) scsPtr->page1.NR;
+      currFocus = scsPtr->page1.zFocus;
+      currXtilt = scsPtr->page1.xTilt;
+      currYtilt = scsPtr->page1.yTilt;
+
+
+      /* "first" gets reset to TRUE each time follow is turned ON */
+      if (first) {
+        lastDmdX = tcsUpdate[3];
+        lastDmdY = tcsUpdate[4];
+        lastDmdZ = tcsUpdate[11];
+
+        prevFocus = currFocus;
+        prevXtilt[beam] = currXtilt;
+        prevYtilt[beam] = currYtilt;
+        badFrames = 0;
+        first = FALSE;
+        printf ("receiveTcsDemand - current pos beam %c at start of follow (frame %d) = %f %f %f\n", 
+            ((beam == 0) ? 'A':'B'), currFrame, currXtilt, currYtilt, currFocus);
+        printf("receiveTcsDemand - setting lastDmds to %f %f %f\n",
+           lastDmdX, lastDmdY, lastDmdZ);
+      }
           
-	  /* If neccessary, rate limit the demands. Note there is no
-	   * protection on reading the reflected memory as it is not
-	   * critical that focus, tip and tilt are all read at the
-	   * same time.
-	   *
-	   * Note: currFocus includes the guide component; tcsUpdate
-	   * does not. So need to add the current guide term in before
-	   * looking at the difference between demand and actual.
-	   * 
-	   * Use scsBase to read the demanded guide */
+      /* If neccessary, rate limit the demands. Note there is no
+       * protection on reading the reflected memory as it is not
+       * critical that focus, tip and tilt are all read at the
+       * same time.
+       *
+       * Note: currFocus includes the guide component; tcsUpdate
+       * does not. So need to add the current guide term in before
+       * looking at the difference between demand and actual.
+       * 
+       * Use scsBase to read the demanded guide */
 
-	  if (scsBase != NULL)
-	    tmp = (double)(scsBase->page0.zGuide);
-	  else
-	    { 
-	      tmp = 0;
-	      printf("receiveTcsDemand - scsBase ptr is NULL");
-	    }
+      if (scsBase != NULL)
+        tmp = (double)(scsBase->page0.zGuide);
+      else
+        { 
+          tmp = 0;
+          printf("receiveTcsDemand - scsBase ptr is NULL");
+        }
 
-	  /* Note 10jul00: As an alternative to rate limiting,
-	   * could check for big diff between demand and actual
-	   * and turn off servos, otherwise turn on - but this
-	   * may cause implications with guiding/chopping 
-	   * simultaneously. */
-
-
-	  dzDemand = (tcsUpdate[11] + tmp) - currFocus;
-	  if (dzDemand > zStep)
-	    tcsUpdate[11] = currFocus + zStep;
-	  else if (dzDemand < -zStep)
-	    tcsUpdate[11] = currFocus - zStep;
-
-	  if (debugLevel == DEBUG_RESERVED1)
-	    {
-	      /*     printf("receiveTcsD: dzD=%f zS=%f tcsUpd=%f tmp=%f currF=%f\n",dzDemand,zStep,tcsUpdate[11],tmp,currFocus); */
-	    }
-
-	  /* NOT_VALID_FOR_CHOPPING
-	   * 19-jul-00: assume valid for chopping.
-	   *            because now the limit is 150 arcsec 
-	   * later: add checks of beam amplitude and forbid
-	   * chops of > 150 or 200 or so.
-	   if (chopIsOn == 0)
-	   {*/
-	  dxDemand = tcsUpdate[3] - lastDmdX;     /* BEAM A */
-	  if (dxDemand > tiltStep)
-	    tcsUpdate[3] = lastDmdX + tiltStep;
-	  else if (dxDemand < -tiltStep)
-	    tcsUpdate[3] = lastDmdX - tiltStep;
-
-	  dyDemand = tcsUpdate[4] - lastDmdY;
-	  if (dyDemand > tiltStep)
-	    tcsUpdate[4] = lastDmdY + tiltStep;
-	  else if (dyDemand < -tiltStep)
-	    tcsUpdate[4] = lastDmdY - tiltStep;
-	  /*
-	    }
-	  */
+      /* Note 10jul00: As an alternative to rate limiting,
+       * could check for big diff between demand and actual
+       * and turn off servos, otherwise turn on - but this
+       * may cause implications with guiding/chopping 
+       * simultaneously. */
 
 
-	  /* calculate the interpolation coefficients */
+      dzDemand = (tcsUpdate[11] + tmp) - currFocus;
+      if (dzDemand > zStep)
+        tcsUpdate[11] = currFocus + zStep;
+      else if (dzDemand < -zStep)
+        tcsUpdate[11] = currFocus - zStep;
 
-	  tcs.timeSent = tcsUpdate[0];
-	  tcs.timeApply = tcsUpdate[1];
-	  tcs.trackId = (long) tcsUpdate[2];
+      if (debugLevel == DEBUG_RESERVED1)
+        {
+          /*     printf("receiveTcsD: dzD=%f zS=%f tcsUpd=%f tmp=%f currF=%f\n",dzDemand,zStep,tcsUpdate[11],tmp,currFocus); */
+        }
 
-	  /* perform coordinate conversion for each beam */
+      /* NOT_VALID_FOR_CHOPPING
+       * 19-jul-00: assume valid for chopping.
+       *            because now the limit is 150 arcsec 
+       * later: add checks of beam amplitude and forbid
+       * chops of > 150 or 200 or so.
+       if (chopIsOn == 0)
+       {*/
+      dxDemand = tcsUpdate[3] - lastDmdX;     /* BEAM A */
+      if (dxDemand > tiltStep)
+        tcsUpdate[3] = lastDmdX + tiltStep;
+      else if (dxDemand < -tiltStep)
+        tcsUpdate[3] = lastDmdX - tiltStep;
 
-	  position.xTilt = tcsUpdate[3];
-	  position.yTilt = tcsUpdate[4];
-	  position.zFocus = tcsUpdate[11];
-	  position.xPos = tcsUpdate[9];
-	  position.yPos = tcsUpdate[10];
+      dyDemand = tcsUpdate[4] - lastDmdY;
+      if (dyDemand > tiltStep)
+        tcsUpdate[4] = lastDmdY + tiltStep;
+      else if (dyDemand < -tiltStep)
+        tcsUpdate[4] = lastDmdY - tiltStep;
+      /*
+        }
+      */
 
 
-	  if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
-	    {
-	      printf("before: xy = %f %f;", position.xPos, position.yPos);
-	    }
+      /* calculate the interpolation coefficients */
 
-	  tcs2m2 (&position);
+      tcs.timeSent = tcsUpdate[0];
+      tcs.timeApply = tcsUpdate[1];
+      tcs.trackId = (long) tcsUpdate[2];
+
+      /* perform coordinate conversion for each beam */
+
+      position.xTilt = tcsUpdate[3];
+      position.yTilt = tcsUpdate[4];
+      position.zFocus = tcsUpdate[11];
+      position.xPos = tcsUpdate[9];
+      position.yPos = tcsUpdate[10];
+
+
+      if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
+        {
+          printf("before: xy = %f %f;", position.xPos, position.yPos);
+        }
+
+      tcs2m2 (&position);
             
-	  if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
-	    {
-	      printf("after: xy = %f %f\n", 
-		     position.xPosNew, position.yPosNew);
-	    }
+      if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
+        {
+          printf("after: xy = %f %f\n", 
+             position.xPosNew, position.yPosNew);
+        }
 
-	  tcs.xTiltA = position.xTiltNew;
-	  tcs.yTiltA = position.yTiltNew;
-	  tcs.zFocus = position.zFocusNew;
-	  tcs.xPosition = position.xPosNew;
-	  tcs.yPosition = position.yPosNew;
+      tcs.xTiltA = position.xTiltNew;
+      tcs.yTiltA = position.yTiltNew;
+      tcs.zFocus = position.zFocusNew;
+      tcs.xPosition = position.xPosNew;
+      tcs.yPosition = position.yPosNew;
 
-	  /* NEW: rate limits for beam B */
-	  dxDemand = tcsUpdate[5] - currXtilt;       /* BEAM B */
-	  if (dxDemand > tiltStep)
-	    tcsUpdate[5] = currXtilt + tiltStep;
-	  else if (dxDemand < -tiltStep)
-	    tcsUpdate[5] = currXtilt - tiltStep;
+      /* NEW: rate limits for beam B */
+      dxDemand = tcsUpdate[5] - currXtilt;       /* BEAM B */
+      if (dxDemand > tiltStep)
+        tcsUpdate[5] = currXtilt + tiltStep;
+      else if (dxDemand < -tiltStep)
+        tcsUpdate[5] = currXtilt - tiltStep;
 
-	  dyDemand = tcsUpdate[6] - currYtilt;
-	  if (dyDemand > tiltStep)
-	    tcsUpdate[6] = currYtilt + tiltStep;
-	  else if (dyDemand < -tiltStep)
-	    tcsUpdate[6] = currYtilt - tiltStep;
+      dyDemand = tcsUpdate[6] - currYtilt;
+      if (dyDemand > tiltStep)
+        tcsUpdate[6] = currYtilt + tiltStep;
+      else if (dyDemand < -tiltStep)
+        tcsUpdate[6] = currYtilt - tiltStep;
              
-	  position.xTilt = tcsUpdate[5];
-	  position.yTilt = tcsUpdate[6];
+      position.xTilt = tcsUpdate[5];
+      position.yTilt = tcsUpdate[6];
 
-	  tcs2m2 (&position);
+      tcs2m2 (&position);
 
-	  tcs.xTiltB = position.xTiltNew;
-	  tcs.yTiltB = position.yTiltNew;
+      tcs.xTiltB = position.xTiltNew;
+      tcs.yTiltB = position.yTiltNew;
 
-	  dxDemand = tcsUpdate[7] - currXtilt;       /* BEAM C */
-	  if (dxDemand > tiltStep)
-	    tcsUpdate[7] = currXtilt + tiltStep;
-	  else if (dxDemand < -tiltStep)
-	    tcsUpdate[7] = currXtilt - tiltStep;
+      dxDemand = tcsUpdate[7] - currXtilt;       /* BEAM C */
+      if (dxDemand > tiltStep)
+        tcsUpdate[7] = currXtilt + tiltStep;
+      else if (dxDemand < -tiltStep)
+        tcsUpdate[7] = currXtilt - tiltStep;
 
-	  dyDemand = tcsUpdate[8] - currYtilt;
-	  if (dyDemand > tiltStep)
-	    tcsUpdate[8] = currYtilt + tiltStep;
-	  else if (dyDemand < -tiltStep)
-	    tcsUpdate[8] = currYtilt - tiltStep;
+      dyDemand = tcsUpdate[8] - currYtilt;
+      if (dyDemand > tiltStep)
+        tcsUpdate[8] = currYtilt + tiltStep;
+      else if (dyDemand < -tiltStep)
+        tcsUpdate[8] = currYtilt - tiltStep;
 
-	  position.xTilt = tcsUpdate[7];
-	  position.yTilt = tcsUpdate[8];
+      position.xTilt = tcsUpdate[7];
+      position.yTilt = tcsUpdate[8];
 
-	  tcs2m2 (&position);
+      tcs2m2 (&position);
 
-	  tcs.xTiltC = position.xTiltNew;
-	  tcs.yTiltC = position.yTiltNew;
+      tcs.xTiltC = position.xTiltNew;
+      tcs.yTiltC = position.yTiltNew;
 
-	  tcsInterpolate (tcs);
+      tcsInterpolate (tcs);
 
-	  /* too much time to print - don't use
-	     if (beamDiscrepancy == TRUE)
-	     {
-	     printf("%d m2 beam=%c, scs beam=%c tcsUpdate  IS ", currFrame,
-	     ((beam == 0) ? 'A' : 'B'), ((beamCompare == 0) ? 'A' : 'B'));
-	     printf("xA%f (last=%f)", tcsUpdate[3], lastDmdX);
-	     printf("yA%f (last=%f)", tcsUpdate[4], lastDmdY);
-	     printf("z%f (act=%f)", tcsUpdate[11], currFocus);
-	     printf("\n"); 
-	     }
-	  */
-	  lastDmdX = tcsUpdate[3];
-	  lastDmdY = tcsUpdate[4];
-	  lastDmdZ = tcsUpdate[11];
-	}
+      /* too much time to print - don't use
+         if (beamDiscrepancy == TRUE)
+         {
+         printf("%d m2 beam=%c, scs beam=%c tcsUpdate  IS ", currFrame,
+         ((beam == 0) ? 'A' : 'B'), ((beamCompare == 0) ? 'A' : 'B'));
+         printf("xA%f (last=%f)", tcsUpdate[3], lastDmdX);
+         printf("yA%f (last=%f)", tcsUpdate[4], lastDmdY);
+         printf("z%f (act=%f)", tcsUpdate[11], currFocus);
+         printf("\n"); 
+         }
+      */
+      lastDmdX = tcsUpdate[3];
+      lastDmdY = tcsUpdate[4];
+      lastDmdZ = tcsUpdate[11];
+    }
       } 
-	
+    
       else {
-	errorLog ("receiveTcsDemand - follow demands failed sanity checks", 1, ON);
+    errorLog ("receiveTcsDemand - follow demands failed sanity checks", 1, ON);
       }
     }
 
@@ -570,7 +580,6 @@ void resetFirstFollowDemand( void )
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADstop
@@ -612,7 +621,6 @@ void resetFirstFollowDemand( void )
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADstop (struct cadRecord * pcad)
@@ -658,7 +666,6 @@ long CADstop (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADmove
@@ -724,7 +731,6 @@ long CADstop (struct cadRecord * pcad)
  * 21-May-1999: Take out the bounds on the XY positioner
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADmove (struct cadRecord * pcad)
@@ -951,7 +957,6 @@ long CADmove (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADfollow
@@ -991,7 +996,6 @@ long CADmove (struct cadRecord * pcad)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADfollow (struct cadRecord * pcad)
@@ -1049,7 +1053,6 @@ long CADfollow (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADactuator
@@ -1104,7 +1107,6 @@ long CADfollow (struct cadRecord * pcad)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADactuators (struct cadRecord * pcad)
@@ -1192,7 +1194,6 @@ long CADactuators (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADpark
@@ -1233,7 +1234,6 @@ long CADactuators (struct cadRecord * pcad)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADpark (struct cadRecord * pcad)
@@ -1279,7 +1279,6 @@ long CADpark (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * ticker
@@ -1323,7 +1322,6 @@ long CADpark (struct cadRecord * pcad)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long ticker (struct genSubRecord * pgsub)
@@ -1360,6 +1358,7 @@ long ticker (struct genSubRecord * pgsub)
 
     return (OK);
 }
+
 
 static void tcsTimeout (void)
 {

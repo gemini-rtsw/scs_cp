@@ -71,6 +71,7 @@
  * 07-Dec-1999: Moved iir_filter and frameConvert from utilities.c to here
  *              since only used by control.c
  * 27-Sep-2002: Freeze last guide values when stopping guide loop
+ * 19-Oct-2017: Begin conversion to EPIS OSI (mdw)
  *
  */
 /* INDENT ON */
@@ -327,7 +328,7 @@ long servoOnStatus;
 long servoInPosition;
 
 /* function prototypes */
-static STATUS  frameConvert (converted *result, frameChange *f, const double x, 
+static int  frameConvert (converted *result, frameChange *f, const double x, 
       const double y, const double z);
 void phasorShow(void);
 int flipGuide = 0;
@@ -335,8 +336,8 @@ int simLevel = 0;
 memMap *scsPtr = NULL;
 memMap *scsBase = NULL;
 memMap *m2Ptr = NULL;
-SEM_ID m2MemFree = NULL;
-SEM_ID slowUpdate = NULL;
+epicsEventId m2MemFree = NULL;
+epicsEventId slowUpdate = NULL;
 SEM_ID wfsFree[MAX_SOURCES];
 SEM_ID diagnosticsAvailable = NULL;
 SEM_ID guideUpdateNow = NULL;
@@ -1714,7 +1715,7 @@ void processGuides (void) {
       /* Give the semaphore taken by "slowTransmit" since it is the guide task
        * that does the transmit of the slower items prepared for transmission to the
        * m2 system by "slowTransmit"  */
-      semGive (slowUpdate);  
+      epicsEventSignal(slowUpdate);  
 
       /* Update the ring buffers, all of them, here. Yes, even 
        * the ones that pertain to P2. This is where you would 
@@ -1837,15 +1838,15 @@ void slowTransmit (void)
    {
       if (localPtr == (commandBlock *) NULL)
       {
-         errorLog("slowTransmit - localPtr is NULL\n", 1, ON);
+         errlogiPrintf("slowTransmit - localPtr is NULL\n", 1, ON);
          continue;
       }
 
       if (dayle != 1964)
-         printf("dayle detected corruption, dayle is %ld\n", dayle);
+         errlogPrintf("dayle detected corruption, dayle is %ld\n", dayle);
 
-      if (semTake (slowUpdate, WAIT_FOREVER) == OK)
-      {
+      epicsEventMustWait(slowUpdate);
+
          /* prepare the TCS demands, interpolate if following */
 
          if (scsState == MOVING && followOn == ON)
@@ -2148,8 +2149,7 @@ void slowTransmit (void)
                errorLog ("slowTransmit - m2MemFree timeout", 1, ON);
             }
          }
-      }
-   }
+   } // for(;;)
 }
 
 /* ===================================================================== */
@@ -2837,7 +2837,7 @@ long writeCommand (const long command)
 
 /* INDENT ON */
 /* ===================================================================== */
-static STATUS frameConvert (converted *result, 
+static int frameConvert (converted *result, 
                 frameChange *f, 
                 const double x, 
                 const double y, 
@@ -3219,7 +3219,7 @@ Phasor* getPhasorY(void) {
 }
 
 long srmisscount;
-STATUS checkGuideModeChange( long mode) {
+int checkGuideModeChange( long mode) {
     
     static int currentmode = GUIDE_200_HZ; /*default mode is 200 Hz*/
     

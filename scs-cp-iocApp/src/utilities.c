@@ -64,13 +64,12 @@
 #define _INCLUDED_SUBRECORD_H
 #include <subRecord.h>
 #endif
-#include <stdio.h>         /* For atoi */
+#include <stdio.h>          /* For atoi */
 #include <stdlib.h>         /* For atoi */
 #include <string.h>
 #include <math.h>           /* For sin, cos */
 #include <time.h>           /* For date2secs */
-#include <timeLib.h>            /* For timeNow */
-#include <logLib.h>         /* For logMsg */
+#include <timeLib.h>        /* For timeNow */
 
 #define SCSTOP "top = m2:"
 #define INSTTOP "I = m2:inst:"
@@ -84,10 +83,18 @@ int pvload(char *file, char *subset, int flags, int noAbort);
 int debugLevel = DEBUG_NONE;
 long inPosition = 0;
 frameChange *ag2m2[MAX_SOURCES];
-SEM_ID compileStatus = NULL;
-SEM_ID statusCompiled = NULL;
-SEM_ID doPvLoad = NULL;
-SEM_ID pvLoadComplete = NULL;
+
+/* not used anywhere. 20171019 MDW */
+//SEM_ID compileStatus = NULL; 
+//SEM_ID statusCompiled = NULL;
+
+
+// SEM_ID doPvLoad = NULL;
+// SEM_ID pvLoadComplete = NULL;
+epicsEventId doPvLoad;
+epicsEventId pvLoadComplete;
+
+
 frameOfReference frame =
 {
     0.0, 0.0, 0.0, 0.0,
@@ -954,39 +961,33 @@ long readHealth(struct genSubRecord *pgsub)
 
 int loadInitFiles(void)
 {
-    for(;;)
-    {
-        if(semTake(doPvLoad, WAIT_FOREVER) == OK)
-        {
-            printf("pvload initialisation data\n");
+   for(;;)
+   {
+      epicsEventMustWait(dpPvLoad);
 
-            if(pvload("./data/SCSinit.dat", SCSTOP, 0, 0) != OK)
-                printf("pvload error SCSinit.dat\n");
-            else
-                printf("pvload SCSinit.dat\n");
+      errlogPrintf("pvload initialisation data\n");
+
+      if(pvload("./data/SCSinit.dat", SCSTOP, 0, 0) != OK)
+         errlogPrintf("pvload error SCSinit.dat\n");
+      else
+         errlogPrintf("pvload SCSinit.dat\n");
                 
-            if(pvload("./data/xforms.dat", SCSTOP, 0, 0) != OK)
-                printf("pvload error xforms.dat\n");
-            else
-                printf("pvload xforms.dat\n");
+      if(pvload("./data/xforms.dat", SCSTOP, 0, 0) != OK)
+         errlogPrintf("pvload error xforms.dat\n");
+      else
+         errlogPrintf("pvload xforms.dat\n");
 
-            if(pvload("./data/limits.dat", SCSTOP, 0, 0) != OK)
-                printf("pvload error limits.dat\n");
-            else
-                printf("pvload limits.dat\n");
+      if(pvload("./data/limits.dat", SCSTOP, 0, 0) != OK)
+         errlogPrintf("pvload error limits.dat\n");
+      else
+         errlogPrintf("pvload limits.dat\n");
 
-            if(pvload("./data/instConfig.dat", INSTTOP, 0, 0) != OK)
-                printf("pvload error instConfig.dat\n");
-            else
-                printf("pvload instConfig.dat\n");
+      if(pvload("./data/instConfig.dat", INSTTOP, 0, 0) != OK)
+         errlogPrintf("pvload error instConfig.dat\n");
+      else
+         errlogPrintf("pvload instConfig.dat\n");
 
-            semGive(pvLoadComplete);
-        }
-        else
-        {
-            logMsg("error taking doPvLoad\n", 0, 0, 0, 0, 0, 0);
-            return(ERROR);
-        }
+      epicsEventSignal(pvLoadComplete);
     }
 }
 
@@ -1437,7 +1438,7 @@ int setPid (int axis, double P, double I, double D, double windUpLimit,
 
 /* ===================================================================== */
 
-STATUS  modifyFrame
+int  modifyFrame
     (
     frameChange *f,
     const double theta,
@@ -1524,7 +1525,7 @@ STATUS  modifyFrame
 
 /* ===================================================================== */
 
-STATUS   showFrame (int source)
+int   showFrame (int source)
 {
     frameChange grab, *f;
 
@@ -1567,7 +1568,7 @@ STATUS   showFrame (int source)
 
 double vtkscale = 1.0;
 
-STATUS vtkControl (Vtk *vtk, double guideError) {
+int vtkControl (Vtk *vtk, double guideError) {
 
     long status = OK;
     double rotatorAngle;

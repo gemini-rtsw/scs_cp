@@ -26,14 +26,18 @@ scs-cp-ioc_DBD += base.dbd
 scs-cp-ioc_SRCS += scs-cp-ioc_registerRecordDeviceDriver.cpp
 
 
+# scs-cp-ioc_SRCS += amsLib.c
+# scs-cp-ioc_SRCS += elgLib.c
+
+
 scs-cp-ioc_SRCS += amsLib.c
+scs-cp-ioc_SRCS += elgLib.c
 scs-cp-ioc_SRCS += archive.c
 scs-cp-ioc_SRCS += chop.c
 scs-cp-ioc_SRCS += chopControl.c
 scs-cp-ioc_SRCS += config.c
 scs-cp-ioc_SRCS += control.c
 scs-cp-ioc_SRCS += dmDrive.c
-scs-cp-ioc_SRCS += elgLib.c
 scs-cp-ioc_SRCS += guide.c
 scs-cp-ioc_SRCS += house.c
 scs-cp-ioc_SRCS += interlock.c
@@ -49,7 +53,7 @@ scs-cp-ioc_SRCS += tiltSim.c
 scs-cp-ioc_SRCS += toolKit.cs.c
 
 scs-cp-ioc_SRCS += utilities.c
-scs-cp-ioc_SRCS += xycom.c
+#scs-cp-ioc_SRCS += xycom.c
 scs-cp-ioc_SRCS += scs_st.st
 scs-cp-ioc_SRCS += tilt_t.st
 

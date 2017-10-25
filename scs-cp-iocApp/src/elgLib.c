@@ -10,28 +10,21 @@ modification history
 1997 Aug 28: Renamed from elglib to elgLib (dap)
 1997 Aug 28: Added elgi and elgf (dap)
 1999 May  7: Added RCS id
-
+2017 Oct 11: Begin conversion to EPICS OSI (mdw)
+             Removed VxMP_ENABLED code (we don't use it) (mdw)
 */
 
-
-/* Hash include (which includes vxworks.h,... etc) */
-#include "elgLib.h"
-
 #include <stdio.h>
-#include <time.h>
 #include <string.h>
-
-
-#include "tickLib.h"
-#include "amsLib.h"
+#include "elgLib.h"
 
 /* Global variables */
 int elgInitialised  = 0; /* 1 after initialisation via elgInit */
 int elgInitialising = 0; /* 1 during initialisation */
-MSG_Q_ID elgQ = NULL;    /* for messages to the elogger task */
+epicsMessageQueueId elgQ = NULL;    /* for messages to the elogger task */
 
 /* elg - Enter a message into the log as from module 0*/
-STATUS elg
+int elg
 (
 char *message     /* Message text (given) */
 )
@@ -40,7 +33,7 @@ char *message     /* Message text (given) */
 
    if (message == NULL)
    {
-      printf("Supply log msg> ");
+      errlogPrintf("Supply log msg> ");
       gets(msg);
    } else
    {
@@ -51,7 +44,7 @@ char *message     /* Message text (given) */
    return (elgPut(0,"log",msg));
 }
 /* elgs - Enter a character string from given module into the log */
-STATUS elgs
+int elgs
 (
    int module,    /* Module number prefixes message in log (given) */
    char * message /* Message text (given) */
@@ -61,7 +54,7 @@ STATUS elgs
    return (elgPut(module,"log",message));
 }
 /* elgi - Enter string and integer value from given module into log */
-STATUS elgi
+int elgi
 (
    int module,    /* Module number prefixes message in log (given) */
    char * message,/* Message text (given) */
@@ -74,7 +67,7 @@ STATUS elgi
    return (elgPut(module,"log",msg));
 }
 /* elgl - Enter string and long value from given module into log */
-STATUS elgl
+int elgl
 (
    int module,    /* Module number prefixes message in log (given) */
    char * message,/* Message text (given) */
@@ -87,7 +80,7 @@ STATUS elgl
    return (elgPut(module,"log",msg));
 }
 /* elgf - Enter string and float value from given module into log */
-STATUS elgf
+int elgf
 (
    int module,    /* Module number prefixes message in log (given) */
    char * message,/* Message text (given) */
@@ -100,7 +93,7 @@ STATUS elgf
    return (elgPut(module,"log",msg));
 }
 /* elgd - Enter string and double value from given module into log */
-STATUS elgd
+int elgd
 (
    int module,    /* Module number prefixes message in log (given) */
    char * message,/* Message text (given) */
@@ -113,7 +106,7 @@ STATUS elgd
    return (elgPut(module,"log",msg));
 }
 /* elgOpen - Open logging file */
-STATUS elgOpen
+int elgOpen
 (
    char * filename   /* Filename to open (given) */
 )
@@ -122,31 +115,31 @@ STATUS elgOpen
    return (elgPut(0,"open",filename));
 }
 /* elgFlush - Flush the current logging file to disk */
-STATUS elgFlush()
+int elgFlush()
 {
    /* Flush the logging file to disk */
    return (elgPut(0,"flush"," "));
 }
 /* elgReport - Report status of logging system to console */
-STATUS elgReport()
+int elgReport()
 {
    /* Report the status of the logging and logging message queue */
    return (elgPut(0,"report"," "));
 }
 /* elgClose - Close the current logging file */
-STATUS elgClose()
+int elgClose()
 {
    /* Close the current logging file */
    return (elgPut(0,"close"," "));
 }
 /* elgDone - Close any curreny logging file and delete the logging task */
-STATUS elgDone()
+int elgDone()
 {
    /* Close any open logging file and delete the logging task */
    return (elgPut(0,"done"," "));
 }
 /* elgPut - Write command, module number and mesage to logging queue */
-STATUS elgPut
+int elgPut
 (
    int module,    /* Module number prefixes message in log (given) */ 
    char * command,/* Command to logging task (eg "log") (given) */
@@ -176,7 +169,8 @@ STATUS elgPut
          sprintf(msg,"%3i ",module);
          strncpy(&msg[5],&asctime(localtime(&now))[11],8);
          strcpy(&msg[13]," ");
-         sprintf(msg,"%s %lu  %s",msg,tickGet(),message);
+//         sprintf(msg,"%s %lu  %s",msg,tickGet(),message);
+         sprintf(msg,"%s %lu  %s",msg,now,message);
 
       } else
       {
@@ -186,23 +180,23 @@ STATUS elgPut
       /* Place the command and message on the logging queue */
       if (amsSend(elgQ,command,msg,&messNo,&amsStat) != OK)
       {
-         printf("elgPut> Failed to log message. Error = %ld\n",
+         errlogPrintf("elgPut> Failed to log message. Error = %ld\n",
             amsStat);
-         printf("elgPut> message was: %s\n",message);
+         errlogPrintf("elgPut> message was: %s\n",message);
          return ERROR;
       }
    }
    return OK;
 }
 /* elgInit - Initialise the elg system */
-STATUS elgInit (void)
+int elgInit (void)
 {
    /* Initialise the logging system */
 
    /* If the elg system is already initialised, do nothing */
    if (elgInitialised == 1)
    {
-      printf("elgInit> logging already initialised\n");
+      errlogPrintf("elgInit> logging already initialised\n");
       return OK;
    }
 
@@ -210,92 +204,37 @@ STATUS elgInit (void)
    elgInitialising = 1;
 
    /* Spawn elogger */
-   if (taskSpawn("elogger",ELG_PRIORITY,0,20000,(FUNCPTR)elogger,
-      0,0,0,0,0,0,0,0,0,0) == ERROR)
-   {
-      printf("elgInit> could not spawn elogger\n");
-      return ERROR;
-   }
+     epicsThreadCreate("elogger",
+                        epicsThreadPriorityMedium, 
+                        epicsThreadGetStackSize(epicsThreadStackMedium),
+                        (EPICSTHREADFUNC)elogger,
+                        NULL);
+
+//   if (taskSpawn("elogger",ELG_PRIORITY,0,20000,(FUNCPTR)elogger,
+//      0,0,0,0,0,0,0,0,0,0) == ERROR)
+//   {
+//      errlogPrintf("elgInit> could not spawn elogger\n");
+//      return ERROR;
+//   }
 
    /* Wait for the elg system to exist */
    if (elgConnect() != OK)
    {
-      printf("elgInit> Could not connect to elg logging system\n");
+      errlogPrintf("elgInit> Could not connect to elg logging system\n");
       return ERROR;
    } else
    {
       return OK;
    }
 }               
-#ifdef VxMP_ENABLED
-/* elgAttach - Attach to the elg logging system from a secondary processor */
-STATUS elgAttach (void)
-{
-   /* Attach to the elg logging system from a secondary processor */
-   MSG_Q_ID path;
-   long amsStat;
-
-   /* If the elg system is already initialised, do nothing */
-   if (elgInitialised == 1)
-   {
-      printf("elgAttach> logging already initialised\n");
-      return OK;
-   }
-
-   if (elgInitialising == 0)
-   {
-      elgInitialising = 1;
-      /* Need to connect to the ams system from this processor */
-      if (amsAttach(&amsStat) != OK)
-      {
-         printf("elgAttach> Failed to attach to ams system\n");
-         printf("elgAttach> amsStat = %d\n",amsStat);
-         return ERROR;
-      }
-      /* Get the ID for the logging message queue and copy 
-         to elgQ in global memory */
-      if (amsPath(ELG_CHANNEL,&path,&amsStat) != OK)
-      {
-         printf("elgAttach> Failed to get path for logging queue\n");
-         printf("elgAttach> amsStat = %d\n",amsStat);
-         return ERROR;
-      } else
-      {
-
-         elgQ = path;
-      }
-
-      /* Set elgInitialised to 1 */
-      elgInitialised  = 1;
-      elgInitialising = 0;
-
-      return OK;
-   } else
-   {
-      /* Another task is handling the initialisation */
-      /* Wait for the edlogInitialised flag to be set */
-      for (;;)
-      {
-         if (elgInitialised == 1)
-         {
-            return OK;
-         } else
-         {
-            taskDelay(10);
-         }
-      }
-   }
-}               
-#else
-STATUS elgAttach (void)
+int elgAttach (void)
 {
    /* Routine just returns error in a non-VxMP environment */
    printf("elgAttach> Illegal call in non-VxMP environment\n");
    return ERROR;
 }
-#endif
 /* elgConnect - Wait until the elg system is initialised on this processor */
-STATUS elgConnect (void)
+int elgConnect (void)
 {
    /* Wait until the elg system has been initialised */
 
@@ -306,17 +245,19 @@ STATUS elgConnect (void)
          return OK;
       } else
       {
-         taskDelay(10);
+        // taskDelay(10);
+        epicsThreadSleep(0.125);
       }
    }
 }
 /* elogger - Logging task */
-STATUS elogger (void)
+//int elogger (void)
+EPICSTHREADFUNC  elogger(void *p)
 {
    /* The function executed by the logging task */
    /* Creates the message queue for logging messages and
       acts on messages it receives */
-   MSG_Q_ID repPath;
+   epicsMessageQueueId repPath;
    long amsStat;
    long messNo;
    long lineNo;
@@ -329,15 +270,15 @@ STATUS elogger (void)
    char filename[AMS_CMDLEN];
    FILE *elgFp;
 
-   printf("elogger> Logging task activated\n");
+   errlogPrintf("elogger> Logging task activated\n");
 
    /* If required, initialise the ams system */
    if (amsInitialised == 0)
    {
       if (amsInit(&amsStat) == ERROR)
       {
-         printf("elgInit> Failed to initialise; amsStat= %ld\n",amsStat);
-         return ERROR;
+         errlogPrintf("elgInit> Failed to initialise; amsStat= %ld\n",amsStat);
+         return NULL;
       }
    }
    /* Create channel for elg messages */
@@ -346,7 +287,7 @@ STATUS elogger (void)
    {
       printf("elgInit> Failed to create channel %ld; amsStat= %ld\n",
          ELG_CHANNEL,amsStat);
-      return ERROR;
+      return NULL;
    } else
    {
       /* Flush the queue of any old messages */
@@ -383,7 +324,8 @@ STATUS elogger (void)
       } else
       {
          /* Update record of maximum number of messages on queue */
-         numMsgs = msgQNumMsgs(elgQ)+1;
+//         numMsgs = msgQNumMsgs(elgQ)+1;
+         numMsgs = epicsMessageQueuePending(elgQ)+1;
          if (numMsgs > maxNumMsgs) maxNumMsgs = numMsgs;
          if (!strcmp(command,"open"))
          {
@@ -471,11 +413,7 @@ STATUS elogger (void)
                AMS_VERSION);
             printf("                Version of elg logging system: %s\n",
                ELG_VERSION);
-#ifdef VxMP_ENABLED
-            printf("                Built for shared operation under VxMP\n");
-#else
             printf("                Built for operation on single processor (non-VxMP)\n");
-#endif
          } else if (!strcmp(command,"close"))
          {
             /* Close file */
@@ -508,7 +446,7 @@ STATUS elogger (void)
             }
             elgInitialised = 0;
             printf("elogger> Logging task terminated\n");
-            return OK;
+            return NULL;
          }
       }
    }

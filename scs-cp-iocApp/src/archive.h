@@ -1,5 +1,4 @@
 /* $Id: archive.h,v 1.1 2002/02/05 13:19:46 gemvx Exp $ */
-/* INDENT OFF */
 /*+
  *
  * FILENAME
@@ -29,7 +28,6 @@
  * 16-Dec-1999: Added global variables.
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 #ifndef _INCLUDED_ARCHIVE_H
 #define _INCLUDED_ARCHIVE_H
@@ -68,8 +66,8 @@ long scsLogDestruct(void);
 
 extern int loggingNow;
 extern int logThreshold;
-extern SEM_ID refMemFree;
-extern SEM_ID logNow;
+extern epicsMutexId refMemFree;
+extern epicsEventId logNow;
 extern DBADDR logCAddr;
 
 #endif /* _INCLUDED_ARCHIVE_H */

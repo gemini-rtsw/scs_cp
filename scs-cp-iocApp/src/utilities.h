@@ -1,5 +1,4 @@
 /* $Id: utilities.h,v 1.7 2015/04/30 23:57:24 mrippa Exp $ */
-/* INDENT OFF */
 /*+
  *
  * FILENAME
@@ -30,9 +29,9 @@
  * 04-Jan-2000: Moved scsReady to setup.h since only used by setup.c
  *              Moved flagOutReg to chopControl.h since not part of 
  *              utilities.c
+ * 19-Oct-2017: Begin conversion to EPICS OSI (mdw)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 #ifndef _INCLUDED_UTILITIES_H
@@ -48,7 +47,14 @@
 #include <genSubRecord.h>
 #endif
 
+#include <epicsMutex.h>
+#include <epicsEvent.h>
+#include <errlog.h>
+
 /* Define true/false, on/off etc */
+
+#define OK              0
+#define ERROR         (-1)
 
 #define ENABLED         0
 #define DISABLED        1
@@ -61,6 +67,7 @@
 #define OFF             0
 
 #define PI              ((double)3.14159265)
+
 
 /* Define conversion factors */
 
@@ -284,7 +291,8 @@ typedef struct
         double  scaleX;
         double  scaleY;
         double  scaleZ;
-        SEM_ID  access;
+        // SEM_ID  access;
+        epicsMutexId  access;
 
 }frameChange;
 
@@ -325,7 +333,7 @@ double confine(double value, double upper, double lower);
 int setPid(int axis, double P, double I, double D, 
            double windUpLimit, double rateLimit);
 
-STATUS  modifyFrame
+int  modifyFrame
         (
         frameChange *f,
         const double theta,
@@ -347,10 +355,15 @@ long driveEvent (struct subRecord * psub);
 extern int debugLevel;
 extern long inPosition;
 extern frameChange *ag2m2[MAX_SOURCES];
-extern SEM_ID compileStatus;
-extern SEM_ID statusCompiled;
-extern SEM_ID doPvLoad;
-extern SEM_ID pvLoadComplete;
+
+/* not used anywhere. 20171019 MDW */
+//extern SEM_ID compileStatus;
+//extern SEM_ID statusCompiled;
+
+
+extern epicsEventId doPvLoad;
+extern epicsEventId pvLoadComplete;
+
 extern frameOfReference frame;
 
 typedef struct {
@@ -414,7 +427,7 @@ void phasorInit (Phasor *p);
 void vtkInit (Vtk *vtk);
 void showPhasorRotation(Phasor *p);
 void showVtkRotation(Vtk *vtk);
-STATUS vtkControl(Vtk *vtk, double guideError);
+int vtkControl(Vtk *vtk, double guideError);
 int phasorSetFrequency(Phasor *p, double newFrequency);
 int phasorSetAmplitude(Phasor *p, double newAmplitude);
 int phasorSetSampleRate(Phasor *p, double newSampleRate);
@@ -454,7 +467,7 @@ Phasor* getPhasorX(void);
 Phasor* getPhasorY(void);
 void setPhasorX(Phasor *phasorx);
 void setPhasorY(Phasor *phasory);
-STATUS checkGuideModeChange( long mode);
+int checkGuideModeChange( long mode);
 
 #define VTK_SR_LOW 25.0
 #define VTK_SR_HIGH 200.0

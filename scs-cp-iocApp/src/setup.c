@@ -174,11 +174,7 @@ int scsInit (void)
 
    for (source = PWFS1; source <= GYRO; source++)
    {
-      if ((wfsFree[source] = semMCreate (SEM_Q_PRIORITY | SEM_DELETE_SAFE | SEM_INVERSION_SAFE)) == NULL)
-      {
-         printf ("unable to create wfsFree[%d] sem\n", source);
-         return (ERROR);
-      }
+      wfsFree[source] = epicsMutexMustCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE | SEM_INVERSION_SAFE);
    }
 
    /* create dummy filters for each of the guide sources */
@@ -282,11 +278,13 @@ int scsInit (void)
       return (ERROR);
    }
 
-   if ((compileStatus = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-   {
-      printf ("unable to create compileStatus\n");
-      return (ERROR);
-   }
+
+/* This semaphore doesn't seem to be used anywhere  -- get rid of it. 20171019 MDW */
+//   if ((compileStatus = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
+//   {
+//      printf ("unable to create compileStatus\n");
+//      return (ERROR);
+//   }
 
    if ((statusCompiled = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
    {

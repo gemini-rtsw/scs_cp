@@ -1,5 +1,3 @@
-/* $Id: archive.c,v 1.1 2002/02/05 13:19:46 gemvx Exp $ */
-/* INDENT OFF */
 /*+
  * FILENAME
  * -------- 
@@ -37,14 +35,12 @@
  * 11-Feb-1998: Add more checks on function return values
  * 23-Feb-1998: make cadDirLog more robust with string length checking
  * 07-May-1999: Added RCS id
+ * 06-OCT-2017: Started conversion to EPICS OSI (MDW)
  */
 
-/* INDENT ON */
 /* ===================================================================== */
-#include "archive.h"
-#include "control.h"    /* For simLevel, scsBase, m2Ptr, m2MemFree */
-#include "utilities.h"  /* For debugLevel */
-#include "elgLib.h"
+#include <stdio.h>
+
 
 #include <string.h>
 #include <stdlib.h>     /* For atoi */
@@ -52,8 +48,12 @@
 #include <cad.h>
 #include <car.h>
 #include <timeLib.h>
-#include <logLib.h>
-#include <stdio.h>
+#include <errlog.h>
+
+#include "archive.h"
+#include "control.h"    /* For simLevel, scsBase, m2Ptr, m2MemFree */
+#include "utilities.h"  /* For debugLevel */
+#include "elgLib.h"
 
 #define BUFFERSIZE   400  /* Number of samples of m2 position to log.
                              Assuming 200Hz update gives 1 second of capture */
@@ -78,7 +78,7 @@ enum                      /* index to define desired log elements */
 static double newestTime, oldestTime = 1.2345;
 static m2History *topPtr = NULL, *endPtr = NULL, *inPtr = NULL;
 static m2History archive[BUFFERSIZE];
-static SEM_ID archiveFree = NULL;
+static epicsMutexId archiveFree = NULL;
 /* Indicates that logging has been turned on */
 static int loggingArmed = OFF;
 
@@ -89,15 +89,14 @@ static int CADlogging = OFF;
 /* declare externals */
 int loggingNow = OFF;
 int logThreshold = 20;
-SEM_ID refMemFree = NULL;
-SEM_ID logNow = NULL;
+epicsMutexId refMemFree = NULL;
+epicsEventId logNow = NULL;
 DBADDR logCAddr;
 
 /* define function prototypes */
 static long scsLogInit (char *, int);
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * writeArchive - create ring buffers and write new sample
@@ -140,7 +139,6 @@ static long scsLogInit (char *, int);
  * 
  */
 
-/* INDENT ON */
 
 /* ===================================================================== */
 
@@ -149,7 +147,6 @@ static int writeArchive (double xTilt, double yTilt, double zFocus, double setX,
 {
     double timeStamp;
     m2History *lookAheadPtr = NULL;
-    char ptrMsg[20];
 
     /*
      * if not already present, create mutex semaphore to protect access to
@@ -158,25 +155,17 @@ static int writeArchive (double xTilt, double yTilt, double zFocus, double setX,
 
     if (archiveFree == NULL)
     {
-    if ((archiveFree = semMCreate (SEM_Q_PRIORITY | SEM_DELETE_SAFE | SEM_INVERSION_SAFE)) == NULL)
-    {
-        errorLog ("writeArchive - unable to create archive free sem", 1, ON);
-        return (ERROR);
-    }
+       archiveFree = epicsMutexMustCreate();
     }
 
-    if (semTake (archiveFree, SEM_TIMEOUT) != OK)
-    {
-    errorLog ("writeArchive - archive free sem timeout", 1, ON);
-    return (ERROR);
-    }
+    epicsMutexMustLock(archiveFree);
 
     /* capture current timestamp */
-
     if (timeNow (&timeStamp) != OK)
     {
-    errorLog ("writeArchive - error reading timeStamp", 1, ON);
-    return (ERROR);
+       errorLog ("writeArchive - error reading timeStamp", 1, ON);
+       epicsMutexUnlock(archiveFree);
+       return (ERROR);
     }
 
     /* if first invocation, set pointers to start and end of buffer area */
@@ -190,6 +179,7 @@ static int writeArchive (double xTilt, double yTilt, double zFocus, double setX,
     if (timeNow (&oldestTime) != OK)
     {
         errorLog ("writeArchive - error reading oldestTime", 1, ON);
+        epicsMutexUnlock(archiveFree);
         return (ERROR);
     }
 
@@ -240,20 +230,18 @@ static int writeArchive (double xTilt, double yTilt, double zFocus, double setX,
     if (inPtr > endPtr)
     inPtr = topPtr;
 
-    semGive (archiveFree);
+    epicsMutexUnlock(archiveFree);
 
     /* add scope for testing */
 
     if (inPtr < topPtr || inPtr > endPtr)
     {
-    sprintf (ptrMsg, "%p", inPtr);
-    logMsg ("%s\n", (int) ptrMsg, 0, 0, 0, 0, 0);
+       errlogPrintf ("writeArchive(): inPtr = %p", inPtr);
     }
     return (OK);
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * readArchive  - print sample for a given time to screen 
@@ -292,7 +280,6 @@ static int writeArchive (double xTilt, double yTilt, double zFocus, double setX,
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 int readArchive (m2History * archivePtr, double targetTime)
@@ -309,10 +296,11 @@ int readArchive (m2History * archivePtr, double targetTime)
 
     /* check that requested time is within archive range */
 
-    if (semTake (archiveFree, SEM_TIMEOUT) == OK)
-    {
+    epicsMutexMustLock(archiveFree);
+    
     if (targetTime < oldestTime)
     {
+        epicsMutexUnlock(archiveFree);
         return (ERROR);
     }
 
@@ -341,7 +329,7 @@ int readArchive (m2History * archivePtr, double targetTime)
 	    break;
     }
 
-    semGive (archiveFree);
+    epicsMutexUnlock(archiveFree);
 
     if (searchPtr != NULL)
     {
@@ -352,16 +340,9 @@ int readArchive (m2History * archivePtr, double targetTime)
     {
         return (ERROR);
     }
-    }
-    else
-    {
-    errorLog ("readArchive timeout on archiveFree semaphore", 2, ON);
-    return (ERROR);
-    }
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADlog   - read logging parameters from the engineering screens
@@ -411,7 +392,6 @@ int readArchive (m2History * archivePtr, double targetTime)
  * 28-Nov-1997: Modify parameters to eliminate start/stop, use DIR instead
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADlog (struct cadRecord * pcad)
@@ -463,8 +443,8 @@ long CADlog (struct cadRecord * pcad)
 
         if (timeNow (&timeStamp) != OK)
         {
-        logMsg ("CADlog - error reading timeStamp\n", 0, 0, 0, 0, 0, 0);
-        return (ERROR);
+           errlogMessage("CADlog - error reading timeStamp\n");
+           return (ERROR);
         }
         logParams.start = (int) timeStamp;
     }
@@ -575,7 +555,7 @@ void showArchive (void)
 
     if (timeNow (&seekTime) != OK)
     {
-    logMsg ("showArchive - error reading seekTime\n", 0, 0, 0, 0, 0, 0);
+    errlogMessage("showArchive - error reading seekTime\n");
     }
 
     printf ("topPtr = %lx, endPtr = %lx, oldestTime = %f, newestTime = %f\n", (long) topPtr, (long) endPtr, oldestTime, newestTime);
@@ -591,7 +571,6 @@ void showArchive (void)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * scsLogInit   - initialise data logging function
@@ -628,7 +607,6 @@ void showArchive (void)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 static long scsLogInit (char *name, int logFreq)
@@ -658,7 +636,7 @@ static long scsLogInit (char *name, int logFreq)
 
     logThreshold = (int) (200.0 / logFreq);
 
-    semGive (logNow);
+    epicsEventSignal(logNow);
 
     return (OK);
 }
@@ -687,172 +665,111 @@ long scsLogDestruct (void)
 }
 
 
-/*
-static void logTicker (void)
-{
-*/
-    /*
-     * cannot run the logging task itself from within an ISR so set semaphore
-     * only
-     */
-/*
-    semGive (logNow);
-}
-*/
-
 void loggerTask (void)
 {
-    double timeStamp;
-    static char message[81];
-    char msg[81];
+   double timeStamp;
+   static char message[81];
 
-    for (;;)
-    {
-    /* wait for semaphore tick to write log */
+   for (;;)
+   {
+      /* wait for semaphore tick to write log */
+      epicsEventMustWait(logNow);
+      if (timeNow (&timeStamp) != OK)
+      {
+         errlogMessage("loggerTask - error reading timeStamp\n");
+      }
 
-    semTake (logNow, WAIT_FOREVER);
+      if (loggingNow != ON && timeStamp >= startLog && timeStamp <= endLog)
+      {
+         /* start logging */
+         loggingNow = ON;
+         errlogPrintf ("logging status = %d\n", loggingNow);
+      }
 
-    if (timeNow (&timeStamp) != OK)
-    {
-        logMsg ("loggerTask - error reading timeStamp\n", 0, 0, 0, 0, 0, 0);
-    }
+      if (timeStamp > endLog)
+      {
+         /* halt logging */
+         loggingNow = OFF;
+         errlogPrintf ("logging status = %d\n", loggingNow);
+         scsLogDestruct ();
+      } 
 
-    if (loggingNow != ON && timeStamp >= startLog && timeStamp <= endLog)
-    {
-        /* start logging */
-
-        loggingNow = ON;
-        sprintf (msg, "logging status = %d\n", loggingNow);
-        logMsg ("%s", (int) msg, 0, 0, 0, 0, 0);
-    }
-
-    if (timeStamp > endLog)
-    {
-        /* halt logging */
-
-        loggingNow = OFF;
-        sprintf (msg, "logging status = %d\n", loggingNow);
-        logMsg ("%s", (int) msg, 0, 0, 0, 0, 0);
-        scsLogDestruct ();
-    }
-
-    if (loggingNow == ON)
-    {
-        /* log the message */
-
-        if(simLevel == 0)
-        {
-        switch (logChoice)
-        {
-          case TILTS:
-
-            /* fetch parameters from reflective memory */
-
-            sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
-                 scsBase->page0.AxTilt, scsBase->page0.AyTilt, scsBase->page0.zFocusGuide,
-                 scsBase->page1.xTilt, scsBase->page1.yTilt, scsBase->page1.zFocus);
-
-            elgs (TILTS, message);
-            strncpy (message, "blank", 80);
-            break;
-
-          case GUIDES:
-            
-            sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f", timeStamp,
-                 scsBase->page0.xTiltGuide, scsBase->page0.yTiltGuide, scsBase->page0.zFocusGuide);
-            
-            elgs (GUIDES, message);
-            break;
-
-          case POSITIONS:
-
-            sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
-                 scsBase->page0.xDemand, scsBase->page0.yDemand,
-                 scsBase->page1.xPosition, scsBase->page1.yPosition);
-
-            elgs (POSITIONS, message);
-            break;
-            
-          default:
-            
-            sprintf (message, "%16.6f no items selected", timeStamp);
-            elgs (0, message);
-        }
-        }
-        else
-        {
-        /* simulation active */
-        
-        switch (logChoice)
-        {
-          case TILTS:
-
-            /* fetch parameters from reflective memory */
-            
-            if (semTake (m2MemFree, SEM_TIMEOUT) == OK)
+      if (loggingNow == ON)
+      {
+         /* log the message */
+         if(simLevel == 0)
+         {
+            switch (logChoice)
             {
-            sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
-                 m2Ptr->page0.AxTilt, m2Ptr->page0.AyTilt, m2Ptr->page0.zFocusGuide,
-                 m2Ptr->page1.xTilt, m2Ptr->page1.yTilt, m2Ptr->page1.zFocus);
-            semGive (m2MemFree);
+               case TILTS:
+                /* fetch parameters from reflective memory */
+                 sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
+                    scsBase->page0.AxTilt, scsBase->page0.AyTilt, scsBase->page0.zFocusGuide,
+                    scsBase->page1.xTilt, scsBase->page1.yTilt, scsBase->page1.zFocus);
+                 elgs (TILTS, message);
+                 strncpy (message, "blank", 80);
+                 break;
 
-            elgs (TILTS, message);
-            strncpy (message, "blank", 80);
-            }
-            else
-            {
-            logMsg ("loggerTask - m2MemFree timeout\n", 0, 0, 0, 0, 0, 0);
-            }
+               case GUIDES:
+                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f", timeStamp,
+                       scsBase->page0.xTiltGuide, scsBase->page0.yTiltGuide, scsBase->page0.zFocusGuide);
+                  elgs (GUIDES, message);
+                  break;
 
-            break;
-
-          case GUIDES:
+               case POSITIONS:
+                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
+                     scsBase->page0.xDemand, scsBase->page0.yDemand,
+                     scsBase->page1.xPosition, scsBase->page1.yPosition);
+                  elgs (POSITIONS, message);
+                  break;
             
-            if (semTake (m2MemFree, SEM_TIMEOUT) == OK)
+               default:
+                  sprintf (message, "%16.6f no items selected", timeStamp);
+                  elgs (0, message);
+            } /* switch(logChoice) */
+         }
+         else   /* if (simLevel == 0) */
+         {
+            /* simulation active */
+            switch (logChoice)
             {
-            sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f", timeStamp,
-                 m2Ptr->page0.xTiltGuide, m2Ptr->page0.yTiltGuide, m2Ptr->page0.zFocusGuide);
-            semGive (m2MemFree);
+               case TILTS:
+                  /* fetch parameters from reflective memory */
+                  epicsMutexMustLock(m2MemFree);
+                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
+                     m2Ptr->page0.AxTilt, m2Ptr->page0.AyTilt, m2Ptr->page0.zFocusGuide,
+                     m2Ptr->page1.xTilt, m2Ptr->page1.yTilt, m2Ptr->page1.zFocus);
+                  epicsMutexUnlock(m2MemFree);
+                  elgs (TILTS, message);
+                  strncpy (message, "blank", 80);
+                  break;
 
-            elgs (GUIDES, message);
-            }
-            else
-            {
-            logMsg ("loggerTask - m2MemFree timeout\n", 0, 0, 0, 0, 0, 0);
-            }
+               case GUIDES:
+                  epicsMutexMustLock(m2MemFree);
+                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f", timeStamp,
+                     m2Ptr->page0.xTiltGuide, m2Ptr->page0.yTiltGuide, m2Ptr->page0.zFocusGuide);
+                  epicsMutexUnlock(m2MemFree);
+                  elgs (GUIDES, message);
+                  break;
 
-            break;
+               case POSITIONS:
+                  epicsMutexMustLock(m2MemFree);
+                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
+                     m2Ptr->page0.xDemand, m2Ptr->page0.yDemand,
+                     m2Ptr->page1.xPosition, m2Ptr->page1.yPosition);
+                  epicsMutexUnlock(m2MemFree);
+                  elgs (POSITIONS, message);
+                  break;
 
-          case POSITIONS:
-
-            if (semTake (m2MemFree, SEM_TIMEOUT) == OK)
-            {
-            sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
-                 m2Ptr->page0.xDemand, m2Ptr->page0.yDemand,
-                 m2Ptr->page1.xPosition, m2Ptr->page1.yPosition);
-            semGive (m2MemFree);
-            
-            elgs (POSITIONS, message);
-            }
-            else
-            {
-            logMsg ("loggerTask - m2MemFree timeout\n", 0, 0, 0, 0, 0, 0);
-            }
-            
-            break;
-            
-          default:
-            
-            sprintf (message, "%16.6f no items selected", timeStamp);
-            elgs (0, message);
-        }
-        }
-    }
-    }
+               default:
+                  sprintf (message, "%16.6f no items selected", timeStamp);
+            } /* switch (logChoice) */
+         } /* else if(simLevel == 0) */
+      } /* if (loggingNow == ON) */
+   } /* for(;;) */
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * cadDirLog
@@ -890,7 +807,6 @@ void loggerTask (void)
  * 01-Feb-1998: Write parameters to screen as well as directives
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 int cadDirLog (char *cadName, int directive, int argc, struct cadRecord * pcad)
 {
@@ -917,7 +833,7 @@ int cadDirLog (char *cadName, int directive, int argc, struct cadRecord * pcad)
 
     if (timeNow (&timeStamp) != OK)
     {
-    logMsg ("loggerTask - error reading timeStamp\n", 0, 0, 0, 0, 0, 0);
+       errlogMessage("loggerTask - error reading timeStamp\n");
     return (ERROR);
     }
 

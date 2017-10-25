@@ -1,4 +1,3 @@
-/* $Id: amsLib.h,v 1.1 2002/02/05 13:19:46 gemvx Exp $ */
 /* ALICE message system library header file            */
 /* Original by Alan Pickup - ROE - 1997 March 11       */
 /*
@@ -8,30 +7,26 @@ modification history
 1997 May 13: Non-VxMP version (dap)
 1997 May 21: Use VxMP_ENABLED to indicate whether shared mem version (dap)
 1997 May 29: Tidy up for documenting (dap)
-
+2017 Oct 06: Begin conversion to EPICS OSI (mdw)
+             Remove all VxMP_ENABLED code (we don't use it anyway)
 */
 
 #ifndef _INCLUDED_AMSLIB_H
 #define _INCLUDED_AMSLIB_H
 
-/* Uncomment the following line to build the VxMP version */
-/*#define VxMP_ENABLED 1*/
 
-/* Hash includes */
-#include "vxWorks.h"
-#include "semLib.h"
-#include "msgQLib.h"
-#include "taskLib.h"
-#include "fioLib.h"
-#include "stdio.h"
+/* EPICS includes */
+#include <epicsMutex.h>
+#include <epicsThread.h>
+#include <epicsMessageQueue.h>
+#include <epicsTime.h>
+#include <errlog.h>
 
-/* Include following only if building shared memory version */
-#ifdef VxMP_ENABLED
-#include "msgQSmLib.h"
-#include "semSmLib.h"
-#include "smNameLib.h"
-#include "smObjLib.h"
-#endif
+#define OK     0
+#define ERROR (-1)
+#define NO_WAIT 0.0
+#define WAIT_FOREVER (-1.0)
+
 /* Define version number of ams */
 #define AMS_VERSION "1.00"
 
@@ -78,7 +73,7 @@ struct amsCmd
 {
    long messNo;       /* assigned by sending task */
    int replies;       /* number of reply messages expected */
-   MSG_Q_ID Q;        /* addr of message queue for receipt/replies (NULL for no receipt) */
+   epicsMessageQueueId Q;    /* addr of message queue for receipt/replies (NULL for no receipt) */
    char command[AMS_CMDLEN]; /* name of command */
    char params[AMS_PARLEN];  /* command parameters */
 };
@@ -93,144 +88,139 @@ struct amsRep
 
 typedef struct _amsChan
 {
-   long channel;       /* Channel number */
-   MSG_Q_ID Q;         /* Message queue ID for channel */
-   int type;           /* Channel type (AMS_CMD or AMS_REP) */
+   long channel;             /* Channel number */
+   epicsMessageQueueId Q;    /* Message queue ID for channel */
+   int type;                 /* Channel type (AMS_CMD or AMS_REP) */
 } amsChan;
 
 typedef struct _amsData
 {
-   SEM_ID amsSmID;     /* Shared semaphore */
+   epicsMutexId amsSmID;     /* Shared semaphore */
    amsChan amsIndex[AMS_MAXCHAN]; /* Assigned channels */
 } AMS_DATA;
 
 /* Global variables */
 extern int amsInitialised;   /* 1 after initialisation via amsInit */
-extern long amsShortTime;    /* Short timeout */
-#ifdef VxMP_ENABLED
-extern AMS_DATA * pamsData;
-#else
-extern AMS_DATA amsData;
-#endif
-extern SEM_ID amsID;
-extern int amsObjType;
+//extern long amsShortTime;    /* Short timeout */
+//extern AMS_DATA amsData;
+//extern epicsMutexId amsID;
+//extern int amsObjType;
 
 /* Function prototypes */
 /* amsInit - Initialise the ams system */
-extern int amsInit
-(
-   long *amsStat     /* global status (given and returned) */
-);
+int amsInit ( long *amsStat);
+
 /* amsAttach - Attach to an existing ams system from a slave processor */
-extern int amsAttach
-(
-   long *amsStat     /* global status (given and returned) */
-);
+int amsAttach ( long *amsStat );
+
 /* amsConnect - Connect to an ams system from the current task */
-extern int amsConnect
-(
-   long *amsStat     /* global status (given and returned) */
-);
+int amsConnect ( long *amsStat );
+
 /* amsTakeSem - Take semaphore controlling access to ams database */
-extern int amsTakeSem
-(
-   long *amsStat     /* global status (given and returned) */
-);
+int amsTakeSem ( long *amsStat );
+
 /* amsGiveSem - Release semaphore controlling access to ams database */
-extern int amsGiveSem
-(
-   long *amsStat     /* global status (given and returned) */
-);
+int amsGiveSem ( long *amsStat );
+
 /* amsFind - Looks up channel number and returns position in amsIndex database */
-extern int amsFind
-(
-   long channel       /* Supplied channel number */
-);
+int amsFind ( long channel );
+
 /* amsPath - Returns message queue ID for given channel number */
-extern int amsPath
+int amsPath
 (
    long channel,     /* Channel number (given) */
-   MSG_Q_ID *path,   /* Message queue ID (returned) */
+   epicsMessageQueueId *path,   /* Message queue ID (returned) */
    long *amsStat     /* global status (given and returned) */
 );
+
 /* amsCreate - Creates message queue of given type and size */
-extern int amsCreate
+int amsCreate
 (
    long channel,     /* channel number (given) */
    int type,         /* Channel type (AMS_CMD/REP/SMCMD/SMREP) (given) */
    long size,        /* Size of message queue (given) */
-   MSG_Q_ID *path,   /* Meassage queue ID (returned) */
+   epicsMessageQueueId *path,   /* Meassage queue ID (returned) */
    long *amsStat     /* global status (given and returned) */
 );
+
 /* amsSend0 - Send a message */
-extern int amsSend0
+int amsSend0
 (
-   MSG_Q_ID path,    /* Message queue ID of queue to send on (given) */
+   epicsMessageQueueId path,    /* Message queue ID of queue to send on (given) */
    char * command,   /* Command string (given) */
    char * params,    /* Parameters string (given) */
    int replies,      /* Number of replies expected (given) */
    long *messNo,     /* Number of generated message (returned) */
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    long *amsStat     /* global status (given and returned) */
 );
+
 /* amsSend - Send a message; don't await receipt or reply */
-extern int amsSend
+int amsSend
 (
-   MSG_Q_ID path,    /* Message queue ID of queue to send on (given) */
+   epicsMessageQueueId path,    /* Message queue ID of queue to send on (given) */
    char * command,   /* Command string (given) */
    char * params,    /* Parameters string (given) */
    long *messNo,     /* Number of generated message (returned) */
    long *amsStat     /* global status (given and returned) */
 );
+
 /* amsCommand - send a message requiring replies, but don's await receipt */
-extern int amsCommand
+int amsCommand
 (
-   MSG_Q_ID path,    /* Message queue ID of queue to send on (given) */
+   epicsMessageQueueId path,    /* Message queue ID of queue to send on (given) */
    char * command,   /* Command string (given) */
    char * params,    /* Parameters string (given) */
    int replies,      /* Number of replies expected (given) */
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    long *messNo,     /* Number of generated message (returned) */
    long *amsStat     /* global status (given and returned) */
 );
+
 /* amsCommandR - Send message and await first reply (= receipt) */
-extern int amsCommandR
+int amsCommandR
 (
-   MSG_Q_ID path,    /* Message queue ID of queue to send on (given) */
+   epicsMessageQueueId path,    /* Message queue ID of queue to send on (given) */
    char * command,   /* Command string (given) */
    char * params,    /* Parameters string (given) */
    int replies,      /* Number of replies expected (given) */
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    long *messNo,     /* Number of generated message (returned) */
-   long timeout,     /* Timeout to allow while awaiting reply (given) */
+//   long timeout,     /* Timeout to allow while awaiting reply (given) */
+   double  timeout,     /* Timeout (in seconds) to allow while awaiting reply (given) */
    long *amsStat     /* global status (given and returned) */
 );
+
 /* amsGetReply - Await and return reply replyNo to message messNo */
-extern int amsGetReply
+int amsGetReply
 (
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    long messNo,      /* Message number for which reply required (given) */
    int replyNo,      /* Reply number (given) */
    char * reply,     /* Reply string (returned) */
-   long timeout,     /* Timeout to allow while awaiting reply (given) */
+//   long timeout,     /* Timeout to allow while awaiting reply (given) */
+   double timeout,     /* Timeout (in seconds) to allow while awaiting reply (given) */
    long *amsStat     /* global status (given and returned) */
 );
+
 /* amsReceive - Await command/parameter string message */
-extern int amsReceive
+int amsReceive
 (
-   MSG_Q_ID cmdPath, /* Message queue ID of queue to listen on (given) */
+   epicsMessageQueueId cmdPath, /* Message queue ID of queue to listen on (given) */
    char * command,   /* Command string (returned) */
    char * params,    /* Parameters string (returned) */
    long *messNo,     /* Number of received message (returned) */
    int *replies,     /* Number of replies expected (returned) */
-   MSG_Q_ID *repPath,/* Message queue ID of queue for reply (returned) */
-   long timeout,     /* Timeout to allow while awaiting message (given) */
+   epicsMessageQueueId *repPath,/* Message queue ID of queue for reply (returned) */
+//   long timeout,     /* Timeout to allow while awaiting message (given) */
+   double timeout,     /* Timeout (in seconds) to allow while awaiting message (given) */
    long *amsStat     /* global status (given and returned) */
 );
+
 /* amsReply - Send reply replyNo to message MessNo */
 extern int amsReply
 (
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    char * reply,     /* Reply string (given) */
    long messNo,      /* Number of message being replied to (given) */
    int replyNo,      /* Number of this reply (given) */
@@ -238,4 +228,5 @@ extern int amsReply
    long *amsStat     /* global status (given and returned) */
 );
 
-#endif
+#endif    // #ifndef _INCLUDED_AMSLIB_H
+

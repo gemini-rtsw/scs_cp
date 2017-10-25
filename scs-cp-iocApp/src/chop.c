@@ -1,6 +1,3 @@
-/* $Id: chop.c,v 1.3 2004/11/22 19:54:02 gemvx Exp $ */
-/* ===================================================================== */
-/* INDENT OFF */
 /*+
  *
  * FILENAME
@@ -39,23 +36,23 @@
  * 19-May-1999: Replaced hard-coded values in calcEnvelope with macros 
  *      where possible
  * 12-Jun-2000: Move chopIsOn here from chopControl.c
+ * 24-Oct-2017: Begin conversion to EPICS OSI (mdw)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
+#include <stdio.h>
+#include <string.h>
+
+#include <cad.h>
+#include <tcslib.h>
+
+#include "utilities.h"      /* for all the EPICS base includes, plus other stuff */
 #include "chop.h"               
 #include "archive.h"        /* for cadDirLog, refMemFree */
 #include "control.h"        /* For scsPtr, interlockFlag */
-#include "utilities.h"
 
-#include <cad.h>
 
-#include <string.h>
 
-#include <logLib.h>
-#include <tcslib.h>
-#include <stdio.h>
-#include <taskLib.h>
 
 /* Define frequency limits for the various chop profiles (Hertz)  */
 
@@ -72,16 +69,16 @@
 
 typedef struct
 {
-        double breakChopFreq;           /* Hertz        */
-        double breakChopFreqThrow;      /* arcsecs      */
-        double maxChopFreq;             /* arcsecs      */
-        double maxChopFreqThrow;        /* arcsecs      */
-        double maxTilt;                 /* arcsecs      */
-        double maxTiltZ;                /* microns      */
-        double minChopFreq;             /* arcsecs      */
-        double minChopFreqThrow;        /* arcsecs      */
-        double minTilt;                 /* arcsecs      */
-        double minTiltZ;                /* microns      */
+   double breakChopFreq;           /* Hertz        */
+   double breakChopFreqThrow;      /* arcsecs      */
+   double maxChopFreq;             /* arcsecs      */
+   double maxChopFreqThrow;        /* arcsecs      */
+   double maxTilt;                 /* arcsecs      */
+   double maxTiltZ;                /* microns      */
+   double minChopFreq;             /* arcsecs      */
+   double minChopFreqThrow;        /* arcsecs      */
+   double minTilt;                 /* arcsecs      */
+   double minTiltZ;                /* microns      */
 } envelope;
 
 /* Declare external variables */
@@ -90,13 +87,14 @@ int m2ChopResponseOK = 0;
 int chopIsPending = 0;
 int decsIsPending = 0;
 int jogBeam = BEAMA;
+
 instStructure instruments[MAX_CHOP_CONTROLLERS] = {
-    {"scs        ", 0, "no", 0, "STROBE"},
-    {"instrument1", 0, "no", 0, "STROBE"},
-    {"instrument2", 0, "no", 0, "STROBE"},
-    {"instrument3", 0, "no", 0, "STROBE"},
-    {"instrument4", 0, "no", 0, "STROBE"},
-    {"instrument5", 0, "no", 0, "STROBE"}
+   {"scs        ", 0, "no", 0, "STROBE"},
+   {"instrument1", 0, "no", 0, "STROBE"},
+   {"instrument2", 0, "no", 0, "STROBE"},
+   {"instrument3", 0, "no", 0, "STROBE"},
+   {"instrument4", 0, "no", 0, "STROBE"},
+   {"instrument5", 0, "no", 0, "STROBE"}
 };
 
 /* Local globals */
@@ -106,17 +104,16 @@ static double dutyCycle = 0.0;
 /* New: Accessor function */
 double getChopDuty(void)
 {
-    return dutyCycle;
+   return dutyCycle;
 }
 
 /* New: Accessor function */
 double getChopFreq(void)
 {
-    return frequency;
+   return frequency;
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADchopConfig
@@ -169,153 +166,150 @@ double getChopFreq(void)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADchopConfig (struct cadRecord * pcad)
 {
-    long    status = CAD_ACCEPT;
-    static int profile, syncSource;
-    static char *profileOpts[] = {"2POSN","3POSN","TRIANGULAR", NULL};
-    static char *ssOpts[] = {"SCS", "ICS0", "ICS1", "ICS2", "ICS3",
+   long    status = CAD_ACCEPT;
+   static int profile, syncSource;
+   static char *profileOpts[] = {"2POSN","3POSN","TRIANGULAR", NULL};
+   static char *ssOpts[] = {"SCS", "ICS0", "ICS1", "ICS2", "ICS3",
                                  "ICS4", NULL} ; 
 
-    cadDirLog ("chopConfig", pcad->dir, 4, pcad);
+   cadDirLog ("chopConfig", pcad->dir, 4, pcad);
 
-    /* Fetch name of cad for messages */
-    tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;
+   /* Fetch name of cad for messages */
+   tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;
 
-    switch (pcad->dir)
-    {
-    case menuDirectiveMARK:
-        break;
+   switch (pcad->dir)
+   {
+   case menuDirectiveMARK:
+       break;
 
-    case menuDirectiveCLEAR:
-        break;
+   case menuDirectiveCLEAR:
+       break;
 
-    case menuDirectivePRESET:
+   case menuDirectivePRESET:
 
-        status = CAD_REJECT ;
+       status = CAD_REJECT ;
 
-        if (tcsDcString (profileOpts, "profile - ", pcad->a, &profile, pcad))
-        {
-            errorLog ("CADchopConfig - failed profile conversion", 2, ON);
-            break ;
-        }
+       if (tcsDcString (profileOpts, "profile - ", pcad->a, &profile, pcad))
+       {
+           errorLog ("CADchopConfig - failed profile conversion", 2, ON);
+           break ;
+       }
 
-        if (tcsDcString (ssOpts, "sync. source - ", pcad->b, &syncSource, pcad))
-        {
-            errorLog ("CADchopConfig - failed syncsource conversion", 2, ON);
-            break ;
-        }
+       if (tcsDcString (ssOpts, "sync. source - ", pcad->b, &syncSource, pcad))
+       {
+           errorLog ("CADchopConfig - failed syncsource conversion", 2, ON);
+           break ;
+       }
 
-        if (tcsDcDouble ("frequency - ", pcad->c, &frequency, pcad))
-        {
-            errorLog ("CADchopConfig - failed frequency conversion", 2, ON);
-            break ;
-        }
-	printf("in CADchopConfig preset, frequency is %f\n", frequency);
+       if (tcsDcDouble ("frequency - ", pcad->c, &frequency, pcad))
+       {
+           errorLog ("CADchopConfig - failed frequency conversion", 2, ON);
+           break ;
+       }
+   printf("in CADchopConfig preset, frequency is %f\n", frequency);
 
-        if (tcsDcDouble ("duty cycle - ", pcad->d, &dutyCycle, pcad))
-        {
-            errorLog ("CADchopConfig - failed duty cycle conversion", 2, ON);
-            break ;
-        }
-        else
-        {
-            if( dutyCycle < DUTY_LOW || dutyCycle > DUTY_HIGH)
-            {
-                tcsCsAppendMessage (pcad, "duty cycle out of range") ;
-                break;
-            } 
-        }
+       if (tcsDcDouble ("duty cycle - ", pcad->d, &dutyCycle, pcad))
+       {
+           errorLog ("CADchopConfig - failed duty cycle conversion", 2, ON);
+           break ;
+       }
+       else
+       {
+           if( dutyCycle < DUTY_LOW || dutyCycle > DUTY_HIGH)
+           {
+               tcsCsAppendMessage (pcad, "duty cycle out of range") ;
+               break;
+           } 
+       }
 
-        /* all conversions complete, check values are in range */
+       /* all conversions complete, check values are in range */
 
-        if (profile == TWOPOINT)
-        {
-            if ((frequency > TWO_POINT_MAX) || (frequency < TWO_POINT_MIN))
-            {
-                tcsCsAppendMessage (pcad, "frequency out of range") ;
-                break;
-            }
-        }
-        else if (profile == THREEPOINT)
-        {
-            if ((frequency > THREE_POINT_MAX) || (frequency < THREE_POINT_MIN))
-            {
-                tcsCsAppendMessage (pcad, "frequency out of range") ;
-                break;
-            }
-        }
-        else if (profile == TRIANGLE)
-        {
-            if ((frequency > TRIANGLE_MAX) || (frequency < TRIANGLE_MIN))
-            {
-                tcsCsAppendMessage (pcad, "frequency out of range") ;
-                break;
-            }
-        }
-        else
-        {
-            tcsCsAppendMessage (pcad, "profile not recognised");
-            break;
-        }
+       if (profile == TWOPOINT)
+       {
+           if ((frequency > TWO_POINT_MAX) || (frequency < TWO_POINT_MIN))
+           {
+               tcsCsAppendMessage (pcad, "frequency out of range") ;
+               break;
+           }
+       }
+       else if (profile == THREEPOINT)
+       {
+           if ((frequency > THREE_POINT_MAX) || (frequency < THREE_POINT_MIN))
+           {
+               tcsCsAppendMessage (pcad, "frequency out of range") ;
+               break;
+           }
+       }
+       else if (profile == TRIANGLE)
+       {
+           if ((frequency > TRIANGLE_MAX) || (frequency < TRIANGLE_MIN))
+           {
+               tcsCsAppendMessage (pcad, "frequency out of range") ;
+               break;
+           }
+       }
+       else
+       {
+           tcsCsAppendMessage (pcad, "profile not recognised");
+           break;
+       }
 
-        status = CAD_ACCEPT ;
-        break;
+       status = CAD_ACCEPT ;
+       break;
 
-    case menuDirectiveSTART:
+   case menuDirectiveSTART:
 
-        /* check the current state of the SCS */
+       /* check the current state of the SCS */
 
-        if (chopIsOn == 0)
-        {
-           if (interlockFlag != 1)
-            {
-            *(long *) pcad->vala = (long)profile;
-            *(long *) pcad->valb = (long)syncSource;
-            *(double *) pcad->valc = frequency;
-            *(double *) pcad->vald = dutyCycle;
-            *(long *) pcad->vale = instruments[syncSource].port;
+       if (chopIsOn == 0)
+       {
+          if (interlockFlag != 1)
+          {
+           *(long *) pcad->vala = (long)profile;
+           *(long *) pcad->valb = (long)syncSource;
+           *(double *) pcad->valc = frequency;
+           *(double *) pcad->vald = dutyCycle;
+           *(long *) pcad->vale = instruments[syncSource].port;
 
-	    if (syncSource == 0)
-	    {
-	        writeCommand(SYNC_SOURCE_M2);
-		logMsg("CADchopConfig - telling M2 sync source is M2\n",
-			0, 0, 0, 0, 0, 0);
-	    }
-	    else
-	    {
-	        writeCommand(SYNC_SOURCE_SCS);
-	        logMsg("CADchopConfig - telling M2 sync source is external to M2\n", 
-		        0, 0, 0, 0, 0, 0);
-	    }
-											    /* write chop parameters to reflective memory */
+      if (syncSource == 0)
+       {
+           writeCommand(SYNC_SOURCE_M2);
+      errlogMessage("CADchopConfig - telling M2 sync source is M2\n");
+       }
+       else
+       {
+           writeCommand(SYNC_SOURCE_SCS);
+           errlogMessage("CADchopConfig - telling M2 sync source is external to M2\n");
+       }
+       /* write chop parameters to reflective memory */
 
-	    if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-	    {
-	        scsPtr->page0.chopFrequency = (float)frequency;
-	        scsPtr->page0.chopProfile   = (long)profile;
-	        scsPtr->page0.chopDutyCycle = (float)dutyCycle;
-	        semGive(refMemFree);
-	    }
-	    else
-	    {
-	        errorLog("CADchopConfig - timeout on refMemFree", 1, ON);
-	    }
+       if(semTake(refMemFree, SEM_TIMEOUT) == OK)
+       {
+           scsPtr->page0.chopFrequency = (float)frequency;
+           scsPtr->page0.chopProfile   = (long)profile;
+           scsPtr->page0.chopDutyCycle = (float)dutyCycle;
+           semGive(refMemFree);
+       }
+       else
+       {
+           errorLog("CADchopConfig - timeout on refMemFree", 1, ON);
+       }
 
-	    /* flag that chop configuration has been changed */
+       /* flag that chop configuration has been changed */
 
-	    writeCommand(CHOP_CHANGE);
-	    printf
-		("CADchopConfig - telling M2 chop config has changed to freq=%f, dutyCycle=%f\n", 
-		 frequency, dutyCycle);
-/*	    taskDelay(5);
-	    writeCommand(CHOP_CHANGE);
-	    printf
-		("CADchopConfig - telling M2 chop config has changed to freq=%f, dutyCycle=%f\n", 
-		 frequency, dutyCycle); */
+       writeCommand(CHOP_CHANGE);
+       printf
+      ("CADchopConfig - telling M2 chop config has changed to freq=%f, dutyCycle=%f\n", 
+       frequency, dutyCycle);
+/*       taskDelay(5);
+       writeCommand(CHOP_CHANGE);
+       printf
+      ("CADchopConfig - telling M2 chop config has changed to freq=%f, dutyCycle=%f\n", 
+       frequency, dutyCycle); */
             }
            else
             {
@@ -343,7 +337,6 @@ long CADchopConfig (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADchopControl
@@ -398,7 +391,6 @@ long CADchopConfig (struct cadRecord * pcad)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADchopControl (struct cadRecord * pcad)
@@ -473,7 +465,6 @@ long    CADchopControl (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADbeamJog
@@ -514,7 +505,6 @@ long    CADchopControl (struct cadRecord * pcad)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADbeamJog (struct cadRecord * pcad)
@@ -594,7 +584,6 @@ long    CADbeamJog (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * initEnvelope
@@ -647,7 +636,6 @@ long    CADbeamJog (struct cadRecord * pcad)
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 /* static long    initEnvelope (struct genSubRecord * pgsub)

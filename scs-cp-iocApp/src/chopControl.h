@@ -30,6 +30,7 @@
  * 04-Jan-2000: Imported declaration of flagOutReg here from utilities.h
  * 06-Jan-2000: Deleted chopModeChange declaration since never used
  * 12-Jun-2000: All Xycom setup from this file now done in xycom.h
+ * 19-Oct-2017: Begin conversion to EPICS OSI (mdw)
  *
  */
 /* INDENT ON */
@@ -37,7 +38,7 @@
 #ifndef _INCLUDED_CHOPCONTROL_H
 #define _INCLUDED_CHOPCONTROL_H
 
-#include "utilities.h"     /* for SEM_ID */
+#include "utilities.h"     /* for epicsEventId */
 
 /* Define constants for event system configuration */ 
 
@@ -100,10 +101,10 @@ enum
 
 /* Global variables */
 
-extern SEM_ID chopEventSem;
+extern epicsEventId chopEventSem;
 
 /* Semaphore given in scs_st.stpp */
-extern SEM_ID eventSem;
+extern epicsEventId eventSem;
 
 /* Event system configuration params */
 extern configStructure eventConfig;

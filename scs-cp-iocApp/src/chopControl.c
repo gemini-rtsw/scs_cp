@@ -1,7 +1,6 @@
-/* $Id: chopControl.c,v 1.1 2002/02/05 13:19:47 gemvx Exp $ */
 /* ===================================================================== */
 /* INDENT OFF */
-/*+
+/*
  *
  * FILENAME
  * -------- 
@@ -33,30 +32,28 @@
  * 30-Jun-1998: Check for presence of xycom card with vxMemProbe (srp)
  * 07-May-1999: Added RCS id 
  * 13-Jun-2000: Gutted and redone
+ * 24-Oct-2017: Begin conversion to EPICS OSI (mdw)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
+#include <stdio.h>
+
+#include <epicsThread.h>
 
 #include "chopControl.h"
 #include "interlock.h"  /* For eventConnect */
 #include "utilities.h"  /* For errorLog, debugLevel */
-#include "xycom.h"      /* For eventHandler */
+//#include "xycom.h"      /* For eventHandler */
 
-#include <taskLib.h>    /* For spawning and deleting tasks */
-#include <sysLib.h>
-#include <stdio.h>
 
 /* Declare external variables */
 
-SEM_ID chopEventSem = NULL;
+epicsEventId chopEventSem;
 
 /* Semaphore given in scs_st.stpp in startInit and startChopControl states */
-
-SEM_ID eventSem = NULL; 
+epicsEventId eventSem; 
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * chopInit
@@ -93,52 +90,44 @@ SEM_ID eventSem = NULL;
  * 13-Jun-2000: Do new stuff here...
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 
-int    chopInit (void)
+int chopInit (void)
 {
-    int tid;
+   epicsThreadId tid;
 
-    /* Check for presence of Xycom, set up I/O and intr addresses and
-     * set up semaphore to keep track of interrupts on the Xycom      */
+   /* Check for presence of Xycom, set up I/O and intr addresses and
+    * set up semaphore to keep track of interrupts on the Xycom      */
 
-    if (xyInit() == OK)
-    {
-        eventConnect = ON;
-    }
-    else
-    {
-	eventConnect = OFF;
-	printf ("unable to init the Xycom\n");
-	return (ERROR);
-    }
+   if (xyInit() == OK)
+   {
+       eventConnect = ON;
+   }
+   else
+   {
+      eventConnect = OFF;
+      errlogMessage ("unable to init the Xycom\n");
+      return (ERROR);
+   }
 
-    /* Create the event semaphore which keeps track of when eventConfig
-     * changes */
+   /* Create the event semaphore which keeps track of when eventConfig
+    * changes */
 
-    if ((eventSem = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-    {
-        printf ("unable to create eventSem sem\n");
-	return (ERROR);
-    } 
+   eventSem = epicsEventMustCreate(epicsEventEmpty);
 
-    /* Spawn the task to watch for the event semaphore to be given */
-    if ((tid = taskSpawn ("tWatchEvents", 90, 0, 5000, (FUNCPTR)eventHandler,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) == ERROR) 
-    {
-        printf ("Cannot watch for evemts\n");
-        return ERROR;
-    }
+   /* Spawn the task to watch for the event semaphore to be given */
+   if (!(tid = epicsThreadCreate("tWatchEvents", epicsThreadPriorityMedium,
+                           epicsThreadGetStackSize(epicsThreadStackMedium), 
+                           eventHandler, NULL)))
+   {
+      errlogMessage("Cannot watch for events\n");
+      return ERROR;
+   }
 
-    /* Create semaphore to trigger tasks */
+   /* Create semaphore to trigger tasks */
+   chopEventSem = epicsEventMustCreate(epicsEventEmpty)
 
-    if ((chopEventSem = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-        {
-            printf ("unable to create chopEvent sem\n");
-	    return (ERROR);
-	}
-    return (OK);
+   return (OK);
 }
 

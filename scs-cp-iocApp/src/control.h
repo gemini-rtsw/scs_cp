@@ -27,9 +27,9 @@
  * -------
  * 17-Nov-1999: Created new header files.
  * 16-Dec-1999: Added global variables
+ * 19-OCT-2017: gon conversion to EPICS OSI (mdw)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 #ifndef _INCLUDED_CONTROL_H
 #define _INCLUDED_CONTROL_H
@@ -51,18 +51,14 @@
 #define GAOS_NODE               5       /* Node 5 is the ALTAIR    */   
 
 #define SYSTEM_CLOCK_RATE      200      /* Number of ticks per second */ 
-#define SEM_TIMEOUT            100      /* Nuber of ticks to wait for 
-                                           semaphore before error. At
-					   200 ticks per second, this
-                                           is 0.5 sec or 500 millisec  */
+
+#define SEM_TIMEOUT            0.5      /* This had been 100 ticks (@ 200 ticks/sec) */
+
 #define WFS_TIMEOUT             20
 
 #define STATUS_BLOCK_SIZE       23      /* number of longs for checksum 
                                            to consider                  */
 #define COMMAND_BLOCK_SIZE      61      /* number of longs for checksum 
-                                           to consider                  */
-/* prior to 3 p.m. 01/30/00 GEM.EXE 
-#define COMMAND_BLOCK_SIZE      47         number of longs for checksum 
                                            to consider                  */
 
 #define MAX_FAULTS              30  /* first 30 faults in diag block */
@@ -373,7 +369,7 @@ typedef struct
     float           azd;
     float           eld;
     float           zd;
-    float           g;		/* Not yet available. Here to end of page */
+    float           g;      /* Not yet available. Here to end of page */
     float           azcg;
     float           elcg;
     float           zcg;
@@ -530,15 +526,22 @@ extern int simLevel;
 extern memMap *scsPtr;
 extern memMap *scsBase;
 extern memMap *m2Ptr;
-extern SEM_ID m2MemFree;
-extern SEM_ID xySem;
-extern SEM_ID slowUpdate;
-extern SEM_ID wfsFree[MAX_SOURCES];
-extern SEM_ID diagnosticsAvailable; 
-extern SEM_ID guideUpdateNow;
-extern SEM_ID scsDataAvailable;
-extern SEM_ID scsReceiveNow;
-extern SEM_ID eventDataSem;
+
+extern epicsMutexId m2MemFree;
+extern epicsMutexId wfsFree[MAX_SOURCES];
+extern epicsMutexId eventDataSem;
+extern epicsMutexId setPointFree;
+
+extern epicsEventId xySem;
+extern epicsEventId slowUpdate;
+extern epicsEventId diagnosticsAvailable; 
+extern epicsEventId guideUpdateNow;
+extern epicsEventId scsDataAvailable;
+extern epicsEventId scsReceiveNow;
+
+extern epicsMessageQueueId commandQId;
+extern epicsMessageQueueId receiveQId;
+
 extern long interlockFlag;
 extern statusBlock safeBlock;
 /* get current guide values to send to TCS */
@@ -546,12 +549,9 @@ extern double xGuideTcs;
 extern double yGuideTcs;
 extern double zGuideTcs;
 extern Demands setPoint;
-extern SEM_ID setPointFree;
 extern int currentBeam;
 extern int flip;
 extern int guideType;
-extern MSG_Q_ID commandQId;
-extern MSG_Q_ID receiveQId;
 extern PID controller[MAX_AXES];
 extern HighSpeed *highSpeedData;
 /* not used extern wfs raw[MAX_SOURCES];*/

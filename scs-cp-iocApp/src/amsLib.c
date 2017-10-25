@@ -12,211 +12,22 @@ modification history
 1997 Sep 12: Return status from amsGetReply always OK if reply received (dap)
 1997 Oct 24: Set waiting=0 if timeout in amsGetReply (dap)
 1999 May  7: Added RCS id
+2017 Oct 10: Begin conversion to EPICS OSI (mdw)
+             Removed code for VxMP_ENABLED (we don't use it)
 */
 
-/* Hash include (which includes vxworks.h,... etc) */
-#include "amsLib.h"
-#include <sysLib.h>
-#include <tickLib.h>
 #include <string.h>
+#include "amsLib.h"
 
 /* Global variables */
 int amsInitialised = 0;      /* 1 after initialisation via amsInit */
-long amsShortTime;           /* Short timeout */
-#ifdef VxMP_ENABLED
-AMS_DATA * pamsData;
-#else
+double amsShortTime;           /* Short timeout */
 AMS_DATA amsData;
-#endif
-SEM_ID amsID;                /* To control access to amsData */
-SEM_ID amsMessID;            /* To control access to amsMessCount */
+epicsMutexId amsID;                /* To control access to amsData */
+epicsMutexId amsMessID;            /* To control access to amsMessCount */
 long amsMessCount;           /* Last message number */
 int amsObjType;
 
-/* Different versions of amsInit and amsAttach for VxMP and non-VxMp */
-#ifdef VxMP_ENABLED
-/* amsInit - Initialise the ams system */
-int amsInit
-(
-   long *amsStat     /* global status (given and returned) */
-)
-{
-   /* Initialise the ams system - VxMP version */
-   int i;
-   int flushing;
-   long retval;
-   struct amsCmd inCmd;
-   struct amsRep inRep;
-   STATUS istat;
-
-   amsInitialised = 0;
-
-   /* Check whether AMS_NAME exists in database */
-   if (smNameFind(AMS_NAME,(void **) &pamsData,
-      &amsObjType,NO_WAIT) == OK)
-   {
-      amsInitialised = 1;
-      /* Convert global address to local */
-      pamsData = (AMS_DATA *) smObjGlobalToLocal(pamsData);
-      /* Get the ID of the semaphore controlling access to amsData */
-      amsID = pamsData->amsSmID;
-      /* Take the semaphore */
-      if (amsTakeSem(amsStat) == ERROR)
-      {
-         return ERROR;
-      }
-      /* Remove local message queues listed in amsData */
-      /* Cannot remove shared message queues so just flush them */
-      for (i=0;i<AMS_MAXCHAN;i++)
-      {
-         if ((pamsData->amsIndex[i].type == AMS_CMD) ||
-            (pamsData->amsIndex[i].type == AMS_REP))
-         {
-            /* Delete the message queue */
-            if (msgQDelete(pamsData->amsIndex[i].Q) == ERROR)
-            {
-               *amsStat = AMS__MQDELFAIL;
-               return ERROR;
-            } else
-            {
-               pamsData->amsIndex[i].channel = 0L;
-               pamsData->amsIndex[i].Q       = NULL;
-               pamsData->amsIndex[i].type    = 0;
-            }
-         } else if ((pamsData->amsIndex[i].type == AMS_SMCMD) ||
-            (pamsData->amsIndex[i].type == AMS_SMREP))
-         {
-            flushing = 1;
-            while (flushing == 1)
-            {
-               if (pamsData->amsIndex[i].type == AMS_SMCMD)
-               {
-                  istat = msgQReceive(pamsData->amsIndex[i].Q,
-                    (char *) &inCmd,AMS_CMDSIZE,NO_WAIT);
-               } else
-               {
-                  istat = msgQReceive(pamsData->amsIndex[i].Q,
-                    (char *) &inRep,AMS_REPSIZE,NO_WAIT);
-               }
-               if (istat == ERROR)
-                  /* Nothing on the queue - stop flushing */
-               {
-                  printf("amsInit> Nothing to flush\n");
-                  flushing = 0;
-               } else
-               {
-                  printf("amsInit> Message flushed\n");
-               }
-            }
-         }
-      }
-   } else
-   {
-      /* Claim shared memory for amsData */
-      pamsData = (AMS_DATA *) smMemMalloc (sizeof (AMS_DATA));
-      /* Create shared memory semaphore */
-      if ((amsID = semBSmCreate (SEM_Q_FIFO, SEM_EMPTY)) == NULL)
-      {
-         *amsStat = AMS__SEMCREFAIL;
-         return ERROR;
-      }
-      pamsData->amsSmID =  amsID;
-      /* Initialise empty amsData */
-      for (i=0;i<AMS_MAXCHAN;i++)
-      {
-         pamsData->amsIndex[i].channel = 0L;
-         pamsData->amsIndex[i].Q       = NULL;
-         pamsData->amsIndex[i].type    = 0;
-      }
-      /* Convert to global address and add to database */
-      if (smNameAdd(AMS_NAME,(void *) smObjLocalToGlobal(pamsData),
-         T_SM_BLOCK) == ERROR)
-      {
-         *amsStat = AMS__NAMADDFAIL;
-         return ERROR;
-      }
-   }
-      
-   /* Create amsMessID semaphore if it does not exist */
-   if (semTake(amsMessID,NO_WAIT) == ERROR)
-   {
-      /* amsMessID semaphore does not exist, so create it */
-      if ((amsMessID = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-      {
-         *amsStat = AMS__SEMCREFAIL;
-         return ERROR;
-      }
-   }
-   /* Initialise amsMessCount */
-   amsMessCount = 0;
-
-   /* Give both semaphores */
-   if (semGive(amsID) != OK)
-   {
-      *amsStat = AMS__SEMFAIL;
-      return ERROR;
-   }
-   if (semGive(amsMessID) != OK)
-   {
-      *amsStat = AMS__SEMFAIL;
-      return ERROR;
-   }
-      
-   amsShortTime = sysClkRateGet()/10;
-   amsInitialised = 1;
-   *amsStat = AMS__OK;
-   printf("VxMP version of ams initialised\n");
-   return OK;          /* Return success */
-}
-/* amsAttach - Attach to an existing ams system from a slave processor */
-int amsAttach
-(
-   long *amsStat     /* global status (given and returned) */
-)
-{
-
-   /* Attach to an existing ams system - VxMP version */
-   /* Equivalent of an amsInit for a slave processor */
-   /* Intended to be run just once per processor */
-   /* Wait for AMS_NAME to exist in database */
-   if (smNameFind(AMS_NAME, (void **) &pamsData,
-        &amsObjType,WAIT_FOREVER) != OK)
-   {
-      *amsStat = AMS__NAMFNDFAIL;
-      return ERROR;
-   }
-
-   /* Convert global address to local */
-   pamsData = (AMS_DATA *) smObjGlobalToLocal(pamsData);
-
-   /* Get shared semaphore ID from structure */
-   amsID = pamsData->amsSmID;
-
-   /* Create amsMessID semaphore if it does not exist */
-   if (semTake(amsMessID,NO_WAIT) == ERROR)
-   {
-      /* amsMessID semaphore does not exist, so create it */
-      if ((amsMessID = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-      {
-         *amsStat = AMS__SEMCREFAIL;
-         return ERROR;
-      }
-   }
-   /* Initialise amsMessCount */
-   amsMessCount = 0;
-   if (semGive(amsMessID) != OK)
-   {
-      *amsStat = AMS__SEMFAIL;
-      return ERROR;
-   }
-
-   /* Set amsShortTime and amsInitialised */
-   amsShortTime = sysClkRateGet()/10;
-   amsInitialised = 1;
-   *amsStat = AMS__OK;
-   return OK;         /* Return success */
-}
-#else
 /* amsInit - Initialise the ams system */
 int amsInit
 (
@@ -234,21 +45,13 @@ int amsInit
       {
          if (amsData.amsIndex[i].type == 0)
          {
-            if (msgQDelete(amsData.amsIndex[i].Q) == ERROR)
-            {
-               *amsStat = AMS__MQDELFAIL;
-               return ERROR;
-            }
+            epicsMessageQueueDestroy(amsData.amsIndex[i].Q);
          }
       }
    } else
    {
       /* Create the semaphore for control of access to amsData */
-      if ((amsID = semBCreate(SEM_Q_FIFO, SEM_EMPTY)) == NULL)
-      {
-         *amsStat = AMS__SEMCREFAIL;
-         return ERROR;
-      }
+      amsID = epicsMutexMustCreate();
    }
 
    /* Initialised the amsData structure */
@@ -258,37 +61,27 @@ int amsInit
       amsData.amsIndex[i].Q       = NULL;
       amsData.amsIndex[i].type    = 0;
    }
+
    /* Create amsMessID semaphore if it does not exist */
-   if (semTake(amsMessID,NO_WAIT) == ERROR)
-   {
-      /* amsMessID semaphore does not exist, so create it */
-      if ((amsMessID = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-      {
-         *amsStat = AMS__SEMCREFAIL;
-         return ERROR;
-      }
-   }
+   if (!amsMessID)
+      amsMessID = epicsMutexMustCreate();
+
    /* Initialise amsMessCount */
    amsMessCount = 0;
 
    /* Give both semaphores */
-   if (semGive(amsID) != OK)
-   {
-      *amsStat = AMS__SEMFAIL;
-      return ERROR;
-   }
-   if (semGive(amsMessID) != OK)
-   {
-      *amsStat = AMS__SEMFAIL;
-      return ERROR;
-   }
+   epicsMutexUnlock(amsID);
+   epicsMutexUnlock(amsMessID);
       
-   amsShortTime = sysClkRateGet()/10;
+   // amsShortTime = sysClkRateGet()/10;
+   amsShortTime = 0.1;
    amsInitialised = 1;
    *amsStat = AMS__OK;
-   printf("Non-VxMP version of ams initialised\n");
+   errlogPrintf("Non-VxMP version of ams initialised\n");
    return OK;          /* Return success */
 }
+
+
 /* amsAttach - Attach to an existing ams system from a slave processor */
 /* Not appropriate in non-VxMP system, but here for compatibility */
 int amsAttach
@@ -298,10 +91,10 @@ int amsAttach
 {
    /* Routine just returns error in a non-VxMP environment */
    *amsStat = AMS__NOTAVAIL;
-   printf("amsAttach> Illegal call in non-VxMP environment\n");
+   errlogPrintf("amsAttach> Illegal call in non-VxMP environment\n");
    return ERROR;
 }
-#endif
+
 /* amsConnect - Connect to an ams system from the current task */
 int amsConnect
 (
@@ -317,7 +110,8 @@ int amsConnect
          return OK;
       } else
       {
-         taskDelay(10);
+         //taskDelay(10);
+         epicsThreadSleep(0.01);
       }
    }
 }
@@ -330,20 +124,15 @@ int amsTakeSem
    /* Wait for ams semaphore */
    if (amsInitialised != 1)
    {
-      printf("amsTakeSem> ams not initialised");
+      errlogPrintf("amsTakeSem> ams not initialised");
       *amsStat = AMS__NOTINIT;
       return ERROR;
    }
-   if (semTake(amsID,WAIT_FOREVER) != OK)
-   {
-      /* Failed to take semaphore */
-      printf("amsTakeSem> Failed to take semaphore\n");
-      *amsStat = AMS__SEMFAIL;
-      return ERROR;
-   }
+   epicsMutexLock(amsID);
    *amsStat = AMS__OK;
    return OK;
 }
+
 /* amsGiveSem - Release semaphore controlling access to ams database */
 int amsGiveSem
 (
@@ -353,20 +142,15 @@ int amsGiveSem
    /* Give the ams semaphore */
    if (amsInitialised != 1)
    {
-      printf("amsGiveSem> ams not initialised");
+      errlogPrintf("amsGiveSem> ams not initialised");
       *amsStat = AMS__NOTINIT;
       return ERROR;
    }
-   if (semGive(amsID) != OK)
-   {
-      /* Failed to give semaphore */
-      printf("amsGiveSem> Failed to give semaphore\n");
-      *amsStat = AMS__SEMFAIL;
-      return ERROR;
-   }
+   epicsMutexUnlock(amsID);
    *amsStat = AMS__OK;
    return OK;
 }
+
 /* amsFind - Looks up channel number and returns position in amsIndex database */
 int amsFind
 (
@@ -380,11 +164,7 @@ int amsFind
 
    for (i=0;i<AMS_MAXCHAN;i++)
    {
-#ifdef VxMP_ENABLED
-      if (pamsData->amsIndex[i].channel == channel)
-#else
       if (amsData.amsIndex[i].channel == channel)
-#endif
       {
          return i;
       }
@@ -394,9 +174,9 @@ int amsFind
 /* amsPath - Returns message queue ID for given channel number */
 int amsPath
 (
-   long channel,     /* Channel number (given) */
-   MSG_Q_ID *path,   /* Message queue ID (returned) */
-   long *amsStat     /* global status (given and returned) */
+   long channel,                /* Channel number (given) */
+   epicsMessageQueueId *path,   /* Message queue ID (returned) */
+   long *amsStat                /* global status (given and returned) */
 )
 {
    /* Return message queue ID for channel */
@@ -407,7 +187,7 @@ int amsPath
    if (amsTakeSem(amsStat) == ERROR)
    {
       /* Failed to take semaphore - abort */
-      printf("amsPath> aborting");
+      errlogPrintf("amsPath> aborting");
       return ERROR;
    }
    
@@ -415,11 +195,7 @@ int amsPath
 
    if (i >= 0)
    {
-#ifdef VxMP_ENABLED
-      *path = pamsData->amsIndex[i].Q;
-#else
       *path = amsData.amsIndex[i].Q;
-#endif
       retval = AMS__OK;
    } else
    {
@@ -449,7 +225,7 @@ int amsCreate
    long channel,     /* channel number (given) */
    int type,         /* Channel type (AMS_CMD/REP/SMCMD/SMREP) (given) */
    long size,        /* Size of message queue (given) */
-   MSG_Q_ID *path,   /* Meassage queue ID (returned) */
+   epicsMessageQueueId *path,   /* Meassage queue ID (returned) */
    long *amsStat     /* global status (given and returned) */
 )
 {
@@ -459,7 +235,7 @@ int amsCreate
    int i;
    int allocated; /* 1 when channel allocated, else 0 */
    int ownSem;    /* ownership of ams semaphore (0 = no; 1=yes) */
-   STATUS status;
+   int status;
    
    /* Initialise amsStat to AMS__OK */
    *amsStat = AMS__OK;
@@ -472,12 +248,7 @@ int amsCreate
    {
       /* invalid channel number */
       *amsStat = AMS__INVCHAN;
-#ifdef VxMP_ENABLED
-   } else if ((type != AMS_CMD) & (type != AMS_REP)
-      & (type != AMS_SMCMD) & (type != AMS_SMREP))
-#else
    } else if ((type != AMS_CMD) & (type != AMS_REP))
-#endif
    {
       /* invalid channel type */
       *amsStat = AMS__INVTYPE;
@@ -497,65 +268,6 @@ int amsCreate
       allocated = 0;
       /* Check for dupicate channel number */
       i = amsFind(channel);
-#ifdef VxMP_ENABLED
-      if (i >= 0)
-      {
-         /* Channel already exists */
-         if (pamsData->amsIndex[i].type != type)
-         {
-            /* Can't change type of existing channel */
-            *amsStat = AMS__CHANFIXED;
-         } else
-         {
-            *path = pamsData->amsIndex[i].Q;
-            allocated = 1;
-         }
-      }
-   }
-   
-   if ((*amsStat == AMS__OK) && (allocated == 0))
-   {
-      /* Allocate channel number to first free slot
-        in ams database */
-      for (i=0;i<AMS_MAXCHAN;i++)
-      {
-         if ((allocated == 0) & (pamsData->amsIndex[i].channel == 0L))
-         {
-            pamsData->amsIndex[i].channel = channel;
-            /* Create message queue of required type */
-            if (type == AMS_SMCMD)
-            {
-               pamsData->amsIndex[i].Q = msgQSmCreate(size,
-                  AMS_CMDSIZE,MSG_Q_FIFO);
-            } else if (type == AMS_SMREP)
-            {
-               pamsData->amsIndex[i].Q = msgQSmCreate(size,
-                  AMS_REPSIZE,MSG_Q_FIFO);
-            } else if (type == AMS_CMD)
-            {
-               pamsData->amsIndex[i].Q = msgQCreate(size,
-                  AMS_CMDSIZE,MSG_Q_PRIORITY);
-            } else  /* type is AMS_REP */
-            {
-               pamsData->amsIndex[i].Q = msgQCreate(size,
-                  AMS_REPSIZE,MSG_Q_PRIORITY);
-            }
-            if (pamsData->amsIndex[i].Q == NULL)
-            {
-               /* Message queue creation failed */
-               printf("amsCreate> Failed to create message queue\n");
-               *amsStat = AMS__MQCREFAIL;
-               /* Deallocate the channel */
-               pamsData->amsIndex[i].channel = 0L;
-            } else
-            {
-               allocated = 1;
-               pamsData->amsIndex[i].type = type;
-               *path = pamsData->amsIndex[i].Q;
-             }
-          }
-      }
-#else
       if (i >= 0)
       {
          /* Channel already exists */
@@ -583,17 +295,17 @@ int amsCreate
             /* Create message queue of required type */
             if (type == AMS_CMD)
             {
-               amsData.amsIndex[i].Q = msgQCreate(size,
-                  AMS_CMDSIZE,MSG_Q_PRIORITY);
+               amsData.amsIndex[i].Q = 
+                        epicsMessageQueueCreate(size, AMS_CMDSIZE);
             } else  /* type is AMS_REP */
             {
-               amsData.amsIndex[i].Q = msgQCreate(size,
-                  AMS_REPSIZE,MSG_Q_PRIORITY);
+               amsData.amsIndex[i].Q = 
+                        epicsMessageQueueCreate(size, AMS_REPSIZE);
             }
             if (amsData.amsIndex[i].Q == NULL)
             {
                /* Message queue creation failed */
-               printf("amsCreate> Failed to create message queue\n");
+               errlogPrintf("amsCreate> Failed to create message queue\n");
                *amsStat = AMS__MQCREFAIL;
                /* Deallocate the channel */
                amsData.amsIndex[i].channel = 0L;
@@ -605,7 +317,6 @@ int amsCreate
              }
           }
       }
-#endif
       if ((*amsStat == AMS__OK) & (allocated == 0))
       {
          /* Out of channels */
@@ -632,12 +343,12 @@ int amsCreate
 /* amsSend0 - Send a message */
 int amsSend0
 (
-   MSG_Q_ID path,    /* Message queue ID of queue to send on (given) */
+   epicsMessageQueueId path,    /* Message queue ID of queue to send on (given) */
    char * command,   /* Command string (given) */
    char * params,    /* Parameters string (given) */
    int replies,      /* Number of replies expected (given) */
    long *messNo,     /* Number of generated message (returned) */
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    long *amsStat     /* global status (given and returned) */
 )
 {
@@ -650,37 +361,32 @@ int amsSend0
 
    /* Compose message */
    /* Increment amsMessCount which is protected by amsMessID semaphore */
-   if (semTake(amsMessID,WAIT_FOREVER) == ERROR)
+   epicsMutexLock(amsMessID);
+
+   if (amsMessCount == 1000000L)
    {
-      *amsStat = AMS__SEMFAIL;
+      amsMessCount = 1;
    } else
    {
-      if (amsMessCount == 1000000L)
-      {
-         amsMessCount = 1;
-      } else
-      {
-         amsMessCount++;
-      }
-      *messNo = amsMessCount;
-      if (semGive(amsMessID) == ERROR)
-      {
-         *amsStat = AMS__SEMFAIL;
-      } else
-      {
-         outgoing.messNo = *messNo;
-         outgoing.replies = replies;
-         outgoing.Q = repPath;
-         strcpy(outgoing.command,command);
-         strcpy(outgoing.params,params);
-         /* Send message */
-         if (msgQSend(path,(char *) &outgoing,AMS_CMDSIZE,
-           amsShortTime,MSG_PRI_NORMAL) == ERROR)
-         {
-            *amsStat = AMS__TIMEOUT;
-         }
-      }
+      amsMessCount++;
    }
+   *messNo = amsMessCount;
+
+   epicsMutexUnlock(amsMessID);
+
+   outgoing.messNo = *messNo;
+   outgoing.replies = replies;
+   outgoing.Q = repPath;
+   strcpy(outgoing.command,command);
+   strcpy(outgoing.params,params);
+
+   /* Send message */
+   if (epicsMessageQueueSendWithTimeout(path,(char *) &outgoing,AMS_CMDSIZE,
+     amsShortTime) == ERROR)
+     {
+        *amsStat = AMS__TIMEOUT;
+     }
+      
    if (*amsStat == AMS__OK)
    {
       return OK;
@@ -689,10 +395,13 @@ int amsSend0
       return ERROR;
    }
 }
+
+
+
 /* amsSend - Send a message; don't await receipt or reply */
 int amsSend
 (
-   MSG_Q_ID path,    /* Message queue ID of queue to send on (given) */
+   epicsMessageQueueId path,    /* Message queue ID of queue to send on (given) */
    char * command,   /* Command string (given) */
    char * params,    /* Parameters string (given) */
    long *messNo,     /* Number of generated message (returned) */
@@ -703,14 +412,15 @@ int amsSend
 
    return (amsSend0(path,command,params,0,messNo,NULL,amsStat));
 }
+
 /* amsCommand - send a message requiring replies, but don's await receipt */
 int amsCommand
 (
-   MSG_Q_ID path,    /* Message queue ID of queue to send on (given) */
+   epicsMessageQueueId path,    /* Message queue ID of queue to send on (given) */
    char * command,   /* Command string (given) */
    char * params,    /* Parameters string (given) */
    int replies,      /* Number of replies expected (given) */
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    long *messNo,     /* Number of generated message (returned) */
    long *amsStat     /* global status (given and returned) */
 )
@@ -739,13 +449,14 @@ int amsCommand
 /* amsCommandR - Send message and await first reply (= receipt) */
 int amsCommandR
 (
-   MSG_Q_ID path,    /* Message queue ID of queue to send on (given) */
+   epicsMessageQueueId path,    /* Message queue ID of queue to send on (given) */
    char * command,   /* Command string (given) */
    char * params,    /* Parameters string (given) */
    int replies,      /* Number of replies expected (given) */
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    long *messNo,     /* Number of generated message (returned) */
-   long timeout,     /* Timeout to allow while awaiting reply (given) */
+//   long timeout,     /* Timeout to allow while awaiting reply (given) */
+   double  timeout,     /* Timeout (in seconds) to allow while awaiting reply (given) */
    long *amsStat     /* global status (given and returned) */
 )
 {
@@ -769,30 +480,41 @@ int amsCommandR
 /* amsGetReply - Await and return reply replyNo to message messNo */
 int amsGetReply
 (
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    long messNo,      /* Message number for which reply required (given) */
    int replyNo,      /* Reply number (given) */
    char * reply,     /* Reply string (returned) */
-   long timeout,     /* Timeout to allow while awaiting reply (given) */
+//   long timeout,     /* Timeout to allow while awaiting reply (given) */
+   double timeout,     /* Timeout (in seconds)to allow while awaiting reply (given) */
    long *amsStat     /* global status (given and returned) */
 )
 {
    /* Wait for reply */
    int waiting;
-   ULONG tickStart;
-   ULONG tickNow;
-   ULONG tickWait;
-   STATUS istat;
+   //ULONG tickStart;
+   //ULONG tickNow;
+   //ULONG tickWait;
+   epicsTimeStamp timeStart;
+   epicsTimeStamp timeNow;
+   epicsTimeStamp timeWait;
+
+   int istat;
    struct amsRep incoming;
 
    *amsStat = AMS__OK;
    istat = OK;
    waiting = 1;
-   tickStart = tickGet();
-   tickWait = tickStart;
+
+   epicsTimeGetCurrent(&timeStart);
+   timeWait = timeStart;
+
+   // tickStart = tickGet();
+   // tickWait = tickStart;
+
    while (waiting == 1)
    {
-      if (msgQReceive(repPath,(char *) &incoming,AMS_REPSIZE,timeout) == ERROR)
+//      if (msgQReceive(repPath,(char *) &incoming,AMS_REPSIZE,timeout) == ERROR)
+      if (epicsMessageQueueReceiveWithTimeout(repPath,&incoming,AMS_REPSIZE,timeout) == ERROR)
       {
          *amsStat = AMS__TIMEOUT;
          istat = ERROR;
@@ -804,17 +526,25 @@ int amsGetReply
          if ((messNo != incoming.messNo) || (replyNo != incoming.replyNo))
          {
             /* Not the expected reply so we need to push it back on the queue.
-               However, every two ticks delay for one tick to prevent
+               However, every two ticks, delay for one tick to prevent
                this task locking up the processor. */
-            tickNow = tickGet();
-            if ((tickNow-tickWait) > 2)
-            {
-               taskDelay(1);
-               tickNow = tickGet();
+
+//            tickNow = tickGet();
+//            if ((tickNow-tickWait) > 2)
+//            {
+//               taskDelay(1);
+//               tickNow = tickGet();
+//            }
+            /* the following assumes that a "tick" is 1/80 of a second */
+            epicsTimeGetCurrent(&timeNow);
+            if( epicsTimeDiffInSeconds(&timeNow, &timeWait) > 0.025) {
+               epicsThreadSleep(0.0125);
+               epicsTimeGetCurrent(&timeNow);
             }
+
             /* Push the message back on the queue */
-            if (msgQSend(repPath,(char *) &incoming,AMS_REPSIZE,timeout,
-               MSG_PRI_NORMAL) == ERROR)
+//            if (msgQSend(repPath,(char *) &incoming,AMS_REPSIZE,timeout, MSG_PRI_NORMAL) == ERROR)
+            if (epicsMessageQueueSendWithTimeout(repPath,&incoming,AMS_REPSIZE,timeout) == ERROR)
             {
                *amsStat = AMS__MQSENDFAIL;
                istat = ERROR;
@@ -822,7 +552,8 @@ int amsGetReply
             } else
             {
                /* Have we waited too long? */
-               if ((timeout != WAIT_FOREVER) && ((tickNow-tickStart)>timeout))
+               //if ((timeout != WAIT_FOREVER) && ((tickNow-tickStart)>timeout))
+               if ((timeout != WAIT_FOREVER) && (epicsTimeDiffInSeconds(&timeNow, &timeStart)>timeout))
                {
                   *amsStat = AMS__TIMEOUT;
                   istat = ERROR;
@@ -847,23 +578,25 @@ int amsGetReply
 /* amsReceive - Await command/parameter string message */
 int amsReceive
 (
-   MSG_Q_ID cmdPath, /* Message queue ID of queue to listen on (given) */
+   epicsMessageQueueId cmdPath, /* Message queue ID of queue to listen on (given) */
    char * command,   /* Command string (returned) */
    char * params,    /* Parameters string (returned) */
    long *messNo,     /* Number of received message (returned) */
    int *replies,     /* Number of replies expected (returned) */
-   MSG_Q_ID *repPath,/* Message queue ID of queue for reply (returned) */
-   long timeout,     /* Timeout to allow while awaiting message (given) */
+   epicsMessageQueueId *repPath,/* Message queue ID of queue for reply (returned) */
+//   long timeout,     /* Timeout to allow while awaiting message (given) */
+   double  timeout,     /* Timeout (in seconds)to allow while awaiting message (given) */
    long *amsStat     /* global status (given and returned) */
 )
 {
    /* Wait for command and parameter strings on cmdPath */
    int retval;
-   STATUS istat;
+   int istat;
    struct amsCmd incoming;
 
    /* Await message */
-   istat = msgQReceive(cmdPath,(char *) &incoming,AMS_CMDSIZE,timeout);
+//   istat = msgQReceive(cmdPath,(char *) &incoming,AMS_CMDSIZE,timeout);
+   istat = epicsMessageQueueReceiveWithTimeout(cmdPath,&incoming,AMS_CMDSIZE,timeout);
    if (istat != ERROR)
    {
 
@@ -881,15 +614,18 @@ int amsReceive
             1,AMS__OK,amsStat);
       } 
    } else
-   {
-      if (errno == S_objLib_OBJ_TIMEOUT)
-      {
          *amsStat = AMS__TIMEOUT;
-       } else
-      {
-         *amsStat = AMS__ERROR;
-       }
-   }
+// 
+//   {
+//      if (errno == S_objLib_OBJ_TIMEOUT)
+//      {
+//         *amsStat = AMS__TIMEOUT;
+//       } else
+//      {
+//         *amsStat = AMS__ERROR;
+//       }
+//   }
+
    if (*amsStat == AMS__OK)
    {
       return OK;
@@ -901,7 +637,7 @@ int amsReceive
 /* amsReply - Send reply replyNo to message MessNo */
 int amsReply
 (
-   MSG_Q_ID repPath, /* Message queue ID of queue for reply (given) */
+   epicsMessageQueueId repPath, /* Message queue ID of queue for reply (given) */
    char * reply,     /* Reply string (given) */
    long messNo,      /* Number of message being replied to (given) */
    int replyNo,      /* Number of this reply (given) */
@@ -917,8 +653,8 @@ int amsReply
    rep.repStatus = repStatus;
    strcpy(rep.rep,reply);
    /* Send reply */
-   if (msgQSend(repPath,(char *) &rep,AMS_REPSIZE,
-     amsShortTime,MSG_PRI_NORMAL) == ERROR)
+//   if (msgQSend(repPath,(char *) &rep,AMS_REPSIZE, amsShortTime,MSG_PRI_NORMAL) == ERROR)
+   if (epicsMessageQueueSendWithTimeout(repPath,&rep,AMS_REPSIZE, amsShortTime) == ERROR)
    {
       *amsStat = AMS__MQSENDFAIL;
       return ERROR;
