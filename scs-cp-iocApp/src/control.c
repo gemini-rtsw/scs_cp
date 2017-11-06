@@ -334,12 +334,12 @@ epicsMutexId m2MemFree = NULL;
 epicsEventId slowUpdate = NULL;
 epicsMutexId wfsFree[MAX_SOURCES];
 epicsEventId diagnosticsAvailable = NULL;
-SEM_ID guideUpdateNow = NULL;
-SEM_ID scsDataAvailable = NULL;
-SEM_ID scsReceiveNow = NULL;
-SEM_ID eventDataSem = NULL;
-SEM_ID cemTimerEndSem = NULL;
-SEM_ID cemTimerStartSem = NULL;
+epicsEventId guideUpdateNow = NULL;
+epicsEventId scsDataAvailable = NULL;
+epicsEventId scsReceiveNow = NULL;
+epicsMutexId eventDataSem = NULL;
+epicsEventId cemTimerEndSem = NULL;
+epicsEventId cemTimerStartSem = NULL;
 long interlockFlag = OFF;
 statusBlock safeBlock;
 
@@ -348,7 +348,7 @@ double xGuideTcs = 0.0;
 double yGuideTcs = 0.0;
 double zGuideTcs = 0.0;
 Demands setPoint;
-SEM_ID setPointFree = NULL;
+epicsMutexId setPointFree = NULL;
 int currentBeam = BEAMA;
 int flip2 = 0;
 int flip = 0;		/* indicates whether or not beams s/b flipped
@@ -360,8 +360,8 @@ double coeffData[5][3];
 int nodeISR2 = 0;
 int nodeISR3 = 0;
 int guideType = AUTOGUIDE;
-MSG_Q_ID commandQId = NULL;
-MSG_Q_ID receiveQId = NULL;
+epicsMessageQueueId commandQId = NULL;
+epicsMessageQueueId receiveQId = NULL;
 double tiptiltGuideLimitFactor = 1.0;
 double focusGuideLimitFactor = 1.0;
 
@@ -432,7 +432,7 @@ static int cbGuideOnA[CB_RECORD_NB];
 static double cbTime[CB_RECORD_NB];
 static double cbP2Time[CB_RECORD_NB];
 static float cbP2Interval[CB_RECORD_NB];
-static unsigned long cbTick[CB_RECORD_NB];
+//static unsigned long cbTick[CB_RECORD_NB];
 
 static float cbAXDemand[CB_RECORD_NB];
 static float cbAYDemand[CB_RECORD_NB];
@@ -564,45 +564,35 @@ void projectSource (void)
           * time update
           */
 
-         if (semTake (wfsFree[source], SEM_TIMEOUT) == OK)
+         epicsMutexLock(wfsFree[source]);
+         if (readArchive (&archiveEntry, filtered[source].time) == OK)
          {
-            if (readArchive (&archiveEntry, filtered[source].time) == OK)
-            {
-               deltaX = xNow - archiveEntry.setX;
-               deltaY = yNow - archiveEntry.setY;
-               deltaZ = zNow - archiveEntry.setZ;
+            deltaX = xNow - archiveEntry.setX;
+            deltaY = yNow - archiveEntry.setY;
+            deltaZ = zNow - archiveEntry.setZ;
 
-               filtered[source].z1 = 
-                  archiveEntry.xTilt + filtered[source].z1 + deltaX;
-               filtered[source].z2 = 
-                  archiveEntry.yTilt + filtered[source].z2 + deltaY;
-               filtered[source].z3 = 
-                  archiveEntry.zFocus + filtered[source].z3 + deltaZ;
-            }
-            else
-            {
-
-               /*
-                * if position cannot be fetched, use current position
-                */
-
-               errorLog ("projectSource - can't retrieve archive position",
-                     1, ON);
-
-               filtered[source].z1 = 
-                  scsPtr->page1.xTilt + filtered[source].z1 + deltaX;
-               filtered[source].z2 = 
-                  scsPtr->page1.yTilt + filtered[source].z2 + deltaY;
-               filtered[source].z3 = 
-                  scsPtr->page1.zFocus + filtered[source].z3 + deltaZ;
-            }
-
-            semGive (wfsFree[source]);
+            filtered[source].z1 = 
+               archiveEntry.xTilt + filtered[source].z1 + deltaX;
+            filtered[source].z2 = 
+               archiveEntry.yTilt + filtered[source].z2 + deltaY;
+            filtered[source].z3 = 
+               archiveEntry.zFocus + filtered[source].z3 + deltaZ;
          }
          else
          {
-            errorLog ("projectsource - wfsFree timeout", 1, ON);
+
+            /*
+             * if position cannot be fetched, use current position
+             */
+
+            errorLog ("projectSource - can't retrieve archive position",
+                     1, ON);
+
+            filtered[source].z1 = scsPtr->page1.xTilt + filtered[source].z1 + deltaX;
+            filtered[source].z2 = scsPtr->page1.yTilt + filtered[source].z2 + deltaY;
+            filtered[source].z3 = scsPtr->page1.zFocus + filtered[source].z3 + deltaZ;
          }
+         epicsMutexUnlock(wfsFree[source]);
       }
    }
 }
@@ -761,9 +751,11 @@ int time_debug = 0;
  */
 
 void cemTimerEnd () {
-
-   FOREVER {
-      if (semTake (cemTimerEndSem, SEM_TIMEOUT) == OK)  {
+   for(;;) {
+      /* The only place this event is signalled is commented out for some reason.           */
+      /* This wait will always time out. Maybe it should be replaced with a taskDelay()    */
+      /* or EPICS OSI equivalent [epicsThreadWait()]  20171030 (mdw)                        */
+      if (epicsEventWaitWithTimeout(cemTimerEndSem, SEM_TIMEOUT) == epicsEventWaitOK)  {
          
         clock_gettime( CLOCK_REALTIME, &timeEnd);
 
@@ -774,7 +766,7 @@ void cemTimerEnd () {
       }
       else {
          if (time_debug) {
-            logMsg("cemTimerEnd timeout\n",0,0,0,0,0,0);
+            errlogPrintf("cemTimerEnd timeout\n");
          }
       }
    }
@@ -786,16 +778,15 @@ void cemTimerEnd () {
  * cemTimerStart() 
  */
 
-void cemTimerStart () {
-
-   FOREVER {
-      if (semTake (cemTimerStartSem, SEM_TIMEOUT) == OK)  {
-         
+void cemTimerStart () 
+{
+   for(;;) {
+      if (epicsEventWaitWithTimeout(cemTimerStartSem, SEM_TIMEOUT) == epicsEventWaitOK)  {
          clock_gettime( CLOCK_REALTIME, &timeStart);
       } 
       else {
          if (time_debug) {
-            logMsg("cemTimerStart timeout\n",0,0,0,0,0,0);
+            errlogMessage("cemTimerStart timeout\n");
          }
       }
    }
@@ -815,7 +806,7 @@ static void reportTimes() {
       result.tv_nsec = timeEnd.tv_nsec - timeStart.tv_nsec;
    }
 
-   logMsg("Elapsed time: %d:%d\n",result.tv_sec, result.tv_nsec, 0, 0, 0, 0);
+   errlogPrintf("Elapsed time: %ld:%ld\n",result.tv_sec, result.tv_nsec);
 }
 
 /* ===================================================================== */
@@ -869,7 +860,7 @@ void fireLoops (int param)
       if (logCount >= logThreshold)
       {
          logCount = 0;
-         semGive (logNow);
+         epicsEventSignal(logNow);
       }
    }
 
@@ -887,7 +878,10 @@ void fireLoops (int param)
 void rmISR2 (int node)
 {
    nodeISR2 = node;
-   semGive (scsReceiveNow);
+   epicsEventSignal(scsReceiveNow);
+
+   /* why is this commented out? This is the only place the 
+    * event is signalled. 20171030 (mdw) */ 
    /*
    semGive (cemTimerEndSem);
    */
@@ -897,7 +891,7 @@ void rmISR2 (int node)
 void rmISR3 (int node)
 {
    nodeISR3 = node;
-   semGive (guideUpdateNow);
+   epicsEventSignal(guideUpdateNow);
 }
 
 /* ===================================================================== */
@@ -956,7 +950,7 @@ void processGuides (void) {
    converted   result;
    int numBytes = 0;
    int indx = 0; 
-   char message[200];
+   //char message[200];
    long lastNS = 0;
    long sensedGuideRate = GUIDE_200_HZ;
    static struct
@@ -1016,20 +1010,19 @@ void processGuides (void) {
       /* waittime = 10; 
        */
 
-      if (semTake (guideUpdateNow, waittime) == OK) 
+      if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
       {
 
-         taskDelay(NO_WAIT);
+         //taskDelay(NO_WAIT);
+         epicsThreadSleep(0.001);
          /* Find which sources have been updated since last ISR call 
           * first, check PWFS1 */
 
          if (debugLevel == DEBUG_RESERVED2)
          {
-            sprintf (message, 
-                  "***** nodeISR3 = %d intervalas %f > %f ",
+            errlogPrintf( "***** nodeISR3 = %d intervalas %f > %f \n",
                   nodeISR3, scsBase->pwfs1.interval,  updateInterval.pwfs1); 
-            logMsg ("%s\n", (int)message, 0, 0, 0, 0, 0);
          }
 
          if ( (nodeISR3 == AGP1_NODE) && (weight[PWFS1][currentBeam] > -2) )
@@ -1345,7 +1338,7 @@ void processGuides (void) {
       else
       {
          if (debugLevel == DEBUG_RESERVED2) 
-            logMsg("processGuides - guideUpdateNow timeout\n", 0, 0, 0, 0, 0, 0); 
+            errlogMessage("processGuides - guideUpdateNow timeout\n"); 
 
          /* New, assume timeout must mean no guide update has
           * occurred and bypass timestamp checking 
@@ -1355,15 +1348,11 @@ void processGuides (void) {
 
       if (debugLevel == DEBUG_RESERVED2)
       {
-         sprintf (message, 
-               "currentBeam = %1d, (0=BEAMA,3=A2BRAMP); guideOnA = %1d",
+         errlogPrintf ("currentBeam = %1d, (0=BEAMA,3=A2BRAMP); guideOnA = %1d\n",
                currentBeam, guideOnA); 
-         logMsg ("%s\n", (int)message, 0, 0, 0, 0, 0);
 
-         sprintf
-            (message, "guideOn = %1ld; applyGuide = %1d, guideUpdate = %1d",
+         errlogPrintf("guideOn = %1ld; applyGuide = %1d, guideUpdate = %1d\n",
              guideOn, applyGuide, guideUpdate); 
-         logMsg ("%s\n", (int)message, 0, 0, 0, 0, 0);
       } 
 
       /* Notes about all these conditions...
@@ -1509,8 +1498,7 @@ void processGuides (void) {
                     this is truly never needed for the future, it could
                     be removed!!! */
             {
-               sprintf(message, "guideType is PROJECT"); 
-               logMsg ("%s\n", (int)message, 0, 0, 0, 0, 0);
+               errlogMessage("guideType is PROJECT\n"); 
 
                projectSource ();
                blendSources ();
@@ -1598,7 +1586,7 @@ void processGuides (void) {
 
          /* fetch command from message queue */
          numBytes = 
-            msgQReceive (commandQId, (char *) &command, sizeof (long), NO_WAIT);
+            epicsMessageQueueReceiveWithTimeout(commandQId, (char *) &command, sizeof (long), NO_WAIT);
 
          if (numBytes == ERROR)
             command = FAST_ONLY;
@@ -1609,9 +1597,8 @@ void processGuides (void) {
          /* print command to screen for testing */
          if ((command > POSITION) && (debugLevel == DEBUG_MED))
          {
-            sprintf (message, "processGuides - sent command =  %s", 
-                  m2CmdName[command]);
-            logMsg ("%s (%d)\n", (int)message, (int)command, 0, 0, 0, 0);
+            errlogPrintf ("processGuides - sent command =  %s (%d)", 
+                  m2CmdName[command], (int)command);
          }
 
          scsBase->page0.commandCode = command;
@@ -1649,52 +1636,45 @@ void processGuides (void) {
       }
       else /* simulation active, write to m2 buffer */
       {
-         if (semTake (m2MemFree, 1) == OK)
-         {
-            m2Ptr->page0.xTiltGuide = (float) xNetGuideU;
-            m2Ptr->page0.yTiltGuide = (float) yNetGuideU;
-            m2Ptr->page0.zFocusGuide = 
-               (float) confine ((setPoint.zFocus + zNetGuideU), 
+         epicsMutexLock(m2MemFree);
+         m2Ptr->page0.xTiltGuide = (float) xNetGuideU;
+         m2Ptr->page0.yTiltGuide = (float) yNetGuideU;
+         m2Ptr->page0.zFocusGuide = 
+              (float) confine ((setPoint.zFocus + zNetGuideU), 
                      Z_FOCUS_LIMIT, -Z_FOCUS_LIMIT);
 
-            /* package data */
+         /* package data */
 
-            /* fetch command from message queue */
+         /* fetch command from message queue */
 
-            numBytes = msgQReceive (commandQId, (char *) &command, 
+         numBytes = epicsMessageQueueReceiveWithTimeout(commandQId, (char *) &command, 
                   sizeof (long), NO_WAIT);
 
-            if (numBytes == ERROR)
-               command = FAST_ONLY;
+         if (numBytes == ERROR)
+            command = FAST_ONLY;
 
-            if (command == CMD_TEST)
-               local.testRequest = 1;
+         if (command == CMD_TEST)
+            local.testRequest = 1;
 
-            m2Ptr->page0.commandCode = command;
-            m2Ptr->page0.NS = ++local.NS;
-            m2Ptr->page0.heartbeat = local.scsHeartbeat++;
-            m2Ptr->page0.checksum = 
-               checkSum ((void *) &m2Ptr->page0.NS, COMMAND_BLOCK_SIZE);
+         m2Ptr->page0.commandCode = command;
+         m2Ptr->page0.NS = ++local.NS;
+         m2Ptr->page0.heartbeat = local.scsHeartbeat++;
+         m2Ptr->page0.checksum = 
+            checkSum ((void *) &m2Ptr->page0.NS, COMMAND_BLOCK_SIZE);
 
-            semGive (m2MemFree);
+         epicsMutexUnlock(m2MemFree);
 
-            /* print command to screen for testing */
+         /* print command to screen for testing */
 
-            if ((command > POSITION) && (debugLevel == DEBUG_MIN))
-            {
-               sprintf (message, "sent command =  %s", m2CmdName[command]);
-               logMsg ("%s (%d)\n", (int)message, (int)command, 
-                     0, 0, 0, 0);
-            }
-
-            /* flag availability of new data */
-            semGive (scsDataAvailable);
-         }
-         else
+         if ((command > POSITION) && (debugLevel == DEBUG_MIN))
          {
-            errorLog ("processGuides - m2MemFree timeout", 1, ON);
+            errlogPrintf("sent command =  %s (%d)\n", m2CmdName[command], (int)command);
          }
+
+         /* flag availability of new data */
+         epicsEventSignal(scsDataAvailable);
       }
+   
 
       /* flag that fast transmission is complete and slow updates may occur */
 
@@ -1716,7 +1696,8 @@ void processGuides (void) {
          continue;
       }
       cbTime[cbCounter] = cbTimeStamp;
-      cbTick[cbCounter] = tickGet();
+      // cbTick[cbCounter] = tickGet();
+
 
       /* Here is all the P2 specific stuff */
       cbXRawGuide[cbCounter] = scsBase->pwfs2.z1;
@@ -1824,7 +1805,7 @@ void slowTransmit (void)
    {
       if (localPtr == (commandBlock *) NULL)
       {
-         errlogiPrintf("slowTransmit - localPtr is NULL\n", 1, ON);
+         errorLog("slowTransmit - localPtr is NULL\n", 1, ON);
          continue;
       }
 
@@ -1833,308 +1814,272 @@ void slowTransmit (void)
 
       epicsEventMustWait(slowUpdate);
 
-         /* prepare the TCS demands, interpolate if following */
+      /* prepare the TCS demands, interpolate if following */
 
-         if (scsState == MOVING && followOn == ON)
+      if (scsState == MOVING && followOn == ON)
+      {
+         if (timeNow (&timeStamp) == OK)
          {
-            if (timeNow (&timeStamp) == OK)
-            {
-               if (semTake (setPointFree, SEM_TIMEOUT) == OK)
-               {
-                  setPoint.xTiltA = getInterpolation (AX, timeStamp);
-                  setPoint.yTiltA = getInterpolation (AY, timeStamp);
-                  setPoint.xTiltB = getInterpolation (BX, timeStamp);
-                  setPoint.yTiltB = getInterpolation (BY, timeStamp);
-                  setPoint.xTiltC = getInterpolation (CX, timeStamp);
-                  setPoint.yTiltC = getInterpolation (CY, timeStamp);
-                  setPoint.zFocus = getInterpolation (Z, timeStamp);
-                  setPoint.xPosition = tcs.xPosition;
-                  setPoint.yPosition = tcs.yPosition;
-
-                  semGive (setPointFree);
-               }
-               else
-               {
-                  errorLog ("slowTransmit - setPointFree timeout", 1, ON);
-               }
-            }
-            else
-            {
-               errorLog ("slowTransmit - error reading timeStamp", 1, ON);
-            }
-            if (timeNowC (TAI, 3, c) == 0) {
-               sprintf (cemtime, "%d%2.2d%2.2dT%2.2d%2.2d%2.2d", c[0], c[1], c[2], c[3], c[4], c[5]); /* ISO8601 format */
-
-            }
-
-            else
-            {
-               strncpy (cemtime, "time read err", CEM_TIME_SIZE - 1);
-            }
-
-            if (mytimeshow) {
-
-               printf("mytime %s\n", cemtime);
-            }
-
-         }
-         else if (followOn == ON) {
-            logMsg("Warning: tcs demands ignored in follow mode!",0, 0, 0, 0, 0, 0);
-         }
-
-         /* check for position update */
-
-         if (positionUpdate == TRUE)
-         {
-            positionUpdate = FALSE;
-            writeCommand(POSITION);
-         }
-
-         if (scstimeUpdate == 1) {
-            writeCommand(SCS_TIME_UPDATE);
-            scstimeUpdate = 0;
-         }
-
-         /* copy current SCS internal buffer to local buffer */
-
-         if (semTake(refMemFree, SEM_TIMEOUT) == OK)
-         {
-            /* before 10sep: localCommandBlock = *(memMap *)scsPtr; */
-            localCommandBlock = *(commandBlock *)&(scsPtr->page0);
-            semGive(refMemFree);
-         }
-
-         /* write demands to reflective memory interface */
-
-         if (simLevel == 0)
-         {
-            if (interlockFlag != ON)
-            {
-
-               switch (jogBeam)
-               {
-                  case BEAMB:
-                     scsBase->page0.AxTilt = 
-                        (float) confine (setPoint.xTiltB, X_TILT_LIMIT, 
-                              -X_TILT_LIMIT);
-                     scsBase->page0.AyTilt = 
-                        (float) confine (setPoint.yTiltB, Y_TILT_LIMIT,
-                              -Y_TILT_LIMIT);
-                     break;
-
-                  case BEAMC:
-                     scsBase->page0.AxTilt = 
-                        (float) confine (setPoint.xTiltC, X_TILT_LIMIT, 
-                              -X_TILT_LIMIT);
-                     scsBase->page0.AyTilt = 
-                        (float) confine (setPoint.yTiltC, Y_TILT_LIMIT, 
-                              -Y_TILT_LIMIT);
-                     break;
-
-                  default:
-                     scsBase->page0.AxTilt = 
-                        (float) confine (setPoint.xTiltA, X_TILT_LIMIT, 
-                              -X_TILT_LIMIT);
-                     scsBase->page0.AyTilt = 
-                        (float) confine (setPoint.yTiltA, Y_TILT_LIMIT, 
-                              -Y_TILT_LIMIT);
-               }
-               scsBase->page0.BxTilt = 
-                  (float) confine (setPoint.xTiltB, X_TILT_LIMIT, 
-                        -X_TILT_LIMIT);
-               scsBase->page0.ByTilt = 
-                  (float) confine (setPoint.yTiltB, Y_TILT_LIMIT, 
-                        -Y_TILT_LIMIT);
-
-               scsBase->page0.CxTilt = 
-                  (float) confine (setPoint.xTiltC, X_TILT_LIMIT, 
-                        -X_TILT_LIMIT);
-               scsBase->page0.CyTilt = 
-                  (float) confine (setPoint.yTiltC, Y_TILT_LIMIT, 
-                        -Y_TILT_LIMIT);
-
-               scsBase->page0.xDemand = (float) setPoint.xPosition;
-               scsBase->page0.yDemand = (float) setPoint.yPosition;
-            }
-            else
-            {
-               /*
-                * interlocks set, adjust demands to current position
-                */
-
-               scsBase->page0.AxTilt = lockPosition.xTilt;
-               scsBase->page0.BxTilt = lockPosition.xTilt;
-               scsBase->page0.CxTilt = lockPosition.xTilt;
-               scsBase->page0.xTiltGuide = 0.0;
-
-               scsBase->page0.AyTilt = lockPosition.yTilt;
-               scsBase->page0.ByTilt = lockPosition.yTilt;
-               scsBase->page0.CyTilt = lockPosition.yTilt;
-               scsBase->page0.yTiltGuide = 0.0;
-
-               scsBase->page0.zFocusGuide = lockPosition.zFocus;
-
-               scsBase->page0.xDemand = lockPosition.xPos;
-               scsBase->page0.yDemand = lockPosition.yPos;
-            }
-
-            scsBase->page0.centralBaffle = localPtr->centralBaffle;
-            scsBase->page0.deployBaffle = localPtr->deployBaffle;
-            scsBase->page0.chopProfile = localPtr->chopProfile;
-            scsBase->page0.chopFrequency = localPtr->chopFrequency;
-            scsBase->page0.chopDutyCycle = localPtr->chopDutyCycle;
-            scsBase->page0.xTiltTolerance = localPtr->xTiltTolerance;
-            scsBase->page0.yTiltTolerance = localPtr->yTiltTolerance;
-            scsBase->page0.zFocusTolerance = localPtr->zFocusTolerance;
-            scsBase->page0.xPositionTolerance = 
-               localPtr->xPositionTolerance;
-            scsBase->page0.yPositionTolerance = 
-               localPtr->yPositionTolerance;
-            scsBase->page0.bandwidth = localPtr->bandwidth;
-            scsBase->page0.xTiltGain = localPtr->xTiltGain;
-            scsBase->page0.yTiltGain = localPtr->yTiltGain;
-            scsBase->page0.zFocusGain = localPtr->zFocusGain;
-            scsBase->page0.xTiltShift = localPtr->xTiltShift;
-            scsBase->page0.yTiltShift = localPtr->yTiltShift;
-            scsBase->page0.zFocusShift = localPtr->zFocusShift;
-            scsBase->page0.xTiltSmooth = localPtr->xTiltSmooth;
-            scsBase->page0.yTiltSmooth = localPtr->yTiltSmooth;
-            scsBase->page0.zFocusSmooth = localPtr->zFocusSmooth;
-            scsBase->page0.xTcsMinRange = localPtr->xTcsMinRange;
-            scsBase->page0.yTcsMinRange = localPtr->yTcsMinRange;
-            scsBase->page0.xTcsMaxRange = localPtr->xTcsMaxRange;
-            scsBase->page0.yTcsMaxRange = localPtr->yTcsMaxRange;
-            scsBase->page0.xPMinRange = localPtr->xPMinRange;
-            scsBase->page0.yPMinRange = localPtr->yPMinRange;
-            scsBase->page0.xPMaxRange = localPtr->xPMaxRange;
-            scsBase->page0.yPMaxRange = localPtr->yPMaxRange;
-            scsBase->page0.follower = localPtr->follower;
-            scsBase->page0.foldir = localPtr->foldir;
-            scsBase->page0.followersteps = localPtr->followersteps;
-            scsBase->page0.offloader = localPtr->offloader;
-            scsBase->page0.ofldir = localPtr->ofldir;
-            scsBase->page0.offloadersteps = localPtr->offloadersteps;
-            scsBase->page0.cbafdir = localPtr->cbafdir;
-            scsBase->page0.cbsteps = localPtr->cbsteps;
-            scsBase->page0.deployable_baffle = localPtr->deployable_baffle;
-            scsBase->page0.dbafdir = localPtr->dbafdir;
-            scsBase->page0.dbsteps = localPtr->dbsteps;
-            scsBase->page0.xy_motor = localPtr->xy_motor;
-            scsBase->page0.xydir = localPtr->xydir;
-            scsBase->page0.xysteps = localPtr->xysteps;
-            scsBase->page0.xyPositionDeadband = localPtr->xyPositionDeadband;
-            strncpy (scsBase->page0.scsTime, cemtime, CEM_TIME_SIZE - 1);
-
+            epicsMutexLock(setPointFree);
+            setPoint.xTiltA = getInterpolation (AX, timeStamp);
+            setPoint.yTiltA = getInterpolation (AY, timeStamp);
+            setPoint.xTiltB = getInterpolation (BX, timeStamp);
+            setPoint.yTiltB = getInterpolation (BY, timeStamp);
+            setPoint.xTiltC = getInterpolation (CX, timeStamp);
+            setPoint.yTiltC = getInterpolation (CY, timeStamp);
+            setPoint.zFocus = getInterpolation (Z, timeStamp);
+            setPoint.xPosition = tcs.xPosition;
+            setPoint.yPosition = tcs.yPosition;
+            epicsMutexUnlock(setPointFree);
          }
          else
          {
-            /* simulation active */
+            errorLog ("slowTransmit - error reading timeStamp", 1, ON);
+         }
+         if (timeNowC (TAI, 3, c) == 0) {
+            sprintf (cemtime, "%d%2.2d%2.2dT%2.2d%2.2d%2.2d", c[0], c[1], c[2], c[3], c[4], c[5]); /* ISO8601 format */
 
-            if (semTake (m2MemFree, SEM_TIMEOUT) == OK)
+         }
+
+         else
+         {
+            strncpy (cemtime, "time read err", CEM_TIME_SIZE - 1);
+         }
+
+         if (mytimeshow) {
+
+            printf("mytime %s\n", cemtime);
+         }
+
+      }
+      else if (followOn == ON) {
+         errlogMessage("Warning: tcs demands ignored in follow mode!");
+      }
+
+      /* check for position update */
+
+      if (positionUpdate == TRUE)
+      {
+         positionUpdate = FALSE;
+         writeCommand(POSITION);
+      }
+
+      if (scstimeUpdate == 1) {
+         writeCommand(SCS_TIME_UPDATE);
+         scstimeUpdate = 0;
+      }
+
+      /* copy current SCS internal buffer to local buffer */
+      epicsMutexLock(refMemFree);
+      /* before 10sep: localCommandBlock = *(memMap *)scsPtr; */
+      localCommandBlock = *(commandBlock *)&(scsPtr->page0);
+      epicsMutexUnlock(refMemFree);
+
+      /* write demands to reflective memory interface */
+
+      if (simLevel == 0)
+      {
+         if (interlockFlag != ON)
+         {
+
+            switch (jogBeam)
             {
-               if (interlockFlag != ON)
-               {
-                  switch(jogBeam)
-                  {
-                     case BEAMB:
-                        m2Ptr->page0.AxTilt = 
-                           (float) confine (setPoint.xTiltB, 
-                                 X_TILT_LIMIT, -X_TILT_LIMIT);
-                        m2Ptr->page0.AyTilt = 
-                           (float) confine (setPoint.yTiltB, 
-                                 Y_TILT_LIMIT, -Y_TILT_LIMIT);
-                        break;
+               case BEAMB:
+                  scsBase->page0.AxTilt = 
+                     (float) confine (setPoint.xTiltB, X_TILT_LIMIT, 
+                           -X_TILT_LIMIT);
+                  scsBase->page0.AyTilt = 
+                     (float) confine (setPoint.yTiltB, Y_TILT_LIMIT,
+                           -Y_TILT_LIMIT);
+                  break;
 
-                     case BEAMC:
-                        m2Ptr->page0.AxTilt = 
-                           (float) confine (setPoint.xTiltC, 
-                                 X_TILT_LIMIT, -X_TILT_LIMIT);
-                        m2Ptr->page0.AyTilt = 
-                           (float) confine (setPoint.yTiltC, 
-                                 Y_TILT_LIMIT, -Y_TILT_LIMIT);
-                        break;
-
-                     default:
-                        m2Ptr->page0.AxTilt = 
-                           (float) confine (setPoint.xTiltA, 
-                                 X_TILT_LIMIT, -X_TILT_LIMIT);
-                        m2Ptr->page0.AyTilt = 
-                           (float) confine (setPoint.yTiltA, 
-                                 Y_TILT_LIMIT, -Y_TILT_LIMIT);
-
-                  }
-
-                  m2Ptr->page0.BxTilt = 
-                     (float) confine (setPoint.xTiltB, 
-                           X_TILT_LIMIT, -X_TILT_LIMIT);
-                  m2Ptr->page0.ByTilt = 
-                     (float) confine (setPoint.yTiltB,            
-                           Y_TILT_LIMIT, -Y_TILT_LIMIT);
-
-                  m2Ptr->page0.CxTilt = 
+               case BEAMC:
+                  scsBase->page0.AxTilt = 
                      (float) confine (setPoint.xTiltC, X_TILT_LIMIT, 
                            -X_TILT_LIMIT);
-                  m2Ptr->page0.CyTilt = 
+                  scsBase->page0.AyTilt = 
                      (float) confine (setPoint.yTiltC, Y_TILT_LIMIT, 
                            -Y_TILT_LIMIT);
+                  break;
 
-                  m2Ptr->page0.xDemand = (float) setPoint.xPosition;
-                  m2Ptr->page0.yDemand = (float) setPoint.yPosition;
-               }
-               else
-               {
-                  /*
-                   * interlocks set, adjust demands to current position
-                   */
-
-                  m2Ptr->page0.AxTilt = lockPosition.xTilt;
-                  m2Ptr->page0.BxTilt = lockPosition.xTilt;
-                  m2Ptr->page0.CxTilt = lockPosition.xTilt;
-                  m2Ptr->page0.xTiltGuide = 0.0;
-
-                  m2Ptr->page0.AyTilt = lockPosition.yTilt;
-                  m2Ptr->page0.ByTilt = lockPosition.yTilt;
-                  m2Ptr->page0.CyTilt = lockPosition.yTilt;
-                  m2Ptr->page0.yTiltGuide = 0.0;
-
-                  m2Ptr->page0.zFocusGuide = lockPosition.zFocus;
-
-                  m2Ptr->page0.xDemand = lockPosition.xPos;
-                  m2Ptr->page0.yDemand = lockPosition.yPos;
-               }
-
-               m2Ptr->page0.centralBaffle = localPtr->centralBaffle;
-               m2Ptr->page0.deployBaffle = localPtr->deployBaffle;
-               m2Ptr->page0.chopProfile = localPtr->chopProfile;
-               m2Ptr->page0.chopFrequency = localPtr->chopFrequency;
-               m2Ptr->page0.chopDutyCycle = localPtr->chopDutyCycle;
-               m2Ptr->page0.xTiltTolerance = localPtr->xTiltTolerance;
-               m2Ptr->page0.yTiltTolerance = localPtr->yTiltTolerance;
-               m2Ptr->page0.zFocusTolerance = localPtr->zFocusTolerance;
-               m2Ptr->page0.xPositionTolerance = 
-                  localPtr->xPositionTolerance;
-               m2Ptr->page0.yPositionTolerance = 
-                  localPtr->yPositionTolerance;
-               m2Ptr->page0.xyPositionDeadband = 
-                  localPtr->xyPositionDeadband;
-               m2Ptr->page0.bandwidth = localPtr->bandwidth;
-               m2Ptr->page0.xTiltGain = localPtr->xTiltGain;
-               m2Ptr->page0.yTiltGain = localPtr->yTiltGain;
-               m2Ptr->page0.zFocusGain = localPtr->zFocusGain;
-               m2Ptr->page0.xTiltShift = localPtr->xTiltShift;
-               m2Ptr->page0.yTiltShift = localPtr->yTiltShift;
-               m2Ptr->page0.zFocusShift = localPtr->zFocusShift;
-               m2Ptr->page0.xTiltSmooth = localPtr->xTiltSmooth;
-               m2Ptr->page0.yTiltSmooth = localPtr->yTiltSmooth;
-               m2Ptr->page0.zFocusSmooth = localPtr->zFocusSmooth;
-               /* some missing here */
-               semGive (m2MemFree);
+               default:
+                  scsBase->page0.AxTilt = 
+                     (float) confine (setPoint.xTiltA, X_TILT_LIMIT, 
+                           -X_TILT_LIMIT);
+                  scsBase->page0.AyTilt = 
+                     (float) confine (setPoint.yTiltA, Y_TILT_LIMIT, 
+                           -Y_TILT_LIMIT);
             }
-            else
-            {
-               errorLog ("slowTransmit - m2MemFree timeout", 1, ON);
-            }
+            scsBase->page0.BxTilt = (float) confine (setPoint.xTiltB, X_TILT_LIMIT, -X_TILT_LIMIT);
+            scsBase->page0.ByTilt = (float) confine (setPoint.yTiltB, Y_TILT_LIMIT, -Y_TILT_LIMIT);
+            scsBase->page0.CxTilt = (float) confine (setPoint.xTiltC, X_TILT_LIMIT, -X_TILT_LIMIT);
+            scsBase->page0.CyTilt = (float) confine (setPoint.yTiltC, Y_TILT_LIMIT, -Y_TILT_LIMIT);
+            scsBase->page0.xDemand = (float) setPoint.xPosition;
+            scsBase->page0.yDemand = (float) setPoint.yPosition;
          }
+         else
+         {
+            /*
+             * interlocks set, adjust demands to current position
+             */
+
+            scsBase->page0.AxTilt = lockPosition.xTilt;
+            scsBase->page0.BxTilt = lockPosition.xTilt;
+            scsBase->page0.CxTilt = lockPosition.xTilt;
+            scsBase->page0.xTiltGuide = 0.0;
+
+            scsBase->page0.AyTilt = lockPosition.yTilt;
+            scsBase->page0.ByTilt = lockPosition.yTilt;
+            scsBase->page0.CyTilt = lockPosition.yTilt;
+            scsBase->page0.yTiltGuide = 0.0;
+
+            scsBase->page0.zFocusGuide = lockPosition.zFocus;
+
+            scsBase->page0.xDemand = lockPosition.xPos;
+            scsBase->page0.yDemand = lockPosition.yPos;
+         }
+
+         scsBase->page0.centralBaffle = localPtr->centralBaffle;
+         scsBase->page0.deployBaffle = localPtr->deployBaffle;
+         scsBase->page0.chopProfile = localPtr->chopProfile;
+         scsBase->page0.chopFrequency = localPtr->chopFrequency;
+         scsBase->page0.chopDutyCycle = localPtr->chopDutyCycle;
+         scsBase->page0.xTiltTolerance = localPtr->xTiltTolerance;
+         scsBase->page0.yTiltTolerance = localPtr->yTiltTolerance;
+         scsBase->page0.zFocusTolerance = localPtr->zFocusTolerance;
+         scsBase->page0.xPositionTolerance = 
+            localPtr->xPositionTolerance;
+         scsBase->page0.yPositionTolerance = 
+            localPtr->yPositionTolerance;
+         scsBase->page0.bandwidth = localPtr->bandwidth;
+         scsBase->page0.xTiltGain = localPtr->xTiltGain;
+         scsBase->page0.yTiltGain = localPtr->yTiltGain;
+         scsBase->page0.zFocusGain = localPtr->zFocusGain;
+         scsBase->page0.xTiltShift = localPtr->xTiltShift;
+         scsBase->page0.yTiltShift = localPtr->yTiltShift;
+         scsBase->page0.zFocusShift = localPtr->zFocusShift;
+         scsBase->page0.xTiltSmooth = localPtr->xTiltSmooth;
+         scsBase->page0.yTiltSmooth = localPtr->yTiltSmooth;
+         scsBase->page0.zFocusSmooth = localPtr->zFocusSmooth;
+         scsBase->page0.xTcsMinRange = localPtr->xTcsMinRange;
+         scsBase->page0.yTcsMinRange = localPtr->yTcsMinRange;
+         scsBase->page0.xTcsMaxRange = localPtr->xTcsMaxRange;
+         scsBase->page0.yTcsMaxRange = localPtr->yTcsMaxRange;
+         scsBase->page0.xPMinRange = localPtr->xPMinRange;
+         scsBase->page0.yPMinRange = localPtr->yPMinRange;
+         scsBase->page0.xPMaxRange = localPtr->xPMaxRange;
+         scsBase->page0.yPMaxRange = localPtr->yPMaxRange;
+         scsBase->page0.follower = localPtr->follower;
+         scsBase->page0.foldir = localPtr->foldir;
+         scsBase->page0.followersteps = localPtr->followersteps;
+         scsBase->page0.offloader = localPtr->offloader;
+         scsBase->page0.ofldir = localPtr->ofldir;
+         scsBase->page0.offloadersteps = localPtr->offloadersteps;
+         scsBase->page0.cbafdir = localPtr->cbafdir;
+         scsBase->page0.cbsteps = localPtr->cbsteps;
+         scsBase->page0.deployable_baffle = localPtr->deployable_baffle;
+         scsBase->page0.dbafdir = localPtr->dbafdir;
+         scsBase->page0.dbsteps = localPtr->dbsteps;
+         scsBase->page0.xy_motor = localPtr->xy_motor;
+         scsBase->page0.xydir = localPtr->xydir;
+         scsBase->page0.xysteps = localPtr->xysteps;
+         scsBase->page0.xyPositionDeadband = localPtr->xyPositionDeadband;
+         strncpy (scsBase->page0.scsTime, cemtime, CEM_TIME_SIZE - 1);
+
+      }
+      else
+      {
+         /* simulation active */
+
+         epicsMutexLock(m2MemFree);
+         if (interlockFlag != ON)
+         {
+               switch(jogBeam)
+               {
+                  case BEAMB:
+                     m2Ptr->page0.AxTilt = 
+                        (float) confine (setPoint.xTiltB, 
+                              X_TILT_LIMIT, -X_TILT_LIMIT);
+                     m2Ptr->page0.AyTilt = 
+                        (float) confine (setPoint.yTiltB, 
+                              Y_TILT_LIMIT, -Y_TILT_LIMIT);
+                     break;
+
+                  case BEAMC:
+                     m2Ptr->page0.AxTilt = 
+                        (float) confine (setPoint.xTiltC, 
+                              X_TILT_LIMIT, -X_TILT_LIMIT);
+                     m2Ptr->page0.AyTilt = 
+                        (float) confine (setPoint.yTiltC, 
+                              Y_TILT_LIMIT, -Y_TILT_LIMIT);
+                     break;
+
+                  default:
+                     m2Ptr->page0.AxTilt = 
+                        (float) confine (setPoint.xTiltA, 
+                              X_TILT_LIMIT, -X_TILT_LIMIT);
+                     m2Ptr->page0.AyTilt = 
+                        (float) confine (setPoint.yTiltA, 
+                              Y_TILT_LIMIT, -Y_TILT_LIMIT);
+
+            }
+
+            m2Ptr->page0.BxTilt = (float) confine (setPoint.xTiltB, X_TILT_LIMIT, -X_TILT_LIMIT);
+            m2Ptr->page0.ByTilt = (float) confine (setPoint.yTiltB, Y_TILT_LIMIT, -Y_TILT_LIMIT);
+            m2Ptr->page0.CxTilt = (float) confine (setPoint.xTiltC, X_TILT_LIMIT, -X_TILT_LIMIT);
+            m2Ptr->page0.CyTilt = (float) confine (setPoint.yTiltC, Y_TILT_LIMIT, -Y_TILT_LIMIT);
+            m2Ptr->page0.xDemand = (float) setPoint.xPosition;
+            m2Ptr->page0.yDemand = (float) setPoint.yPosition;
+         }
+         else
+         {
+            /*
+             * interlocks set, adjust demands to current position
+             */
+
+            m2Ptr->page0.AxTilt = lockPosition.xTilt;
+            m2Ptr->page0.BxTilt = lockPosition.xTilt;
+            m2Ptr->page0.CxTilt = lockPosition.xTilt;
+            m2Ptr->page0.xTiltGuide = 0.0;
+
+            m2Ptr->page0.AyTilt = lockPosition.yTilt;
+            m2Ptr->page0.ByTilt = lockPosition.yTilt;
+            m2Ptr->page0.CyTilt = lockPosition.yTilt;
+            m2Ptr->page0.yTiltGuide = 0.0;
+
+            m2Ptr->page0.zFocusGuide = lockPosition.zFocus;
+
+            m2Ptr->page0.xDemand = lockPosition.xPos;
+            m2Ptr->page0.yDemand = lockPosition.yPos;
+         }
+
+         m2Ptr->page0.centralBaffle = localPtr->centralBaffle;
+         m2Ptr->page0.deployBaffle = localPtr->deployBaffle;
+         m2Ptr->page0.chopProfile = localPtr->chopProfile;
+         m2Ptr->page0.chopFrequency = localPtr->chopFrequency;
+         m2Ptr->page0.chopDutyCycle = localPtr->chopDutyCycle;
+         m2Ptr->page0.xTiltTolerance = localPtr->xTiltTolerance;
+         m2Ptr->page0.yTiltTolerance = localPtr->yTiltTolerance;
+         m2Ptr->page0.zFocusTolerance = localPtr->zFocusTolerance;
+         m2Ptr->page0.xPositionTolerance = 
+            localPtr->xPositionTolerance;
+         m2Ptr->page0.yPositionTolerance = 
+               localPtr->yPositionTolerance;
+         m2Ptr->page0.xyPositionDeadband = 
+               localPtr->xyPositionDeadband;
+         m2Ptr->page0.bandwidth = localPtr->bandwidth;
+         m2Ptr->page0.xTiltGain = localPtr->xTiltGain;
+         m2Ptr->page0.yTiltGain = localPtr->yTiltGain;
+         m2Ptr->page0.zFocusGain = localPtr->zFocusGain;
+         m2Ptr->page0.xTiltShift = localPtr->xTiltShift;
+         m2Ptr->page0.yTiltShift = localPtr->yTiltShift;
+         m2Ptr->page0.zFocusShift = localPtr->zFocusShift;
+         m2Ptr->page0.xTiltSmooth = localPtr->xTiltSmooth;
+         m2Ptr->page0.yTiltSmooth = localPtr->yTiltSmooth;
+         m2Ptr->page0.zFocusSmooth = localPtr->zFocusSmooth;
+         /* some missing here */
+         epicsMutexUnlock(m2MemFree);
+      }
    } // for(;;)
 }
 
@@ -2190,7 +2135,7 @@ void tiltReceive (void)
    static long m2Heartbeat = 0;
    static long myTiltRxErrcount = 0;
    long localCommandCode = FAST_ONLY;
-   char message[200];
+   //char message[200];
 
 
    for (;;) {
@@ -2217,9 +2162,9 @@ void tiltReceive (void)
              * state code
              */
              if (localCommandCode != FAST_ONLY) {
-                if (msgQSend (receiveQId, (char *) &localCommandCode,
-                              sizeof (long), SEM_TIMEOUT, 
-                              MSG_PRI_NORMAL) == ERROR)
+                if (epicsMessageQueueSendWithTimeout(
+                        receiveQId, (char *) &localCommandCode,
+                        sizeof(long), SEM_TIMEOUT) == ERROR)
                 {
                    errorLog ("timeout appending command to receiveQId", 1, ON);
                    if (myTiltRxErrcount++ < 100) 
@@ -2244,19 +2189,17 @@ void tiltReceive (void)
            m2Ptr->page1.checksum = checkSum ((void *) &m2Ptr->page1.NR, 
                  STATUS_BLOCK_SIZE);
 
-           semGive (m2MemFree);
+           epicsMutexUnlock(m2MemFree);
 
            /* flag status data available */
-           semGive (scsReceiveNow);
+           epicsEventSignal(scsReceiveNow);
 
             /* print command to screen for testing */
             if ((localCommandCode > POSITION) & 
                   (debugLevel > DEBUG_MIN) &
                   (debugLevel <= DEBUG_MED)) {
-               sprintf (message, "sim receive command =  %s", 
-                     m2CmdName[localCommandCode]);
-               logMsg ("%s (%d)\n", (int) message, (int)localCommandCode, 
-                     0, 0, 0, 0);
+               errlogPrintf ("sim receive command =  %s (%d)\n", 
+                     m2CmdName[localCommandCode], (int)localCommandCode); 
             }
          }
       else {
@@ -2315,7 +2258,7 @@ void scsReceive (void)
 
    for (;;)
    {
-      if (semTake (scsReceiveNow, RECEIVE_TIMEOUT) == OK)
+      if (epicsEventWaitWithTimeout(scsReceiveNow, RECEIVE_TIMEOUT) == epicsEventWaitOK)
       {
          if (simLevel == 0)
          {
@@ -2341,20 +2284,12 @@ void scsReceive (void)
          else
          {
             /* simulation active, get data from m2 buffers */
+            epicsMutexLock(m2MemFree);
+            localStatusBlock = *(statusBlock *) & m2Ptr->page1;
+            epicsMutexUnlock(m2MemFree);
 
-            if (semTake (m2MemFree, SEM_TIMEOUT) == OK)
-            {
-               localStatusBlock = *(statusBlock *) & m2Ptr->page1;
-               semGive (m2MemFree);
-
-               /* grab the engineering data for logging */
-
-               m2LoggerTask (m2Ptr);
-            }
-            else
-            {
-               errorLog ("scsReceive - m2MemFree timeout", 1, ON);
-            }
+            /* grab the engineering data for logging */
+            m2LoggerTask (m2Ptr);
          }
 
          /* check the received block */
@@ -2379,19 +2314,12 @@ void scsReceive (void)
             else
             {
                /* all is well, copy the checked data to the scs buffer */
-
                local.m2Heartbeat = localStatusBlock.heartbeat;
 
-               if (semTake (refMemFree, SEM_TIMEOUT) == OK)
-               {
-                  *(statusBlock *) & scsPtr->page1 = localStatusBlock;
-                  semGive (refMemFree);
+               epicsMutexLock(refMemFree);
+               *(statusBlock *) & scsPtr->page1 = localStatusBlock;
+               epicsMutexUnlock(refMemFree);
 
-               }
-               else
-               {
-                  errorLog ("scsReceive - refmemfree timeout", 1, ON);
-               }
 
                if (local.NS != localStatusBlock.NR)
                {
@@ -2416,7 +2344,7 @@ void scsReceive (void)
             {
                sprintf(errBuff, "checksum calc = %lx, received = %lx\n", 
                      simCheck, localStatusBlock.checksum);
-               logMsg("%s", (int)errBuff, 0, 0, 0, 0, 0);
+               errlogPrintf("%s", errBuff);
             }
             errorLog ("scsReceive - checksum fail", 1, ON);
          }
@@ -2424,7 +2352,7 @@ void scsReceive (void)
       else
       {
          errorLog ("scsReceive - scsReceiveNow timeout", 1, ON);
-         logMsg ("scsReceive - scsReceiveNow timeout\n", 0, 0, 0, 0, 0, 0);
+         errlogMessage("rscsReceive - scsReceiveNow timeout\n");
       }
    }
 }
@@ -2498,118 +2426,106 @@ int checkTiltStatus (void)
 
    /* grab copy of m2 status word */
 
-   if (semTake (refMemFree, SEM_TIMEOUT) == OK)
+   epicsMutexLock(refMemFree);
+   tiltStatusWord = scsPtr->page1.statusWord;
+   epicsMutexUnlock(refMemFree);
+
+   /* if a fault has arisen that wasn't present before, set health bad */
+   if (tiltStatusWord.flags.health != 0 && errorLatch.health == 0)
    {
-      tiltStatusWord = scsPtr->page1.statusWord;
-      semGive (refMemFree);
-
-      /* if a fault has arisen that wasn't present before, set health bad */
-
-      if (tiltStatusWord.flags.health != 0 && errorLatch.health == 0)
-      {
-         errorLog ("M2 reports bad health", 0, ON);
-         reportHealth (BAD, "M2 reports bad health");
-         errorLatch.health = 1;
-      }
-      else if (tiltStatusWord.flags.sensorLimit != 0 &&  
-            errorLatch.sensorLimit == 0)
-      {
-         errorLog ("M2 sensors out of range", 0, ON);
-         reportHealth (BAD, "M2 sensors out of range");
-         errorLatch.sensorLimit = 1;
-      }
-      else if (tiltStatusWord.flags.actuatorLimit != 0 && 
-            errorLatch.actuatorLimit == 0)
-      {
-         errorLog ("M2 actuators out of range", 0, ON);
-         reportHealth (BAD, "M2 actuators out of range");
-         errorLatch.actuatorLimit = 1;
-      }
-      else if (tiltStatusWord.flags.thermalLimit != 0 && 
-            errorLatch.thermalLimit == 0)
-      {
-         errorLog ("M2 thermal overload", 0, ON);
-         reportHealth (BAD, "M2 thermal overload");
-         errorLatch.thermalLimit = 1;
-      }
-      else if (tiltStatusWord.flags.mirrorDspInt != 0 && 
-            errorLatch.mirrorDspInt == 0)
-      {
-         errorLog ("M2 invalid C31 interrupt on DSP board", 0, ON);
-         reportHealth (BAD, "M2 invalid C31 interrupt on DSP board");
-         errorLatch.mirrorDspInt = 1;
-      }
-      else if (tiltStatusWord.flags.vibDspInt != 0 && 
-            errorLatch.vibDspInt == 0)
-      {
-         errorLog ("M2 invalid C31 interrupt on vib ctrl board", 0, ON);
-         reportHealth (BAD, "M2 invalid C31 interrupt on vib ctrl board");
-         errorLatch.vibDspInt = 1;
-      }
-
-      /* check whether an existing health condition has recovered */
-
-      if (tiltStatusWord.flags.health == 0 && errorLatch.health == 1)
-      {
-         errorLatch.health = 0;
-         errorLatch.recover = 1;
-      }
-      else if (tiltStatusWord.flags.sensorLimit == 0 &&  
-            errorLatch.sensorLimit == 1)
-      {
-         errorLatch.sensorLimit = 0;
-         errorLatch.recover = 1;
-      }
-      else if (tiltStatusWord.flags.actuatorLimit == 0 && 
-            errorLatch.actuatorLimit == 1)
-      {
-         errorLatch.actuatorLimit = 0;
-         errorLatch.recover = 1;
-      }
-      else if (tiltStatusWord.flags.thermalLimit == 0 && 
-            errorLatch.thermalLimit == 1)
-      {
-         errorLatch.thermalLimit = 0;
-         errorLatch.recover = 1;
-      }
-      else if (tiltStatusWord.flags.mirrorDspInt == 0 && 
-            errorLatch.mirrorDspInt == 1)
-      {
-         errorLatch.mirrorDspInt = 0;
-         errorLatch.recover = 1;
-      }
-      else if (tiltStatusWord.flags.vibDspInt == 0 && 
-            errorLatch.vibDspInt == 1)
-      {
-         errorLatch.vibDspInt = 0;
-         errorLatch.recover = 1;
-      }
-
-      /* if at least one error condition has recovered, check whether 
-         health is now good */
-
-      if(errorLatch.recover == 1)
-      {
-         errorLatch.recover = 0;
-         if((errorLatch.health + errorLatch.sensorLimit +
-                  errorLatch.actuatorLimit + errorLatch.thermalLimit +
-                  errorLatch.mirrorDspInt + errorLatch.vibDspInt) == 0)
-         {
-            reportHealth(GOOD, "");
-         }
-      }
-
-      return (OK);
+      errorLog ("M2 reports bad health", 0, ON);
+      reportHealth (BAD, "M2 reports bad health");
+      errorLatch.health = 1;
    }
-   else
+   else if (tiltStatusWord.flags.sensorLimit != 0 &&  
+         errorLatch.sensorLimit == 0)
    {
-      /* if unable to access ref mem, raise an error and set health bad */
-      /* as there may be an error                                       */
-
-      errorLog ("checkTiltStatus - timeout on refMemFree access", 1, ON);
-      reportHealth (WARNING, "Timeout semaphore refMemFree");
-      return (ERROR);
+      errorLog ("M2 sensors out of range", 0, ON);
+      reportHealth (BAD, "M2 sensors out of range");
+      errorLatch.sensorLimit = 1;
    }
+   else if (tiltStatusWord.flags.actuatorLimit != 0 && 
+         errorLatch.actuatorLimit == 0)
+   {
+      errorLog ("M2 actuators out of range", 0, ON);
+      reportHealth (BAD, "M2 actuators out of range");
+      errorLatch.actuatorLimit = 1;
+   }
+   else if (tiltStatusWord.flags.thermalLimit != 0 && 
+         errorLatch.thermalLimit == 0)
+   {
+      errorLog ("M2 thermal overload", 0, ON);
+      reportHealth (BAD, "M2 thermal overload");
+      errorLatch.thermalLimit = 1;
+   }
+   else if (tiltStatusWord.flags.mirrorDspInt != 0 && 
+         errorLatch.mirrorDspInt == 0)
+   {
+      errorLog ("M2 invalid C31 interrupt on DSP board", 0, ON);
+      reportHealth (BAD, "M2 invalid C31 interrupt on DSP board");
+      errorLatch.mirrorDspInt = 1;
+   }
+   else if (tiltStatusWord.flags.vibDspInt != 0 && 
+         errorLatch.vibDspInt == 0)
+   {
+      errorLog ("M2 invalid C31 interrupt on vib ctrl board", 0, ON);
+      reportHealth (BAD, "M2 invalid C31 interrupt on vib ctrl board");
+      errorLatch.vibDspInt = 1;
+   }
+
+   /* check whether an existing health condition has recovered */
+
+   if (tiltStatusWord.flags.health == 0 && errorLatch.health == 1)
+   {
+      errorLatch.health = 0;
+      errorLatch.recover = 1;
+   }
+   else if (tiltStatusWord.flags.sensorLimit == 0 &&  
+         errorLatch.sensorLimit == 1)
+   {
+      errorLatch.sensorLimit = 0;
+      errorLatch.recover = 1;
+   }
+   else if (tiltStatusWord.flags.actuatorLimit == 0 && 
+         errorLatch.actuatorLimit == 1)
+   {
+      errorLatch.actuatorLimit = 0;
+      errorLatch.recover = 1;
+   }
+   else if (tiltStatusWord.flags.thermalLimit == 0 && 
+         errorLatch.thermalLimit == 1)
+   {
+      errorLatch.thermalLimit = 0;
+      errorLatch.recover = 1;
+   }
+   else if (tiltStatusWord.flags.mirrorDspInt == 0 && 
+         errorLatch.mirrorDspInt == 1)
+   {
+      errorLatch.mirrorDspInt = 0;
+      errorLatch.recover = 1;
+   }
+   else if (tiltStatusWord.flags.vibDspInt == 0 && 
+         errorLatch.vibDspInt == 1)
+   {
+      errorLatch.vibDspInt = 0;
+      errorLatch.recover = 1;
+   }
+
+   /* if at least one error condition has recovered, check whether 
+      health is now good */
+
+   if(errorLatch.recover == 1)
+   {
+      errorLatch.recover = 0;
+      if((errorLatch.health + errorLatch.sensorLimit +
+               errorLatch.actuatorLimit + errorLatch.thermalLimit +
+               errorLatch.mirrorDspInt + errorLatch.vibDspInt) == 0)
+      {
+         reportHealth(GOOD, "");
+      }
+   }
+
+   return (OK);
 }
 
 /* ===================================================================== */
@@ -2658,43 +2574,35 @@ int updateEventPage (int scsInPosition, int scsPresentBeam)
    int myScsInPosition = 0;
 
    /* Protect eventData access to the eventData structure */
-   if (semTake (eventDataSem, SEM_TIMEOUT) == OK) {
+   epicsMutexLock(eventDataSem); 
 
-      if (scsPresentBeam == BEAMA) {
+   if (scsPresentBeam == BEAMA) {
+      /*Only switch beam logic on high beam */
+      currentBeam = BEAMA;
 
-         /*Only switch beam logic on high beam */
-         currentBeam = BEAMA;
-
-         if (!guideOnA) 
-            myScsInPosition = 0;
-         else 
-            myScsInPosition = scsInPosition; 
-      }
-
-      else if (scsPresentBeam == BEAMB) {
-
-         /*Only switch beam logic on high beam */
-         currentBeam = BEAMB;
-
-         if (!guideOnB) 
-            myScsInPosition = 0;
-         else
-            myScsInPosition = scsInPosition;
-      }
-
-      else {
-         myScsInPosition = 0; /* Anything other than Beam A|B is invalid*/
-      }
-
-      eventData.inPosition = myScsInPosition;
-      eventData.currentBeam = currentBeam;
-      semGive (eventDataSem);
-   } 
-
-   else {
-      errorLog ("updateEventPage - eventDataSem timeout", 1, ON);
-      return (ERROR);
+      if (!guideOnA) 
+         myScsInPosition = 0;
+      else 
+         myScsInPosition = scsInPosition; 
    }
+   else if (scsPresentBeam == BEAMB) {
+
+      /*Only switch beam logic on high beam */
+      currentBeam = BEAMB;
+
+      if (!guideOnB) 
+         myScsInPosition = 0;
+      else
+         myScsInPosition = scsInPosition;
+   }
+   else {
+         myScsInPosition = 0; /* Anything other than Beam A|B is invalid*/
+   }
+
+   eventData.inPosition = myScsInPosition;
+   eventData.currentBeam = currentBeam;
+   epicsMutexUnlock(eventDataSem);
+
 
    nodeISR3 = -99;
    semFlush(guideUpdateNow);
@@ -2753,7 +2661,7 @@ long writeCommand (const long command)
 	{
 		taskDelay(sysClkRateGet()/3);  
 
-		if (msgQSend (commandQId, (char *) &localCommand, sizeof (long), 
+		if (epicsMessageQueueSend (commandQId, (char *) &localCommand, sizeof (long), 
 					SEM_TIMEOUT, MSG_PRI_NORMAL) == ERROR)
 		{
 			printf ("failed to append command message %s to message queue\n", 
@@ -2816,28 +2724,17 @@ static int frameConvert (converted *result,
 {
     /* check that frame structure has been initialised */
     if (f == NULL || result == NULL) {
-        logMsg("frame conversion pointers not initialised\n", 0, 0, 0, 0, 0 ,0);
+        errlogMessage("frame conversion pointers not initialised\n");
         return(ERROR);
     }
 
     /* access frame */
-    if (semTake(f->access, WFS_TIMEOUT) == OK) 
-    {
-        /* perform the conversion */
-
-        result->x = f->scaleX*(f->cosTheta*x - f->sinTheta*y) + f->offsetX;
-        result->y = f->scaleY*(f->sinTheta*x + f->cosTheta*y) + f->offsetY;
-        result->z = f->scaleZ * z;
-
-        semGive(f->access);
-        return (OK);
-
-    } else 
-    {
-        logMsg("frame convert - unable to get mutex for conversion frame\n", 
-            0, 0, 0, 0 ,0 ,0);
-        return(ERROR);
-    }
+    epicsMutexLock(f->access); 
+    /* perform the conversion */
+    result->x = f->scaleX*(f->cosTheta*x - f->sinTheta*y) + f->offsetX;
+    result->y = f->scaleY*(f->sinTheta*x + f->cosTheta*y) + f->offsetY;
+    result->z = f->scaleZ * z;
+    epicsMutexUnlock(f->access);
 }
 
 /* ===================================================================== */
@@ -2949,8 +2846,10 @@ int saveCb ()
 
     for ( i = cbCounter ; i < CB_RECORD_NB ; i ++ ) 
     {
-        fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
-		cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
+        //fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
+		//cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
+        fprintf ( pFile, "  3 %f %f %f %d\n", 
+		cbTime[i], cbP2Time[i], cbP2Interval[i], i);
         fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
 		cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
         fprintf ( pFile, "  7 %+4.2f %+4.2f %+4.2f\n", 
@@ -2973,8 +2872,10 @@ int saveCb ()
     /* write from beginning of array to newest data */
     for ( i = 0 ; i < cbCounter ; i ++ )
     {
-        fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
-		cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
+        //fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
+	//	cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
+        fprintf ( pFile, "  3 %f %f %f %d\n", 
+		cbTime[i], cbP2Time[i], cbP2Interval[i], i);
         fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
 		cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
         fprintf ( pFile, "  7 %+4.2f %+4.2f %+4.2f\n", 

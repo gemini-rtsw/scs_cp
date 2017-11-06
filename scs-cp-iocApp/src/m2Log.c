@@ -52,7 +52,7 @@ static int logInterval = 5; /* every 10 is not enough, but 1 will hang crate */
 /* Circular buffers for debugging what is going on in M2 */
 static int cbM2Counter = 0;
 static double cbTime[CB_RECORD_NB];
-static unsigned long cbTick[CB_RECORD_NB];
+//static unsigned long cbTick[CB_RECORD_NB];
 static float cbXTilt[CB_RECORD_NB]; 
 static float cbYTilt[CB_RECORD_NB];
 static float cbZfocus[CB_RECORD_NB];
@@ -193,7 +193,7 @@ long m2CircBufferTask (memMap *ptr)
 	return (ERROR);
     }
 
-    cbTick[cbM2Counter] = tickGet();
+    //cbTick[cbM2Counter] = tickGet();
     cbTime[cbM2Counter] = timeStamp;
     cbXTilt[cbM2Counter] = ptr->page1.xTilt; 
     cbYTilt[cbM2Counter] = ptr->page1.yTilt;
@@ -277,7 +277,8 @@ int saveM2Cb ()
     /* write out from oldest data to end of array */
     for ( i = cbM2Counter ; i < CB_RECORD_NB ; i ++ )
     {
-        fprintf ( pFile, "  3 %f %ld %d\n", cbTime[i], cbTick[i], i);
+        //fprintf ( pFile, "  3 %f %ld %d\n", cbTime[i], cbTick[i], i);
+        fprintf ( pFile, "  3 %f %d\n", cbTime[i], i);
         fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
             cbXTilt[i], cbYTilt[i], cbZfocus[i]);
         fprintf ( pFile, "  5 %+4.2f %+4.2f %+4.2f\n", 
@@ -312,7 +313,8 @@ int saveM2Cb ()
     /* write from beginning of array to newest data */
     for ( i = 0 ; i < cbM2Counter ; i ++ )
     {
-        fprintf ( pFile, "  3 %f %ld %d\n", cbTime[i], cbTick[i], i);
+        //fprintf ( pFile, "  3 %f %ld %d\n", cbTime[i], cbTick[i], i);
+        fprintf ( pFile, "  3 %f %d\n", cbTime[i], i);
         fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
             cbXTilt[i], cbYTilt[i], cbZfocus[i]);
         fprintf ( pFile, "  5 %+4.2f %+4.2f %+4.2f\n", 

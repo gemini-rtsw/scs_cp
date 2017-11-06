@@ -1,6 +1,4 @@
-/* $Id: config.c,v 1.10 2015/05/01 00:06:15 mrippa Exp $ */
 /* ===================================================================== */
-/* INDENT OFF */
 /*+
  *
  * FILENAME
@@ -53,24 +51,23 @@
  * 18-Jan-2000: Added CADdriveFollower 
  * 01-Feb-2000: Added CADdrive* routines for offloaders, cbaf, dbafs and xy
  * 06-Mar-2000: Added CAD*PidControl to allow toggling of PID control
+ * 26-Oct-2017: Begin conversion to EPICS OSI (mdw)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
-
-#include "config.h"
-#include "utilities.h"      /* For setPid, errorLog, debugLevel */
-#include "archive.h"        /* For cadDirLog, refMemFree */
-#include "control.h"        /* For writeCommand, scsPtr, interlockFlag, 
-                                       guideType */
 
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 
 #include <cad.h>
-#include <logLib.h>
 #include <tcslib.h>
+
+#include "config.h"
+#include "utilities.h"      /* For setPid, errorLog, debugLevel */
+#include "archive.h"        /* For cadDirLog, refMemFree */
+#include "control.h"        /* For writeCommand, scsPtr, interlockFlag, 
+                                       guideType */
 
 /* Define limits for PID parameters */
 
@@ -175,7 +172,6 @@ char *depBaffle[] =
 };
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADmovebaffle
@@ -223,7 +219,6 @@ char *depBaffle[] =
  *
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADmoveBaffle (struct cadRecord * pcad)
@@ -283,23 +278,15 @@ long    CADmoveBaffle (struct cadRecord * pcad)
             *(long *) pcad->valb = (long)central; */
 
             /* brought from SNL 08-FEB-2000 */
-            if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-            {
-                scsPtr->page0.deployBaffle  = (long)deployable;
-                scsPtr->page0.centralBaffle = (long)central;
-                semGive(refMemFree);
-            }
-            else
-            {
-                errorLog("startMoveBaffle - refMemFree timeout", 1, ON);
-            }
+            epicsMutexLock(refMemFree);
+            scsPtr->page0.deployBaffle  = (long)deployable;
+            scsPtr->page0.centralBaffle = (long)central;
+            epicsMutexUnlock(refMemFree);
 
             writeCommand(BAFFLE_CHANGE);
-         /*    writeCommand(BAFFLE_CHANGE); */
 
-            logMsg(
-      "sent command %2d to drive deployable to pos: %1d and periscope to pos: %1d\n",
-                BAFFLE_CHANGE, deployable, central, 0, 0, 0);
+            errlogPrintf( "sent command %2d to drive deployable to pos: %1d and periscope to pos: %1d\n",
+                               BAFFLE_CHANGE, deployable, central);
 
             /* TO DO: use a wait record to time up to TIMEOUT if not
                done via delay in seq record
@@ -338,7 +325,6 @@ long    CADmoveBaffle (struct cadRecord * pcad)
 
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADservoBandwidth
@@ -378,7 +364,6 @@ long    CADmoveBaffle (struct cadRecord * pcad)
  * 24-Jul-1996: Original(srp)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADservoBandwidth (struct cadRecord * pcad)
@@ -442,7 +427,6 @@ long    CADservoBandwidth (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADcontroller
@@ -491,7 +475,6 @@ long    CADservoBandwidth (struct cadRecord * pcad)
  * 15-Jul-1998: Bug fix, tilt windup limit incorrect
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    dummyInit (struct cadRecord * pcad)
@@ -1216,7 +1199,6 @@ long    CADsetVTKControl (struct cadRecord * pcad)
 } 
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADdecsAdjust
@@ -1261,7 +1243,6 @@ long    CADsetVTKControl (struct cadRecord * pcad)
  * 06-Dec-1996: Original(srp)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADdecsAdjust (struct cadRecord * pcad)
@@ -1426,24 +1407,17 @@ long    CADdecsAdjust (struct cadRecord * pcad)
 
         /* write values to reflective memory */
 
-        if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-        {
-            scsPtr->page0.xTiltGain = (float)decsValue.xGain;
-            scsPtr->page0.yTiltGain = (float)decsValue.yGain;
-            scsPtr->page0.zFocusGain = (float)decsValue.zGain;
-            scsPtr->page0.xTiltShift = (float)decsValue.xShift;
-            scsPtr->page0.yTiltShift = (float)decsValue.yShift;
-            scsPtr->page0.zFocusShift = (float)decsValue.zShift;
-            scsPtr->page0.xTiltSmooth = (float)decsValue.xSmooth;
-            scsPtr->page0.yTiltSmooth = (float)decsValue.ySmooth;
-            scsPtr->page0.zFocusSmooth = (float)decsValue.zSmooth;
-
-            semGive(refMemFree);
-        }
-        else
-        {
-            errorLog("CADdecsAdjust - refMemFree timeout", 1, ON);
-        }
+        epicsMutexLock(refMemFree);
+        scsPtr->page0.xTiltGain = (float)decsValue.xGain;
+        scsPtr->page0.yTiltGain = (float)decsValue.yGain;
+        scsPtr->page0.zFocusGain = (float)decsValue.zGain;
+        scsPtr->page0.xTiltShift = (float)decsValue.xShift;
+        scsPtr->page0.yTiltShift = (float)decsValue.yShift;
+        scsPtr->page0.zFocusShift = (float)decsValue.zShift;
+        scsPtr->page0.xTiltSmooth = (float)decsValue.xSmooth;
+        scsPtr->page0.yTiltSmooth = (float)decsValue.ySmooth;
+        scsPtr->page0.zFocusSmooth = (float)decsValue.zSmooth;
+        epicsMutexUnlock(refMemFree);
 
         /* indicate to M2 that a change has occurred */
 
@@ -1465,7 +1439,6 @@ long    CADdecsAdjust (struct cadRecord * pcad)
 
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADtolerance
@@ -1516,7 +1489,6 @@ long    CADdecsAdjust (struct cadRecord * pcad)
  * 23-Jun-1998: Put lower limit on tolerance windows
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADtolerance (struct cadRecord * pcad)
@@ -1647,7 +1619,6 @@ long    CADtolerance (struct cadRecord * pcad)
 
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADdebug
@@ -1685,7 +1656,6 @@ long    CADtolerance (struct cadRecord * pcad)
  * 02-Feb-2000: Add "Med", "Max", "Reserved 1" and "Reserved 2". Drop "Full".
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADdebug (struct cadRecord * pcad)
@@ -1748,7 +1718,6 @@ long    CADdebug (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADdriveFollower
@@ -1790,7 +1759,6 @@ long    CADdebug (struct cadRecord * pcad)
  * 18-Jan-2000: Original(kdk)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADdriveFollower (struct cadRecord * pcad)
@@ -1854,18 +1822,12 @@ long    CADdriveFollower (struct cadRecord * pcad)
                                  this down by one for M2 naming convention */
             *(long *) pcad->valb = foldir;
 
-            if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-            {
+            epicsMutexLock(refMemFree);
                 /* Note: should be long already from database */
-                scsPtr->page0.follower      = (long) follower--;
-                scsPtr->page0.foldir        = (long) foldir;
-                scsPtr->page0.followersteps = (long) followersteps;
-                semGive(refMemFree);
-            }
-            else
-            {
-                errorLog("startDriveFollower - timeout on refMemFree", 1, ON);
-            }
+            scsPtr->page0.follower      = (long) follower--;
+            scsPtr->page0.foldir        = (long) foldir;
+            scsPtr->page0.followersteps = (long) followersteps;
+            epicsMutexUnlock(refMemFree);
 
             writeCommand(VDRVFOL);
 
@@ -1895,7 +1857,6 @@ long    CADdriveFollower (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADdriveOffloader
@@ -1935,7 +1896,6 @@ long    CADdriveFollower (struct cadRecord * pcad)
  * 01-Feb-2000: Original(kdk)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADdriveOffloader (struct cadRecord * pcad)
@@ -1994,18 +1954,12 @@ long    CADdriveOffloader (struct cadRecord * pcad)
 
         if (interlockFlag != 1)
         {
-            if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-            {
-                /* Note: should be long already from database */
-                scsPtr->page0.offloader      = (long) offloader--;
-                scsPtr->page0.ofldir        = (long) ofldir;
-                scsPtr->page0.offloadersteps = (long) offloadersteps;
-                semGive(refMemFree);
-            }
-            else
-            {
-                errorLog("startDriveOffloader - timeout on refMemFree", 1, ON);
-            }
+            epicsMutexLock(refMemFree);
+            /* Note: should be long already from database */
+            scsPtr->page0.offloader      = (long) offloader--;
+            scsPtr->page0.ofldir        = (long) ofldir;
+            scsPtr->page0.offloadersteps = (long) offloadersteps;
+            epicsMutexUnlock(refMemFree);
 
             writeCommand(MDRVOFL);
 
@@ -2034,7 +1988,6 @@ long    CADdriveOffloader (struct cadRecord * pcad)
     return (status);
 }
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADdriveDB
@@ -2074,7 +2027,6 @@ long    CADdriveOffloader (struct cadRecord * pcad)
  * 01-Feb-2000: Original(kdk)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADdriveDB (struct cadRecord * pcad)
@@ -2133,18 +2085,12 @@ long    CADdriveDB (struct cadRecord * pcad)
 
         if (interlockFlag != 1)
         {
-            if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-            {
-                /* Note: should be long already from database */
-                scsPtr->page0.deployable_baffle      = (long) deployable_baffle;
-                scsPtr->page0.dbafdir = (long) dbafdir;
-                scsPtr->page0.dbsteps = (long) dbsteps;
-                semGive(refMemFree);
-            }
-            else
-            {
-                errorLog("startDriveDB - timeout on refMemFree", 1, ON);
-            }
+            epicsMutexLock(refMemFree);
+            /* Note: should be long already from database */
+            scsPtr->page0.deployable_baffle      = (long) deployable_baffle;
+            scsPtr->page0.dbafdir = (long) dbafdir;
+            scsPtr->page0.dbsteps = (long) dbsteps;
+            epicsMutexUnlock(refMemFree);
 
             writeCommand(DBDRV);
 
@@ -2173,7 +2119,6 @@ long    CADdriveDB (struct cadRecord * pcad)
     return (status);
 }
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADdriveCB
@@ -2212,7 +2157,6 @@ long    CADdriveDB (struct cadRecord * pcad)
  * 01-Feb-2000: Original(kdk)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADdriveCB(struct cadRecord * pcad)
@@ -2259,17 +2203,11 @@ long    CADdriveCB(struct cadRecord * pcad)
 
         if (interlockFlag != 1)
         {
-            if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-            {
-                /* Note: should be long already from database */
-                scsPtr->page0.cbafdir = (long) cbafdir;
-                scsPtr->page0.cbsteps = (long) cbsteps;
-                semGive(refMemFree);
-            }
-            else
-            {
-                errorLog("startDriveCB - timeout on refMemFree", 1, ON);
-            }
+            epicsMutexLock(refMemFree);
+            /* Note: should be long already from database */
+            scsPtr->page0.cbafdir = (long) cbafdir;
+            scsPtr->page0.cbsteps = (long) cbsteps;
+            epicsMutexUnlock(refMemFree);
 
             writeCommand(CBDRV);
 
@@ -2298,7 +2236,6 @@ long    CADdriveCB(struct cadRecord * pcad)
     return (status);
 }
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADdriveXY
@@ -2338,7 +2275,6 @@ long    CADdriveCB(struct cadRecord * pcad)
  * 01-Feb-2000: Original(kdk)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADdriveXY (struct cadRecord * pcad)
@@ -2397,18 +2333,12 @@ long    CADdriveXY (struct cadRecord * pcad)
 
         if (interlockFlag != 1)
         {
-            if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-            {
-                /* Note: should be long already from database */
-                scsPtr->page0.xy_motor      = (long) xy_motor;
-                scsPtr->page0.xydir         = (long) xydir;
-                scsPtr->page0.xysteps = (long) xysteps;
-                semGive(refMemFree);
-            }
-            else
-            {
-                errorLog("startDriveXY - timeout on refMemFree", 1, ON);
-            }
+            epicsMutexLock(refMemFree);
+            /* Note: should be long already from database */
+            scsPtr->page0.xy_motor      = (long) xy_motor;
+            scsPtr->page0.xydir         = (long) xydir;
+            scsPtr->page0.xysteps = (long) xysteps;
+            epicsMutexUnlock(refMemFree);
 
             writeCommand(XYDRV);
 
@@ -2438,7 +2368,6 @@ long    CADdriveXY (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADtiltPidControl
@@ -2478,7 +2407,6 @@ long    CADdriveXY (struct cadRecord * pcad)
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADtiltPidControl (struct cadRecord * pcad)
@@ -2554,7 +2482,6 @@ long CADtiltPidControl (struct cadRecord * pcad)
 }
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADfocusPidControl
@@ -2594,7 +2521,6 @@ long CADtiltPidControl (struct cadRecord * pcad)
  *
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 long CADfocusPidControl (struct cadRecord * pcad)
@@ -2926,7 +2852,6 @@ long CADvtkControl (struct cadRecord * pcad)
 
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * CADmovepersicope
@@ -2967,7 +2892,6 @@ long CADvtkControl (struct cadRecord * pcad)
  *
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 long    CADmovePeriscope (struct cadRecord * pcad)
@@ -3011,21 +2935,14 @@ long    CADmovePeriscope (struct cadRecord * pcad)
         if (interlockFlag != 1)
         {
             /* brought from SNL 08-FEB-2000 */
-            if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-            {
-                scsPtr->page0.centralBaffle = (long)periscope;
-                semGive(refMemFree);
-            }
-            else
-            {
-                errorLog("startMovePeriscope - refMemFree timeout", 1, ON);
-            }
+            epicsMutexLock(refMemFree);
+            scsPtr->page0.centralBaffle = (long)periscope;
+            epicsMutexUnlock(refMemFree);
 
             writeCommand(BAFFLE_CHANGE);
     
-            logMsg(
-                "sent command %2d to move periscope to pos: %1d \n", 
-                BAFFLE_CHANGE, periscope, 0, 0, 0, 0); 
+            errlogPrintf( "sent command %2d to move periscope to pos: %1d \n", 
+                BAFFLE_CHANGE, periscope); 
         }
         else
         {
