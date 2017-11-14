@@ -115,7 +115,7 @@
 #define MAGIC_NUMBER            1958    /* magic number so sequences don't
                                            all start at zero    */
 #define CB_RECORD_NB            2000
-#define SCS_DATA_SIZE  		81
+#define SCS_DATA_SIZE        81
 #define MAX_FILENAME_SIZE       100
 #define LOG_INTERVAL            5
 
@@ -351,7 +351,7 @@ Demands setPoint;
 epicsMutexId setPointFree = NULL;
 int currentBeam = BEAMA;
 int flip2 = 0;
-int flip = 0;		/* indicates whether or not beams s/b flipped
+int flip = 0;      /* indicates whether or not beams s/b flipped
                            eg. 1 for sig gen; 0 for OSCIR. set to 1 at
                            crate console */
 
@@ -754,7 +754,7 @@ void cemTimerEnd () {
    for(;;) {
       /* The only place this event is signalled is commented out for some reason.           */
       /* This wait will always time out. Maybe it should be replaced with a taskDelay()    */
-      /* or EPICS OSI equivalent [epicsThreadWait()]  20171030 (mdw)                        */
+      /* or EPICS OSI equivalent [epicsThreadSleep()]  20171030 (mdw)                        */
       if (epicsEventWaitWithTimeout(cemTimerEndSem, SEM_TIMEOUT) == epicsEventWaitOK)  {
          
         clock_gettime( CLOCK_REALTIME, &timeEnd);
@@ -943,11 +943,11 @@ int rxwaitticks = 0;
 int    waittime = 10;
 int useDynamicVtk =0;
 
-void processGuides (void) {
-
+void processGuides (void) 
+{
    long command = FAST_ONLY;
    location    position;
-   converted   result;
+   converted   result = {0,0,0};
    int numBytes = 0;
    int indx = 0; 
    //char message[200];
@@ -989,7 +989,7 @@ void processGuides (void) {
       /* Wait for either guide update or timeout */
 
       /* OLD WAY: No status checking. - wait 2 ticks -- if it fails
-       *	we still proceed.  semTake (guideUpdateNow, 2);
+       *   we still proceed.  semTake (guideUpdateNow, 2);
 
        * NEW. Try to take the semaphore given by "rmISR3" But don't wait for
        * it. We have things to do.    Idea: If don't take this semaphore, is
@@ -1357,8 +1357,8 @@ void processGuides (void) {
 
       /* Notes about all these conditions...
        *
-       *	- "guideOn" refers to request from TCS/SCS CAD
-       *	  executed to turn on guiding   
+       *   - "guideOn" refers to request from TCS/SCS CAD
+       *     executed to turn on guiding   
        *
        * - "applyGuide" refers to the beam setting being
        *   set up correctly and being ON BEAM (ie. not
@@ -1478,11 +1478,11 @@ void processGuides (void) {
                   it in sync with what the M2 receives. 
                   And, do this after the PID */
                xNetGuideU = confine (xNetGuideT, TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor,
-				     -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
-	       yNetGuideU = confine (yNetGuideT, TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor,
-		        	     -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
-	       zNetGuideU = confine (zNetGuideT, Z_GUIDE_STEP_LIMIT*focusGuideLimitFactor,
-				     -Z_GUIDE_STEP_LIMIT*focusGuideLimitFactor);
+                 -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
+          yNetGuideU = confine (yNetGuideT, TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor,
+                      -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
+          zNetGuideU = confine (zNetGuideT, Z_GUIDE_STEP_LIMIT*focusGuideLimitFactor,
+                 -Z_GUIDE_STEP_LIMIT*focusGuideLimitFactor);
 
                /* write values to TCS variables */
                xGuideTcs = xNetGuideU;
@@ -1522,7 +1522,7 @@ void processGuides (void) {
       /* Not guiding on this beam or not applying guide so
        * zero corrections.
        */
-      else {	
+      else {   
 
          /* Set pin JK2/41 high to show guiding is *NOT*
           * appplied 
@@ -1538,7 +1538,7 @@ void processGuides (void) {
          yNetGuideU = confine (yNetGuideT, TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor, 
                -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor); 
         
-		if (focusPidOn == ON)
+      if (focusPidOn == ON)
          {
             zNetGuideT = control (FOCUS, 0.0, 0.0);
          }
@@ -2605,7 +2605,7 @@ int updateEventPage (int scsInPosition, int scsPresentBeam)
 
 
    nodeISR3 = -99;
-   semFlush(guideUpdateNow);
+   //semFlush(guideUpdateNow); /* what to do about this?  Hmmm... (mdw) */
    return (OK);
 }
 
@@ -2652,28 +2652,28 @@ int updateEventPage (int scsInPosition, int scsPresentBeam)
 
 long writeCommand (const long command)
 {
-	long localCommand;
+   long localCommand;
 
-	localCommand = command;
+   localCommand = command;
 
-	/* if interlocks are active, do not write message to queue */
-	if (interlockFlag != ON)
-	{
-		taskDelay(sysClkRateGet()/3);  
+   /* if interlocks are active, do not write message to queue */
+   if (interlockFlag != ON)
+   {
+      // taskDelay(sysClkRateGet()/3);  
+                epicsThreadSleep(1.0/3.0);
 
-		if (epicsMessageQueueSend (commandQId, (char *) &localCommand, sizeof (long), 
-					SEM_TIMEOUT, MSG_PRI_NORMAL) == ERROR)
-		{
-			printf ("failed to append command message %s to message queue\n", 
-					m2CmdName[command]);
-			return (-1);
-		}
-		return (0);
-	}
-	else
-	{
-		return (-2);
-	}
+      if (epicsMessageQueueSendWithTimeout(commandQId, (char *)&localCommand, sizeof (long), SEM_TIMEOUT) == ERROR)
+      {
+         printf ("failed to append command message %s to message queue\n", 
+               m2CmdName[command]);
+         return (-1);
+      }
+      return (0);
+   }
+   else
+   {
+      return (-2);
+   }
 }
 
 /* ===================================================================== */
@@ -2735,6 +2735,8 @@ static int frameConvert (converted *result,
     result->y = f->scaleY*(f->sinTheta*x + f->cosTheta*y) + f->offsetY;
     result->z = f->scaleZ * z;
     epicsMutexUnlock(f->access);
+
+   return OK;
 }
 
 /* ===================================================================== */
@@ -2831,8 +2833,8 @@ int saveCb ()
     
     if (timeNow(&fileTime) != OK)
     {
-	errorLog ("saveCb - error reading timeStamp\n", 1, ON);
-	return (ERROR);
+   errorLog ("saveCb - error reading timeStamp\n", 1, ON);
+   return (ERROR);
     }
 
     sprintf(fileName, "./chop-guide-%d.log", (int)fileTime);
@@ -2847,52 +2849,52 @@ int saveCb ()
     for ( i = cbCounter ; i < CB_RECORD_NB ; i ++ ) 
     {
         //fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
-		//cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
+      //cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
         fprintf ( pFile, "  3 %f %f %f %d\n", 
-		cbTime[i], cbP2Time[i], cbP2Interval[i], i);
+      cbTime[i], cbP2Time[i], cbP2Interval[i], i);
         fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
-		cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
+      cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
         fprintf ( pFile, "  7 %+4.2f %+4.2f %+4.2f\n", 
-		cbXGuideBeforePID[i], cbYGuideBeforePID[i], 
+      cbXGuideBeforePID[i], cbYGuideBeforePID[i], 
                 cbZGuideBeforePID[i]);
         fprintf ( pFile, "  8 %+4.2f %+4.2f %+4.2f\n", 
-		cbXGuideAfterPID[i], cbYGuideAfterPID[i], cbZGuideAfterPID[i]);
+      cbXGuideAfterPID[i], cbYGuideAfterPID[i], cbZGuideAfterPID[i]);
         fprintf ( pFile, "  9 %+4.2f %+4.2f %+4.2f\n", 
-		cbXGuideDemand[i], cbYGuideDemand[i], cbZGuideDemand[i]);
-	fprintf ( pFile, " 10 %1d %1d %1d %1d\n",
+      cbXGuideDemand[i], cbYGuideDemand[i], cbZGuideDemand[i]);
+   fprintf ( pFile, " 10 %1d %1d %1d %1d\n",
                  cbCurBeam[i], cbApplyGuide[i], cbGuideOnA[i], cbInPos[i] );
         fprintf ( pFile, " 11 %+4.2f %+4.2f %4.2f %4.2f\n", 
-		cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
+      cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
         fprintf ( pFile, " 13 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
-		cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
+      cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
         fprintf ( pFile, " 15 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
-		cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
+      cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
     }
 
     /* write from beginning of array to newest data */
     for ( i = 0 ; i < cbCounter ; i ++ )
     {
         //fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
-	//	cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
+   //   cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
         fprintf ( pFile, "  3 %f %f %f %d\n", 
-		cbTime[i], cbP2Time[i], cbP2Interval[i], i);
+      cbTime[i], cbP2Time[i], cbP2Interval[i], i);
         fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
-		cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
+      cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
         fprintf ( pFile, "  7 %+4.2f %+4.2f %+4.2f\n", 
-		cbXGuideBeforePID[i], cbYGuideBeforePID[i], 
+      cbXGuideBeforePID[i], cbYGuideBeforePID[i], 
                 cbZGuideBeforePID[i]);
         fprintf ( pFile, "  8 %+4.2f %+4.2f %+4.2f\n", 
-		cbXGuideAfterPID[i], cbYGuideAfterPID[i], cbZGuideAfterPID[i]);
+      cbXGuideAfterPID[i], cbYGuideAfterPID[i], cbZGuideAfterPID[i]);
         fprintf ( pFile, "  9 %+4.2f %+4.2f %+4.2f\n", 
-		cbXGuideDemand[i], cbYGuideDemand[i], cbZGuideDemand[i]);
-	fprintf ( pFile, " 10 %1d %1d %1d %1d\n",
+      cbXGuideDemand[i], cbYGuideDemand[i], cbZGuideDemand[i]);
+   fprintf ( pFile, " 10 %1d %1d %1d %1d\n",
                  cbCurBeam[i], cbApplyGuide[i], cbGuideOnA[i], cbInPos[i] );
         fprintf ( pFile, " 11 %+4.2f %+4.2f %4.2f %4.2f\n", 
-		cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
+      cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
         fprintf ( pFile, " 13 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
-		cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
+      cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
         fprintf ( pFile, " 15 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
-		cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
+      cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
     }
 
     fclose (pFile);

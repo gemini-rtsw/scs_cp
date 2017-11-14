@@ -60,6 +60,17 @@
 
 /* ===================================================================== */
 
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>         /* For calloc */
+#include <stdio.h>         /* For calloc */
+
+#include <cad.h>
+#include <car.h>
+#include <timeLib.h>        /* For timeNow */
+
+#include "utilities.h"      /* For act2tilt, errorLog, modifyFrame,
+                                       debugLevel, ag2m2 */
 #include "scs.h"
 #include "archive.h"        /* For cadDirLog */
 #include "chop.h"           /* For chopIsOn */
@@ -67,23 +78,6 @@
 #include "guide.h"          /* For enum define of instrument indices */
 #include "interlock.h"      /* For scsState */
 #include "interp.h"         /* For tcsInterpolate */
-#include "utilities.h"      /* For act2tilt, errorLog, modifyFrame,
-                                       debugLevel, ag2m2 */
-
-#include <cad.h>
-#include <car.h>
-
-#include <logLib.h>         /* For logMsg */
-#include <timeLib.h>        /* For timeNow */
-
-//#include <wdLib.h>
-#include <epicsTimer.h>
-#include <epicsThread.h>
-
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>         /* For calloc */
-#include <stdio.h>         /* For calloc */
 
 /* Define default tilt and focus scaling */
 #define DEFAULT_TILT_SCALE    3.917
@@ -100,7 +94,7 @@
 
 #define ALWAYS 1
 
-#if 0    FIX THIS
+#if 0    // FIX THIS
 /* Declare in file globals */
 //static WDOG_ID timeoutId;
 epicsTimerQueueId tqid = epicsTimerQueueAllocate(1, epicsThreadPriorityScanLow);
@@ -184,8 +178,7 @@ long initFollowGenSub (struct genSubRecord * pgsub)
             if ((ag2m2[source] = (frameChange *) calloc 
             (1, sizeof (frameChange))) == NULL)
             {
-                logMsg ("Unable to calloc frameChange for source %d\n", 
-            (int) source, 0, 0, 0, 0, 0);
+                errlogPrintf("Unable to calloc frameChange for source %d\n", source);
                 return (ERROR);
             }
             else
@@ -193,8 +186,7 @@ long initFollowGenSub (struct genSubRecord * pgsub)
                 if ((ag2m2[source]->access = semMCreate (SEM_Q_PRIORITY | 
                 SEM_DELETE_SAFE | SEM_INVERSION_SAFE)) == NULL)
                 {
-                    logMsg ("Unable to create mutex for conversion source %d\n",
-            (int) source, 0, 0, 0, 0, 0);
+                    errlogPrintf("Unable to create mutex for conversion source %d\n", source);
                 }
                 else
                 {
@@ -308,8 +300,10 @@ long receiveTcsDemand (struct genSubRecord * pgsub)
 
       if (timeNow (&scsTimeNow) != OK)
         {
-      /*            logMsg ("receiveTcsDemand - error reading timestamp\n", 0, 0, 0, 0, 0, 0);
-            return (ERROR); */
+/*
+            errlogMessage("receiveTcsDemand - error reading timestamp\n");
+            return (ERROR); 
+*/
         }
 
       /* compare time sent for late arrival and sanity check all demands */
@@ -369,8 +363,7 @@ long receiveTcsDemand (struct genSubRecord * pgsub)
 
     /* Inspect "beam" */
     if ((beam != BEAMA) && (beam != BEAMB) && (beam != BEAMC)) {
-      logMsg("receiveTcsDemand - unknown beam = %d\n",beam,0,0,0,0,0);
-      printf("receiveTcsDemand - unknown beam = %d\n",beam);
+      errlogPrintf("receiveTcsDemand - unknown beam = %d\n",beam);
       beam = BEAMA; 
     } /***/
 
@@ -1345,7 +1338,7 @@ long ticker (struct genSubRecord * pgsub)
     if (timeNow (&scsTimeNow) != OK)
     {
         if ((debugLevel > DEBUG_NONE) & (debugLevel <= DEBUG_MED))
-            logMsg ("ticker - error reading timestamp\n", 0, 0, 0, 0, 0, 0);
+            errlogMessage("ticker - error reading timestamp\n");
         return (ERROR);
     }
     
@@ -1366,5 +1359,5 @@ static void tcsTimeout (void)
 
     /* wdStart (timeoutId, FOLLOW_TIMEOUT, (FUNCPTR) tcsTimeout, 0); */
     if (debugLevel == DEBUG_MED)
-      logMsg ("tcsTimeout - tcs 20Hz follow demand missed for > 1 sec\n", 0, 0, 0, 0, 0, 0);
+      errlogMessage("tcsTimeout - tcs 20Hz follow demand missed for > 1 sec\n");
 }
