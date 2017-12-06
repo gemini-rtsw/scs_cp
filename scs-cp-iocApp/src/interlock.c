@@ -44,7 +44,6 @@
 #include "interlock.h"
 #include "utilities.h"      /* For reportHealth */
 
-#include <logLib.h>
 
 /* Define interlock port masks */
 
@@ -102,21 +101,15 @@ int eventConnect = OFF;
  * 26-Jan-1998: Original(srp)
  * 
  */
-
-/* INDENT ON */
 /* ===================================================================== */
 
-/*
-long dummyInitPsub (struct subRecord * psub)
-{
-    return (OK);
-}
-*/
 
 long    initInterlock (struct subRecord * psub)
 {
     return (OK);
 }
+
+
 
 long    lockMonitor (struct subRecord * psub)
 {
@@ -151,40 +144,29 @@ long    lockMonitor (struct subRecord * psub)
     if (interlockStatus == ON)
     {
         /* set interlockFlag to lockout further commands */
-
         interlockFlag = ON;
 
-        if(semTake(refMemFree, SEM_TIMEOUT) == OK)
-        {
-            /* record current mirror position */
+        /* record current mirror position */
+        epicsMutexLock(refMemFree);
+        lockPosition.xTilt = scsPtr->page1.xTilt;
+        lockPosition.yTilt = scsPtr->page1.yTilt;
+        lockPosition.zFocus = scsPtr->page1.zFocus;
+        lockPosition.xPos = scsPtr->page1.xPosition;
+        lockPosition.yPos = scsPtr->page1.yPosition;
+        epicsMutexUnlock(refMemFree);
 
-            lockPosition.xTilt = scsPtr->page1.xTilt;
-            lockPosition.yTilt = scsPtr->page1.yTilt;
-            lockPosition.zFocus = scsPtr->page1.zFocus;
-            lockPosition.xPos = scsPtr->page1.xPosition;
-            lockPosition.yPos = scsPtr->page1.yPosition;
-
-            semGive(refMemFree);
-        }
-        else
-        {
-            logMsg("interlock monitor - refMemFree timeout\n", 0, 0, 0, 0, 0, 0);
-        }
 
         /* clear command message queues */
-
         if (Qcleared == 0)
         {
-            logMsg("interlock detected - begin clearing message queue", 0, 0, 0, 0, 0, 0);
+            errlogMessage("interlock detected - begin clearing message queue");
 
             /* read out and discard messages until none left */
-
-            while (msgQReceive (commandQId, (char *) &received, sizeof (long), NO_WAIT) != ERROR)
+            while ( epicsMessageQueueTryReceive(commandQId, (char *) &received, sizeof (long)) != MSG_Q_EMPTY)
                 ;
 
             Qcleared = 1;
-
-            logMsg ("message queue cleared\n", 0, 0, 0, 0, 0, 0);
+            errlogMessage("message queue cleared\n");
         }
     }
     else

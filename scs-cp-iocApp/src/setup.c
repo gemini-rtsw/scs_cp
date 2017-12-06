@@ -127,31 +127,10 @@ int scsInit (void)
    char pRecordName[MAX_STRING_SIZE];
    char test = 0;
 
-   /* create holding semaphore to prevent execution before intialisation */
-   /* (code deleted) */
-
 
    /* create semaphores to control pvload of initialisation files */
-
-   if ((doPvLoad = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-   {
-      printf ("unable to create doPvload sem\n");
-      return (ERROR);
-   }
-
-   if ((pvLoadComplete = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-   {
-      printf ("unable to create pvLoadComplete sem\n");
-      return (ERROR);
-   }
-
-   /* create semaphore to control data logging */
-
-   if ((logNow = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-   {
-      printf ("scsLogInit - unable to create logNow sem\n");
-      return (ERROR);
-   }
+   doPvLoad = epicsEventMustCreate(epicsEventEmpty);
+   pvLoadComplete = epicsEventMustCreate(epicsEventEmpty);
 
    /* get address of logging CAR record */
 
@@ -159,34 +138,26 @@ int scsInit (void)
 
    if (dbNameToAddr (pRecordName, &logCAddr) != 0)
    {
-      printf ("scsLogInit - unable to fetch address of logC CAR\n");
+      errlogPrintf("scsLogInit - unable to fetch address of logC CAR\n");
       return (ERROR);
    }
 
    /* mutex semaphore to prevent multiple access to guide data */
-
    for (source = PWFS1; source <= GYRO; source++)
    {
-      wfsFree[source] = epicsMutexMustCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE | SEM_INVERSION_SAFE);
+      wfsFree[source] = epicsMutexMustCreate();
    }
 
    /* create dummy filters for each of the guide sources */
-
    for (source = PWFS1; source <= GYRO; source++)
    {
       createFilter (source, OFF, 200.0, 20.0, 20.0, -2.0, -2.0, -2.0);
    }
 
    /* create mutex semaphore to protect the set point values */
-
-   if ((setPointFree = semMCreate (SEM_Q_PRIORITY | SEM_DELETE_SAFE | SEM_INVERSION_SAFE)) == NULL)
-   {
-      printf ("unable to create setPointFree sem\n");
-      return (ERROR);
-   }
+   setPointFree = epicsMutexCreate();
 
    /* spawn task to pvload initialisation data */
-
    if (taskSpawn ("tloadInit", 150, VX_FP_TASK, 20000, (FUNCPTR) loadInitFiles, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) == ERROR)
    {
       logMsg ("unable to spawn load init files task\n", 0, 0, 0, 0, 0, 0);
@@ -194,7 +165,6 @@ int scsInit (void)
    }
 
    /* spawn logging task */
-
    if (taskSpawn ("loggerTask", 44, VX_FP_TASK, 20000, (FUNCPTR) loggerTask, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) == ERROR)
    {
       printf ("unable to spawn loggerTask\n");
@@ -202,7 +172,6 @@ int scsInit (void)
    }
 
    /* spawn control loop task */
-
    if (taskSpawn ("tslowTx", 100, VX_FP_TASK, 30000, (FUNCPTR) slowTransmit, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) == ERROR)
    {
       logMsg ("unable to spawn slowTransmit task\n", 0, 0, 0, 0, 0, 0);
@@ -218,11 +187,17 @@ int scsInit (void)
       return (ERROR);
    }
 
+#if 0
+/* convert this to a thread that runs periodically */
    /* set up aux clock to and connect ISR */
-
    sysAuxClkRateSet (SYSTEM_CLOCK_RATE);
    sysAuxClkConnect ((FUNCPTR) fireLoops, 0);
    sysAuxClkEnable ();
+#endif
+   
+   epicsThreadCreate("fireLoops", epicsThreadPriorityHigh,
+                      epicsThreadGetStackSize(epicsThreadStackSmall),
+                      (EPICSTHREADFUNC)fireLoops, (void *)NULL);
 
    /*
     * call with parameter zero for no simulation, any other value for full

@@ -106,7 +106,7 @@ static int first = TRUE;
 int badBeamCount = 0;    /* accessible from VxWorks prompt */
 
 /* In file prototypes */
-static void tcsTimeout (void);
+// static void tcsTimeout (void);
 
 /* ===================================================================== */
 /*
@@ -183,18 +183,11 @@ long initFollowGenSub (struct genSubRecord * pgsub)
             }
             else
             {
-                if ((ag2m2[source]->access = semMCreate (SEM_Q_PRIORITY | 
-                SEM_DELETE_SAFE | SEM_INVERSION_SAFE)) == NULL)
-                {
-                    errlogPrintf("Unable to create mutex for conversion source %d\n", source);
-                }
-                else
-                {
-                    /* initialise structure with default values */
+                ag2m2[source]->access = epicsMutexMustCreate(); 
 
-                    modifyFrame (ag2m2[source], 0.0, DEFAULT_TILT_SCALE, 
-            DEFAULT_TILT_SCALE, DEFAULT_FOCUS_SCALE, 0.0, 0.0);
-                }
+                 /* initialise structure with default values */
+                 modifyFrame (ag2m2[source], 0.0, DEFAULT_TILT_SCALE, 
+                       DEFAULT_TILT_SCALE, DEFAULT_FOCUS_SCALE, 0.0, 0.0);
             }
         }
     }
@@ -242,7 +235,8 @@ long receiveTcsDemand (struct genSubRecord * pgsub)
     static location position;
     double tcsUpdate[FOLLOW_ARRAY_SIZE];
            /*= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22.22, 33.33};*/
-    double *ptr, scsTimeNow,badBeamTime;
+    double *ptr, scsTimeNow;
+
 
     static double lastDmdX;
     static double lastDmdY;
@@ -268,7 +262,7 @@ long receiveTcsDemand (struct genSubRecord * pgsub)
     double tiltStep;                      /* Max change in tilt demand */
     double tmp;                  /* temp value to hold z guide */
     int    beam;              /* Current beam as M2 sees */
-    int    beamCompare;              /* Current beam as SCS sees */
+    //int    beamCompare;              /* Current beam as SCS sees */
     int    currFrame;
 
     static int beamDiscrepancy = FALSE;   /* Flag that M2 beam != SCS beam */
@@ -1352,7 +1346,7 @@ long ticker (struct genSubRecord * pgsub)
     return (OK);
 }
 
-
+#if 0
 static void tcsTimeout (void)
 {
     /* restart watchdog timer */
@@ -1361,3 +1355,4 @@ static void tcsTimeout (void)
     if (debugLevel == DEBUG_MED)
       errlogMessage("tcsTimeout - tcs 20Hz follow demand missed for > 1 sec\n");
 }
+#endif

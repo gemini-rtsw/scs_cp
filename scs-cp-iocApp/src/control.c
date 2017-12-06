@@ -90,7 +90,6 @@
                            weight */
 #include "interlock.h"  /* For lockPosition, scsState */
 #include "interp.h"     /* For AX, AY, ..., Z axis identifiers */
-#include "m2Log.h"
 #include "xycom.h"      /* For ports[7] (tests only), ticksToWait (temp) */
 #include "interp.h"     /* For getInterpolation */
 
@@ -842,36 +841,22 @@ static void reportTimes() {
  *
  * History:
  * 15-Oct-1997: Original(srp)
+ * 06-Dec-2017: Converted to a thread that runs periodically (mdw)
  *
  */
 
 /* ===================================================================== */
-void fireLoops (int param)
+void fireLoops (void *param)
 {
-   static int logCount = 0, tickCount = 0;
 
-   /* if logging period is expired, set log semaphore */
-
-   logCount++;
-
-   if (isLoggingArmed())
-   {
-      if (logCount >= logThreshold)
-      {
-         logCount = 0;
-         epicsEventSignal(logNow);
-      }
-   }
-
-   if (tickCount++ >= SYSTEM_CLOCK_RATE)
-   {
+   while (1){
       /* translation demands update to m2 system at 1Hz */
       /* set flag to indicate position update */
-
-      tickCount = 0;
       positionUpdate = TRUE;
+      epicsThreadSleep(1.0);
    }
 }
+
 
 /* Later: add header */
 void rmISR2 (int node)
@@ -947,7 +932,6 @@ void processGuides (void)
    long command = FAST_ONLY;
    location    position;
    converted   result = {0,0,0};
-   int numBytes = 0;
    int indx = 0; 
    //char message[200];
    long lastNS = 0;
@@ -1012,8 +996,6 @@ void processGuides (void)
       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
       {
-
-         //taskDelay(NO_WAIT);
          epicsThreadSleep(0.001);
          /* Find which sources have been updated since last ISR call 
           * first, check PWFS1 */
@@ -1584,10 +1566,7 @@ void processGuides (void)
          scsBase->page0.yGrossTiltDmd = scsBase->page0.AyTilt + (float) yNetGuideU;
 
          /* fetch command from message queue */
-         numBytes = 
-            epicsMessageQueueReceiveWithTimeout(commandQId, (char *) &command, sizeof (long), NO_WAIT);
-
-         if (numBytes == ERROR)
+         if( epicsMessageQueueTryReceive(commandQId, (char *) &command, sizeof (long)) < 0 )
             command = FAST_ONLY;
 
          if (command == CMD_TEST)
@@ -1646,10 +1625,7 @@ void processGuides (void)
 
          /* fetch command from message queue */
 
-         numBytes = epicsMessageQueueReceiveWithTimeout(commandQId, (char *) &command, 
-                  sizeof (long), NO_WAIT);
-
-         if (numBytes == ERROR)
+         if( epicsMessageQueueTryReceive(commandQId, (char *) &command, sizeof (long)) < 0)
             command = FAST_ONLY;
 
          if (command == CMD_TEST)
@@ -2269,7 +2245,7 @@ void scsReceive (void)
             /* only does anything if m2LogActive is set (via
              * primitive commands dm screen */
 
-            m2LoggerTask (scsBase);
+            // m2LoggerTask (scsBase);
 
             /* put the engineering data in a ring buffer
              * Right now, this is ALWAYS done. Later, could 
@@ -2288,7 +2264,7 @@ void scsReceive (void)
             epicsMutexUnlock(m2MemFree);
 
             /* grab the engineering data for logging */
-            m2LoggerTask (m2Ptr);
+            // m2LoggerTask (m2Ptr);
          }
 
          /* check the received block */

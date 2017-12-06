@@ -95,6 +95,9 @@ epicsEventId doPvLoad;
 epicsEventId pvLoadComplete;
 
 
+extern epicsMessageQueueId healthQId;
+
+
 frameOfReference frame =
 {
     0.0, 0.0, 0.0, 0.0,

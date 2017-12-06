@@ -36,12 +36,11 @@
 #ifndef _INCLUDED_SETUP_H
 #define _INCLUDED_SETUP_H
 
+#include "utilities.h"
+
 /* Public functions */
 int scsInit(void);
 
 /* Global variables */
-
-extern epicsMessageQueueId healthQId;
-extern SEM_ID scsReady;
 
 #endif

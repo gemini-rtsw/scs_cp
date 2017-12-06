@@ -78,13 +78,11 @@
 #include <cad.h>
 #include <car.h>
 
-#include <logLib.h>         /* For logMsg */
 #include <tcslib.h>
 
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-#include <taskLib.h>
 
 #define MAX_FILTER_CHANNELS 15  /* Used by dfilter to set array size */
 #define NUM_DECIMATORS  12      /* Number of channels needing decimation 
@@ -650,7 +648,7 @@ long CADguideConfig (struct cadRecord * pcad)
                                   NULL } ;
      static char *filterOpts[] = {"OFF", "RAW", "LOWPASS", "HIGHPASS",
                                   "BANDPASS", "BANDSTOP", NULL} ;
-     static char *resetOpts[] = {"OFF", "ON", NULL} ;
+     //static char *resetOpts[] = {"OFF", "ON", NULL} ;
 
 
      cadDirLog ("guideConfig", pcad->dir, 10, pcad);
@@ -973,7 +971,7 @@ long guideConfig (struct genSubRecord *pgsub)
 
           if (j < 0 || j > (MAX_SOURCES - 1))
           {
-               logMsg ("guideMaster index out of range\n", 0, 0, 0, 0, 0, 0);
+               errlogMessage("guideMaster index out of range\n");
           }
           else
           {
@@ -991,7 +989,7 @@ long guideConfig (struct genSubRecord *pgsub)
 
           if (source < 0 || source > (MAX_SOURCES - 1))
           {
-               logMsg ("guideMaster index out of range\n", 0, 0, 0, 0, 0, 0);
+               errlogMessage("guideMaster index out of range\n");
           }
           else
           {
@@ -1011,7 +1009,7 @@ long guideConfig (struct genSubRecord *pgsub)
 
                               if (source2 < 0 || source2 > (MAX_SOURCES - 1))
                               {
-                                   logMsg ("guideMaster index out of range\n", 0, 0, 0, 0, 0, 0);
+                                   errlogMessage("guideMaster index out of range\n");
                               }
                               else
                               {
@@ -1043,7 +1041,7 @@ long guideConfig (struct genSubRecord *pgsub)
 
                               if (source2 < 0 || source2 > (MAX_SOURCES - 1))
                               {
-                                   logMsg ("guideMaster index out of range\n", 0, 0, 0, 0, 0, 0);
+                                   errlogMessage("guideMaster index out of range\n");
                               }
                               else
                               {
@@ -1073,7 +1071,7 @@ long guideConfig (struct genSubRecord *pgsub)
 
                               if (source2 < 0 || source2 > (MAX_SOURCES - 1))
                               {
-                                   logMsg ("guideMaster index out of range\n", 0, 0, 0, 0, 0, 0);
+                                   errlogMessage("guideMaster index out of range\n");
                               }
                               else
                               {
@@ -1152,7 +1150,7 @@ long CADguideReset (struct cadRecord * pcad)
      long status = CAD_REJECT;
      static int reset;
 
-     static double weightA, weightB, weightC;
+     // static double weightA, weightB, weightC;
      static char *resetOpts[] = {"OFF", "ON", NULL} ;
 
 
@@ -1272,20 +1270,10 @@ long CADguideReset (struct cadRecord * pcad)
 
 long resetGuideConfig (struct genSubRecord *pgsub)
 {
-     int i, j;
-     double maxFreq[MAX_BEAMS];
-     static int source;
-     int source2;
-     static int filterType, reset;
-     static double sampleFreq, freq1, freq2, weightA, weightB, weightC;
+     int i;
      char filterString[MAX_STRING_SIZE];
 
 
-     /* copy inputs to local variables */
-
-     reset = *(long *)pgsub->a;
-
-     printf("resetGuideConfig: %d %d \n", source,reset);
 
           for (i = PWFS1; i <= GYRO; i++)
           {
@@ -2249,24 +2237,23 @@ long decimate (struct genSubRecord * pgsub)
      {
           /* simulation active */
 
-          if (semTake (m2MemFree, SEM_TIMEOUT) == OK)
-          {
-               tcsData.xTiltPos = (double) m2Ptr->page1.xTilt;
-               tcsData.yTiltPos = (double) m2Ptr->page1.yTilt;
-               tcsData.zPos = (double) m2Ptr->page1.zFocus;
+          epicsMutexLock(m2MemFree);
 
-               tcsData.xTiltGuide = (double)xGuideTcs;
-               tcsData.yTiltGuide = (double)yGuideTcs;
-               tcsData.zGuide = (double)zGuideTcs;
+          tcsData.xTiltPos = (double) m2Ptr->page1.xTilt;
+          tcsData.yTiltPos = (double) m2Ptr->page1.yTilt;
+          tcsData.zPos = (double) m2Ptr->page1.zFocus;
 
-               tcsData.xDmd = (double) m2Ptr->page0.xDemand;
-               tcsData.yDmd = (double) m2Ptr->page0.yDemand;
+          tcsData.xTiltGuide = (double)xGuideTcs;
+          tcsData.yTiltGuide = (double)yGuideTcs;
+          tcsData.zGuide = (double)zGuideTcs;
 
-               tcsData.xPos = (double) m2Ptr->page1.xPosition;
-               tcsData.yPos = (double) m2Ptr->page1.yPosition;
+          tcsData.xDmd = (double) m2Ptr->page0.xDemand;
+          tcsData.yDmd = (double) m2Ptr->page0.yDemand;
 
-               semGive (m2MemFree);
-          }
+          tcsData.xPos = (double) m2Ptr->page1.xPosition;
+          tcsData.yPos = (double) m2Ptr->page1.yPosition;
+
+          epicsMutexUnlock(m2MemFree);
      }
      else
      {
@@ -2290,35 +2277,30 @@ long decimate (struct genSubRecord * pgsub)
 
      }
 
-     if (semTake (setPointFree, SEM_TIMEOUT) != OK)
+     epicsMutexLock(setPointFree);
+
+     switch (currentBeam)
      {
-          errorLog ("decimate - setPointFree timeout", 1, ON);
-          return (ERROR);
+         case BEAMB:
+         case B2ARAMP:
+              tcsData.xNetTiltDmd = (double) setPoint.xTiltB;
+              tcsData.yNetTiltDmd = (double) setPoint.yTiltB;
+              break;
+
+         case BEAMC:
+              tcsData.xNetTiltDmd = (double) setPoint.xTiltC;
+              tcsData.yNetTiltDmd = (double) setPoint.yTiltC;
+              break;
+
+         default:
+              tcsData.xNetTiltDmd = (double) setPoint.xTiltA;
+              tcsData.yNetTiltDmd = (double) setPoint.yTiltA;
      }
-     else
-     {
-          switch (currentBeam)
-          {
-          case BEAMB:
-          case B2ARAMP:
-               tcsData.xNetTiltDmd = (double) setPoint.xTiltB;
-               tcsData.yNetTiltDmd = (double) setPoint.yTiltB;
-               break;
 
-          case BEAMC:
-               tcsData.xNetTiltDmd = (double) setPoint.xTiltC;
-               tcsData.yNetTiltDmd = (double) setPoint.yTiltC;
-               break;
+     tcsData.zNetDmd = (double) setPoint.zFocus;
 
-          default:
-               tcsData.xNetTiltDmd = (double) setPoint.xTiltA;
-               tcsData.yNetTiltDmd = (double) setPoint.yTiltA;
-          }
+     epicsMutexUnlock(setPointFree);
 
-          tcsData.zNetDmd = (double) setPoint.zFocus;
-
-          semGive (setPointFree);
-     }
 
      /* convert current position readings from m2 to tcs frame of reference */
 
@@ -2583,7 +2565,7 @@ static double dfilter(double newSample, int Id)
 
      if(Id < 0 || Id > (MAX_FILTER_CHANNELS - 1))
      {
-          logMsg("dfilter - item Id [%d] out of range\n", (int)Id, 0, 0, 0, 0, 0);
+          errlogPrintf("dfilter - item Id [%d] out of range\n", (int)Id);
           return(0.0);
      }
 

@@ -15,10 +15,8 @@
  * 
  * FUNCTION NAME(S)
  * ----------------
- * realInit - dummy INAM routine
  * realDrive    - read tilt system data buffer and write to gensub ports
  * displayScs   - read scs system data buffer and write to gensub ports
- * statusInit   - dummy INAM routine
  * statusDrive  - read tilt system status word and write to gensub ports
  * real2Drive   - read more tilt system values and write to gensub ports
  *
@@ -39,10 +37,12 @@
  * 29-Oct-1997: Add displayScs routines
  * 07-May-1999: Added RCS id
  * 15-Dec-1999: Added real2Drive
+ * 06-Dec-2017: Begin EPICS OSI conversion (mdw)
  *
  */
 /* INDENT ON */
 /* ===================================================================== */
+#include <timeLib.h>        /* For timeNow */
 #include "archive.h"        /* For refMemFree */
 #include "chop.h"           /* For chopIsOn, getSyncMask */
 #include "control.h"        /* For simLevel, scsPtr, scsBase, m2Ptr, 
@@ -51,14 +51,11 @@
 #include "utilities.h"      /* For errorLog, debugLevel */
 #include "xycom.h"          /* For xyStatus */
 
-#include <logLib.h>         /* For logMsg */
-#include <timeLib.h>        /* For timeNow */
 
 /* ===================================================================== */
 /* INDENT OFF */
 /*
  * Function name:
- * realInit
  * realDrive
  * 
  * Purpose:
@@ -117,52 +114,41 @@
 
 /* INDENT ON */
 /* ===================================================================== */
-
-/*
-long    realInit (struct genSubRecord * pgsub)
-{
-    return (OK);
-}
-*/
-
 long    realDrive (struct genSubRecord * pgsub)
 {
 
     /* note sense reversal for in position, on ref mem 0 = in position */
 
-    if(semTake (refMemFree, SEM_TIMEOUT) == OK)
-    {
-        *(long *) pgsub->vala   = scsPtr->page1.checksum;
-        *(long *) pgsub->valb   = scsPtr->page1.NR;
-        *(double *) pgsub->valc = scsPtr->page1.xTilt;
-        *(double *) pgsub->vald = scsPtr->page1.yTilt;
-        *(double *) pgsub->vale = scsPtr->page1.zFocus;
-        *(double *) pgsub->valf = scsPtr->page1.actuator1;
-        *(double *) pgsub->valg = scsPtr->page1.actuator2;
-        *(double *) pgsub->valh = scsPtr->page1.actuator3;
-        *(long *) pgsub->vali   = scsPtr->page1.inPosition;
-        if (scsPtr->page1.chopTransition)
-           *(long *) pgsub->valj   = 0;
-	else
-           *(long *) pgsub->valj   = 1;
-        *(long *) pgsub->valk   = (long) scsPtr->page1.statusWord.all;
-        *(long *) pgsub->vall   = scsPtr->page1.heartbeat;
-        *(long *) pgsub->valm   = scsPtr->page1.beamPosition;
-        *(double *) pgsub->valn = scsPtr->page1.xPosition;
-        *(double *) pgsub->valo = scsPtr->page1.yPosition;
-        *(long *) pgsub->valp   = scsPtr->page1.deployBaffle;
-        *(long *) pgsub->valq   = scsPtr->page1.centralBaffle;
-        *(double *) pgsub->valr = scsPtr->page1.baffleEncoderA;
-        *(double *) pgsub->vals = scsPtr->page1.baffleEncoderB;
-        *(double *) pgsub->valt = scsPtr->page1.baffleEncoderC;
-        *(long *) pgsub->valu   = scsPtr->page1.topEnd;
+    epicsMutexLock(refMemFree);
 
-        semGive (refMemFree);
-    }
+    *(long *) pgsub->vala   = scsPtr->page1.checksum;
+    *(long *) pgsub->valb   = scsPtr->page1.NR;
+    *(double *) pgsub->valc = scsPtr->page1.xTilt;
+    *(double *) pgsub->vald = scsPtr->page1.yTilt;
+    *(double *) pgsub->vale = scsPtr->page1.zFocus;
+    *(double *) pgsub->valf = scsPtr->page1.actuator1;
+    *(double *) pgsub->valg = scsPtr->page1.actuator2;
+    *(double *) pgsub->valh = scsPtr->page1.actuator3;
+    *(long *) pgsub->vali   = scsPtr->page1.inPosition;
+
+    if (scsPtr->page1.chopTransition)
+       *(long *) pgsub->valj   = 0;
     else
-    {
-        errorLog("realDrive - refMemFree timeout", 1, ON);
-    }
+       *(long *) pgsub->valj   = 1;
+
+    *(long *) pgsub->valk   = (long) scsPtr->page1.statusWord.all;
+    *(long *) pgsub->vall   = scsPtr->page1.heartbeat;
+    *(long *) pgsub->valm   = scsPtr->page1.beamPosition;
+    *(double *) pgsub->valn = scsPtr->page1.xPosition;
+    *(double *) pgsub->valo = scsPtr->page1.yPosition;
+    *(long *) pgsub->valp   = scsPtr->page1.deployBaffle;
+    *(long *) pgsub->valq   = scsPtr->page1.centralBaffle;
+    *(double *) pgsub->valr = scsPtr->page1.baffleEncoderA;
+    *(double *) pgsub->vals = scsPtr->page1.baffleEncoderB;
+    *(double *) pgsub->valt = scsPtr->page1.baffleEncoderC;
+    *(long *) pgsub->valu   = scsPtr->page1.topEnd;
+
+    epicsMutexUnlock(refMemFree);
 
     return (OK);
 }
@@ -214,17 +200,10 @@ long    realDrive (struct genSubRecord * pgsub)
 long    real2Drive (struct genSubRecord * pgsub)
 {
 
-    if(semTake (refMemFree, SEM_TIMEOUT) == OK)
-    {
-        *(double *) pgsub->vala = scsPtr->page1.upperBearingAngle;
-        *(double *) pgsub->valb = scsPtr->page1.lowerBearingAngle;
-
-        semGive (refMemFree);
-    }
-    else
-    {
-        errorLog("real2Drive - refMemFree timeout", 1, ON);
-    }
+    epicsMutexLock(refMemFree);
+    *(double *) pgsub->vala = scsPtr->page1.upperBearingAngle;
+    *(double *) pgsub->valb = scsPtr->page1.lowerBearingAngle;
+    epicsMutexUnlock(refMemFree);
 
     return (OK);
 }
@@ -296,31 +275,29 @@ long    displayScs (struct genSubRecord * pgsub)
 {
     if(simLevel != 0)
     {
-        if(semTake (m2MemFree, SEM_TIMEOUT) == OK)  
-        {
-            *(double *) pgsub->vala = m2Ptr->page0.xTiltGuide;
-            *(double *) pgsub->valb = m2Ptr->page0.yTiltGuide;
-            *(double *) pgsub->valc = m2Ptr->page0.zFocusGuide;
-            *(double *) pgsub->vald = m2Ptr->page0.AxTilt;
-            *(double *) pgsub->vale = m2Ptr->page0.AyTilt;
-            *(double *) pgsub->valf = m2Ptr->page0.BxTilt;
-            *(double *) pgsub->valg = m2Ptr->page0.ByTilt;
-            *(double *) pgsub->valh = m2Ptr->page0.CxTilt;
-            *(double *) pgsub->vali = m2Ptr->page0.CyTilt;
-            *(double *) pgsub->valj = m2Ptr->page0.actuator1;
-            *(double *) pgsub->valk = m2Ptr->page0.actuator2;
-            *(double *) pgsub->vall = m2Ptr->page0.actuator3;
-            *(long *) pgsub->valm = m2Ptr->page0.heartbeat;
-            *(double *) pgsub->valn = m2Ptr->page0.xDemand;
-            *(double *) pgsub->valo = m2Ptr->page0.yDemand;
-            *(long *) pgsub->valp = m2Ptr->page0.centralBaffle;
-            *(long *) pgsub->valq = m2Ptr->page0.deployBaffle;
-            *(long *) pgsub->valr = m2Ptr->page0.chopProfile;
-            *(double *) pgsub->vals = m2Ptr->page0.chopFrequency;
-            *(double *) pgsub->valt = m2Ptr->page0.chopDutyCycle;
-            *(long *) pgsub->valu = m2Ptr->page0.NS;
-            semGive (m2MemFree);
-        }
+        epicsMutexLock(m2MemFree);  
+        *(double *) pgsub->vala = m2Ptr->page0.xTiltGuide;
+        *(double *) pgsub->valb = m2Ptr->page0.yTiltGuide;
+        *(double *) pgsub->valc = m2Ptr->page0.zFocusGuide;
+        *(double *) pgsub->vald = m2Ptr->page0.AxTilt;
+        *(double *) pgsub->vale = m2Ptr->page0.AyTilt;
+        *(double *) pgsub->valf = m2Ptr->page0.BxTilt;
+        *(double *) pgsub->valg = m2Ptr->page0.ByTilt;
+        *(double *) pgsub->valh = m2Ptr->page0.CxTilt;
+        *(double *) pgsub->vali = m2Ptr->page0.CyTilt;
+        *(double *) pgsub->valj = m2Ptr->page0.actuator1;
+        *(double *) pgsub->valk = m2Ptr->page0.actuator2;
+        *(double *) pgsub->vall = m2Ptr->page0.actuator3;
+        *(long *) pgsub->valm = m2Ptr->page0.heartbeat;
+        *(double *) pgsub->valn = m2Ptr->page0.xDemand;
+        *(double *) pgsub->valo = m2Ptr->page0.yDemand;
+        *(long *) pgsub->valp = m2Ptr->page0.centralBaffle;
+        *(long *) pgsub->valq = m2Ptr->page0.deployBaffle;
+        *(long *) pgsub->valr = m2Ptr->page0.chopProfile;
+        *(double *) pgsub->vals = m2Ptr->page0.chopFrequency;
+        *(double *) pgsub->valt = m2Ptr->page0.chopDutyCycle;
+        *(long *) pgsub->valu = m2Ptr->page0.NS;
+        epicsMutexUnlock(m2MemFree);
     }
     else
     {
@@ -421,18 +398,15 @@ long    displayScs2 (struct genSubRecord * pgsub)
 
     if(simLevel != 0)
     {
-	if(semTake (m2MemFree, SEM_TIMEOUT) == OK)  
-	{
-	    *(double *) pgsub->vala = m2Ptr->page0.zFocus;
-	    *(double *) pgsub->valb = m2Ptr->page0.zGuide; 
-	    *(double *) pgsub->valc = m2Ptr->page0.rawXGuide;
-	    *(double *) pgsub->vald = m2Ptr->page0.rawYGuide;
-	    *(double *) pgsub->vale = m2Ptr->page0.rawZGuide;
-            *(double *) pgsub->valf = m2Ptr->page0.xGrossTiltDmd;
-            *(double *) pgsub->valg = m2Ptr->page0.yGrossTiltDmd;
-
-	    semGive (m2MemFree);
-	}
+	epicsMutexLock(m2MemFree);  
+	*(double *) pgsub->vala = m2Ptr->page0.zFocus;
+	*(double *) pgsub->valb = m2Ptr->page0.zGuide; 
+	*(double *) pgsub->valc = m2Ptr->page0.rawXGuide;
+	*(double *) pgsub->vald = m2Ptr->page0.rawYGuide;
+	*(double *) pgsub->vale = m2Ptr->page0.rawZGuide;
+        *(double *) pgsub->valf = m2Ptr->page0.xGrossTiltDmd;
+        *(double *) pgsub->valg = m2Ptr->page0.yGrossTiltDmd;
+	epicsMutexUnlock(m2MemFree);
     }
     else
     {
@@ -456,11 +430,11 @@ long    displayScs2 (struct genSubRecord * pgsub)
     }
 
     /* Either way, simulating or not, put eventData values on display */
-    if (semTake (eventDataSem, SEM_TIMEOUT) == OK)
-    {
-            /* event bus stuff */
-            *(long   *) pgsub->valh = eventData.inPosition;
-            *(long   *) pgsub->vali = eventData.currentBeam;
+    epicsMutexLock(eventDataSem);
+
+    /* event bus stuff */
+    *(long   *) pgsub->valh = eventData.inPosition;
+    *(long   *) pgsub->vali = eventData.currentBeam;
             /*
             *(double *) pgsub->valj = eventData.xTilt;
             *(double *) pgsub->valk = eventData.yTilt;
@@ -469,13 +443,7 @@ long    displayScs2 (struct genSubRecord * pgsub)
             *(double *) pgsub->valn = eventData.yPosition;
             *(double *) pgsub->valo = eventData.time; 
 	    timeLogged = eventData.time;*/
-	    semGive (eventDataSem);
-    }
-    else
-    {
-        errorLog ("displayScs2 - eventDataSem timeout\n", 1, ON);	
-	return (ERROR);
-    }
+    epicsMutexUnlock(eventDataSem);
         
     *(long *) pgsub->valp = getSyncMask();
 
@@ -485,7 +453,6 @@ long    displayScs2 (struct genSubRecord * pgsub)
 /* INDENT OFF */
 /*
  * Function name:
- * statusInit
  * statusDrive
  * 
  * Purpose:
@@ -526,38 +493,22 @@ long    displayScs2 (struct genSubRecord * pgsub)
 
 /* INDENT ON */
 /* ===================================================================== */
-
-/*
-long    statusInit (struct genSubRecord * pgsub)
-{
-    return (OK);
-}
-*/
-
 long    statusDrive (struct genSubRecord * pgsub)
 {
+
+    epicsMutexLock(refMemFree);
+
     /* read the m2 status word as bytes and put out to ports */
+    *(long *) pgsub->vala = (char) scsPtr->page1.statusWord.byte[3];
+    *(long *) pgsub->valb = (char) scsPtr->page1.statusWord.byte[2];
+    *(long *) pgsub->valc = (char) scsPtr->page1.statusWord.byte[1];
+    *(long *) pgsub->vald = (char) scsPtr->page1.statusWord.byte[0];
 
-    if(semTake (refMemFree, SEM_TIMEOUT) != OK)
-    {
-        if ((debugLevel > DEBUG_NONE) & (debugLevel <= DEBUG_MED))
-            logMsg("statusDrive - refMemFree timeout\n", 0, 0, 0, 0, 0, 0);
-        return(ERROR);
-    }
-    else
-    {
-        *(long *) pgsub->vala = (char) scsPtr->page1.statusWord.byte[3];
-        *(long *) pgsub->valb = (char) scsPtr->page1.statusWord.byte[2];
-        *(long *) pgsub->valc = (char) scsPtr->page1.statusWord.byte[1];
-        *(long *) pgsub->vald = (char) scsPtr->page1.statusWord.byte[0];
+    /* read enclosure temperature */
+    *(double *) pgsub->vale = scsPtr->page1.enclosureTemp;
 
-        /* read enclosure temperature */
+    epicsMutexUnlock(refMemFree);
 
-        *(double *) pgsub->vale = scsPtr->page1.enclosureTemp;
-
-        semGive (refMemFree);
-
-        return (OK);
-    }
+    return (OK);
 }
 

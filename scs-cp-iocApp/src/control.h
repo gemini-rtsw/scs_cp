@@ -441,16 +441,11 @@ enum
     INT3
 };
 
-void fireLoops(int param);
-
+void  fireLoops(void *);
 void processGuides(void);
-
 void slowTransmit(void);
-
 void tiltReceive(void);
-
 void scsReceive(void);
-
 int checkTiltStatus(void);
 
 void cemTimerStart();

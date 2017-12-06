@@ -50,6 +50,8 @@
 #include <epicsMutex.h>
 #include <epicsEvent.h>
 #include <errlog.h>
+#include <epicsMessageQueue.h>
+#include <epicsThread.h>
 
 /* Define true/false, on/off etc */
 
@@ -67,6 +69,8 @@
 #define OFF             0
 
 #define PI              ((double)3.14159265)
+
+#define MSG_Q_EMPTY   (-1)
 
 
 /* Define conversion factors */

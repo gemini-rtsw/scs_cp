@@ -42,7 +42,6 @@
 #include "control.h"      /* For definition of Demands */
 #include "utilities.h"    /* For debugLevel */
 
-#include <logLib.h>
 #include <stdio.h>
 
 #define NUM_INTERP_AXES    7    /* number of channels that need interpolating */
@@ -140,7 +139,7 @@ double  getInterpolation (int selectAxis, double targetTime)
 
     if(selectAxis < 0 || selectAxis > (NUM_INTERP_AXES - 1))
     {
-        logMsg("getInterpolation - axis out of range\n", 0, 0, 0, 0, 0, 0);
+        errlogMessage("getInterpolation - axis out of range\n");
         return(ERROR);
     }
 
@@ -246,19 +245,19 @@ void    tcsInterpolate (Demands newTcsDemand)
             if ((debugLevel > DEBUG_MED) & (debugLevel <= DEBUG_MED))
             {
                 sprintf(message, "axis = %d\n", axis);
-                logMsg("%s", (int)message, 0, 0, 0, 0, 0);
+                errlogPrintf("%s", message);
 
                 sprintf(message, "coefficients = %4.2f, b= %4.2f, c=%4.2f\n",
                     interpCoeff[axis][0], interpCoeff[axis][1], interpCoeff[axis][2]);
-                logMsg("%s", (int)message, 0, 0, 0, 0, 0);
+                errlogPrintf("%s", message);
 
                 sprintf(message, "position     = %4.2f %4.2f %4.2f\n",
                     sample[axis][0], sample[axis][1], sample[axis][2]); 
-                logMsg("%s", (int)message, 0, 0, 0, 0, 0);
+                errlogPrintf("%s", message);
 
                 sprintf(message, "times        = %4.2f %4.2f %4.2f\n", 
                    t[0], t[1], t[2]);
-                logMsg("%s", (int)message, 0, 0, 0, 0, 0);
+                errlogPrintf("%s", message);
 
             }
 

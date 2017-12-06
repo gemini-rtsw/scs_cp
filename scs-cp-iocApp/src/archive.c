@@ -82,15 +82,14 @@ static epicsMutexId archiveFree = NULL;
 /* Indicates that logging has been turned on */
 static int loggingArmed = OFF;
 
-static int logChoice = TILTS;
-static int startLog, endLog;
+//static int logChoice = TILTS;
+//static int startLog, endLog;
 static int CADlogging = OFF;
 
 /* declare externals */
 int loggingNow = OFF;
 int logThreshold = 20;
 epicsMutexId refMemFree = NULL;
-epicsEventId logNow = NULL;
 DBADDR logCAddr;
 
 
@@ -392,9 +391,13 @@ int readArchive (m2History * archivePtr, double targetTime)
 
 /* ===================================================================== */
 
+
 long CADlog (struct cadRecord * pcad)
 {
     long status = CAD_ACCEPT;
+
+
+#if 0
     long conversionFlag;
     char buffer[MAX_STRING_SIZE];
     double timeStamp;
@@ -536,7 +539,10 @@ long CADlog (struct cadRecord * pcad)
     strncpy (pcad->mess, "log - inappropriate cad directive", MAX_STRING_SIZE - 1);
     status = CAD_REJECT;
     }
+#endif
 
+    strncpy (pcad->mess, "logging not implemented", MAX_STRING_SIZE - 1);
+    status = CAD_REJECT;
     return (status);
 }
 
@@ -553,18 +559,18 @@ void showArchive (void)
 
     if (timeNow (&seekTime) != OK)
     {
-    errlogMessage("showArchive - error reading seekTime\n");
+       errlogMessage("showArchive - error reading seekTime\n");
     }
 
-    printf ("topPtr = %lx, endPtr = %lx, oldestTime = %f, newestTime = %f\n", (long) topPtr, (long) endPtr, oldestTime, newestTime);
+    epicsPrintf ("topPtr = %lx, endPtr = %lx, oldestTime = %f, newestTime = %f\n", (long) topPtr, (long) endPtr, oldestTime, newestTime);
 
     if (readArchive (&archiveEntry, seekTime) == OK)
     {
-    printf ("x = %f, y = %f, z = %f\n", archiveEntry.xTilt, archiveEntry.yTilt, archiveEntry.zFocus);
+       printf ("x = %f, y = %f, z = %f\n", archiveEntry.xTilt, archiveEntry.yTilt, archiveEntry.zFocus);
     }
     else
     {
-    printf ("unable to retrieve positions for time specified, use current position\n");
+       epicsPrintf ("unable to retrieve positions for time specified, use current position\n");
     }
 }
 

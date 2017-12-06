@@ -67,7 +67,6 @@ long scsLogDestruct(void);
 extern int loggingNow;
 extern int logThreshold;
 extern epicsMutexId refMemFree;
-extern epicsEventId logNow;
 extern DBADDR logCAddr;
 
 #endif /* _INCLUDED_ARCHIVE_H */
