@@ -27,7 +27,7 @@
  * -------
  * 17-Nov-1999: Created new header files.
  * 16-Dec-1999: Added global variables
- * 19-OCT-2017: gon conversion to EPICS OSI (mdw)
+ * 19-OCT-2017: Begin conversion to EPICS OSI (mdw)
  *
  */
 /* ===================================================================== */
@@ -35,7 +35,6 @@
 #define _INCLUDED_CONTROL_H
 
 #include "chopControl.h"        /* For BEAMA definition */
-#include "elgLib.h"
 #include "guide.h"
 #include "utilities.h"          /* For MAX_SOURCES */
 

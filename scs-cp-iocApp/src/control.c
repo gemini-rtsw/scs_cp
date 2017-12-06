@@ -86,7 +86,6 @@
 #include "archive.h"    /* For refMemFree */
 #include "chop.h"       /* For jogBeam, chopIsOn */
 #include "control.h"    /* For logThreshold, SYSTEM_CLOCK_RATE */
-#include "elgLib.h"     /* For data logging routine */
 #include "guide.h"      /* For updateInterval, guideOn, guideOnA, guideOnB,
                            weight */
 #include "interlock.h"  /* For lockPosition, scsState */

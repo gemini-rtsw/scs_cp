@@ -31,7 +31,9 @@
  * 31-Mar-1998: Original (srp)
  * 23-Jun-1998: Create message queue for health reporting
  * 07-May-1999: Added RCS id
+ * 05-Dec-2017: Begin conversion to EPICS OSI (mdw)
  *
+ * oi
  */
 /* INDENT ON */
 /* ===================================================================== */
@@ -49,13 +51,8 @@
 
 #include <string.h>
 #include <stdio.h>
-
-#include <logLib.h> /* For logMsg */
 #include <dbAccess.h>   /* For dbNameToAddr */
 
-#include <taskLib.h>
-#include <sysLib.h> /* For sysXXX */
-#include <vxLib.h>  /* For vxMemProbe */
 
 #define TOP "m2:"
 
@@ -68,8 +65,7 @@
 
 /* Declare externals */
 
-MSG_Q_ID healthQId = NULL;
-SEM_ID scsReady = NULL;
+epicsMessageQueueId  healthQId = NULL;
 
 /* ===================================================================== */
 /* INDENT OFF */
@@ -118,7 +114,8 @@ SEM_ID scsReady = NULL;
  * History:
  * 15-Oct-1997: Original(srp)
  * 10-Feb-1998: Incorporate spawning of guide handling tasks
- * 
+ * 05-Dec-2017: Removed scsReady semaphore creation code since the semaphore
+ *              wasn't being used anywhere. (mdw)
  */
 
 /* INDENT ON */
@@ -131,12 +128,8 @@ int scsInit (void)
    char test = 0;
 
    /* create holding semaphore to prevent execution before intialisation */
+   /* (code deleted) */
 
-   if ((scsReady = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY)) == NULL)
-   {
-      printf ("unable to create scsReady sem\n");
-      return (ERROR);
-   }
 
    /* create semaphores to control pvload of initialisation files */
 

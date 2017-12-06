@@ -27,6 +27,8 @@
  * -------
  * 17-Nov-1999: Created new header files.
  * 16-Dec-1999: Added global variables
+ * 05-Dec-2017: Begin EPICS OSI conversion (mdw)
+ *              Removed #include <elgLib.h> (mdw)
  *
  */
 /* INDENT ON */
@@ -34,20 +36,12 @@
 #ifndef _INCLUDED_SETUP_H
 #define _INCLUDED_SETUP_H
 
-#include "elgLib.h"
-
-#ifndef _INCLUDED_SEMLIB_H
-#define _INCLUDED_SEM_LIB_H
-#include <semLib.h>
-#endif
-
 /* Public functions */
-
 int scsInit(void);
 
 /* Global variables */
 
-extern MSG_Q_ID healthQId;
+extern epicsMessageQueueId healthQId;
 extern SEM_ID scsReady;
 
 #endif

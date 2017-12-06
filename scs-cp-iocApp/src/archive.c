@@ -35,7 +35,8 @@
  * 11-Feb-1998: Add more checks on function return values
  * 23-Feb-1998: make cadDirLog more robust with string length checking
  * 07-May-1999: Added RCS id
- * 06-OCT-2017: Started conversion to EPICS OSI (MDW)
+ * 06-OCT-2017: Started conversion to EPICS OSI (mdw)
+ * 05-Dec-2017: Removed the error logging support functions (mdw)
  */
 
 /* ===================================================================== */
@@ -53,7 +54,6 @@
 #include "archive.h"
 #include "control.h"    /* For simLevel, scsBase, m2Ptr, m2MemFree */
 #include "utilities.h"  /* For debugLevel */
-#include "elgLib.h"
 
 #define BUFFERSIZE   400  /* Number of samples of m2 position to log.
                              Assuming 200Hz update gives 1 second of capture */
@@ -93,8 +93,6 @@ epicsMutexId refMemFree = NULL;
 epicsEventId logNow = NULL;
 DBADDR logCAddr;
 
-/* define function prototypes */
-static long scsLogInit (char *, int);
 
 /* ===================================================================== */
 /*
@@ -570,204 +568,6 @@ void showArchive (void)
     }
 }
 
-/* ===================================================================== */
-/*
- * Function name:
- * scsLogInit   - initialise data logging function
- * 
- * Purpose:
- * Initialise the data logging functions with the filename specified
- * 
- *
- * Invocation:
- * scsLogInit(filename)
- *
- * Parameters in:
- *  string  filename
- * 
- * Parameters out:
- * None
- *
- * Return value:
- *      < status    int OK or ERROR
- * 
- * Globals: 
- *  External functions:
- *  None
- *
- *  External variables:
- * 
- * Requirements:
- * 
- * Author:
- * Sean Prior  (srp@roe.ac.uk)
- * 
- * History:
- * 01-Dec-1997: Original(srp)
- * 
- */
-
-/* ===================================================================== */
-
-static long scsLogInit (char *name, int logFreq)
-{
-    static char filename[MAX_STRING_SIZE];
-    long carValue = CAR_BUSY;
-
-    /* initialise elg logging */
-
-    strncpy (filename, name, MAX_STRING_SIZE - 1);
-    printf ("scsLogInit: log file = %s\n", filename);
-
-    /* access to the target stream protected by semaphore */
-
-    elgOpen (filename);
-
-    /* write BUSY to logC CAR */
-
-    if (dbPutField (&logCAddr, DBR_LONG, &carValue, 1) != 0)
-    {
-    errorLog ("scsLogInit - unable to write to logC CAR", 1, ON);
-    }
-
-    loggingArmed = ON;
-
-    /* set logging frequency on the auxiliary clock and enable */
-
-    logThreshold = (int) (200.0 / logFreq);
-
-    epicsEventSignal(logNow);
-
-    return (OK);
-}
-
-long scsLogDestruct (void)
-{
-    long carValue = CAR_IDLE;
-
-    /* indicate that logging is over */
-
-    loggingNow = OFF;
-    loggingArmed = OFF;
-
-    /* write IDLE to the logC CAR */
-
-    if (dbPutField (&logCAddr, DBR_LONG, &carValue, 1) != 0)
-    {
-    errorLog ("scsLogDestruct - unable to write to logC CAR", 1, ON);
-    }
-
-    /* close logging files */
-
-    elgClose ();
-
-    return (OK);
-}
-
-
-void loggerTask (void)
-{
-   double timeStamp;
-   static char message[81];
-
-   for (;;)
-   {
-      /* wait for semaphore tick to write log */
-      epicsEventMustWait(logNow);
-      if (timeNow (&timeStamp) != OK)
-      {
-         errlogMessage("loggerTask - error reading timeStamp\n");
-      }
-
-      if (loggingNow != ON && timeStamp >= startLog && timeStamp <= endLog)
-      {
-         /* start logging */
-         loggingNow = ON;
-         errlogPrintf ("logging status = %d\n", loggingNow);
-      }
-
-      if (timeStamp > endLog)
-      {
-         /* halt logging */
-         loggingNow = OFF;
-         errlogPrintf ("logging status = %d\n", loggingNow);
-         scsLogDestruct ();
-      } 
-
-      if (loggingNow == ON)
-      {
-         /* log the message */
-         if(simLevel == 0)
-         {
-            switch (logChoice)
-            {
-               case TILTS:
-                /* fetch parameters from reflective memory */
-                 sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
-                    scsBase->page0.AxTilt, scsBase->page0.AyTilt, scsBase->page0.zFocusGuide,
-                    scsBase->page1.xTilt, scsBase->page1.yTilt, scsBase->page1.zFocus);
-                 elgs (TILTS, message);
-                 strncpy (message, "blank", 80);
-                 break;
-
-               case GUIDES:
-                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f", timeStamp,
-                       scsBase->page0.xTiltGuide, scsBase->page0.yTiltGuide, scsBase->page0.zFocusGuide);
-                  elgs (GUIDES, message);
-                  break;
-
-               case POSITIONS:
-                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
-                     scsBase->page0.xDemand, scsBase->page0.yDemand,
-                     scsBase->page1.xPosition, scsBase->page1.yPosition);
-                  elgs (POSITIONS, message);
-                  break;
-            
-               default:
-                  sprintf (message, "%16.6f no items selected", timeStamp);
-                  elgs (0, message);
-            } /* switch(logChoice) */
-         }
-         else   /* if (simLevel == 0) */
-         {
-            /* simulation active */
-            switch (logChoice)
-            {
-               case TILTS:
-                  /* fetch parameters from reflective memory */
-                  epicsMutexMustLock(m2MemFree);
-                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
-                     m2Ptr->page0.AxTilt, m2Ptr->page0.AyTilt, m2Ptr->page0.zFocusGuide,
-                     m2Ptr->page1.xTilt, m2Ptr->page1.yTilt, m2Ptr->page1.zFocus);
-                  epicsMutexUnlock(m2MemFree);
-                  elgs (TILTS, message);
-                  strncpy (message, "blank", 80);
-                  break;
-
-               case GUIDES:
-                  epicsMutexMustLock(m2MemFree);
-                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f", timeStamp,
-                     m2Ptr->page0.xTiltGuide, m2Ptr->page0.yTiltGuide, m2Ptr->page0.zFocusGuide);
-                  epicsMutexUnlock(m2MemFree);
-                  elgs (GUIDES, message);
-                  break;
-
-               case POSITIONS:
-                  epicsMutexMustLock(m2MemFree);
-                  sprintf (message, "%16.6f %+4.2f %+4.2f %+4.2f %+4.2f", timeStamp,
-                     m2Ptr->page0.xDemand, m2Ptr->page0.yDemand,
-                     m2Ptr->page1.xPosition, m2Ptr->page1.yPosition);
-                  epicsMutexUnlock(m2MemFree);
-                  elgs (POSITIONS, message);
-                  break;
-
-               default:
-                  sprintf (message, "%16.6f no items selected", timeStamp);
-            } /* switch (logChoice) */
-         } /* else if(simLevel == 0) */
-      } /* if (loggingNow == ON) */
-   } /* for(;;) */
-}
 
 /* ===================================================================== */
 /*

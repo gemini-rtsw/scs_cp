@@ -26,8 +26,8 @@ scs-cp-ioc_DBD += base.dbd
 scs-cp-ioc_SRCS += scs-cp-ioc_registerRecordDeviceDriver.cpp
 
 
-scs-cp-ioc_SRCS += amsLib.c
-scs-cp-ioc_SRCS += elgLib.c
+#scs-cp-ioc_SRCS += amsLib.c
+#scs-cp-ioc_SRCS += elgLib.c
 scs-cp-ioc_SRCS += archive.c
 scs-cp-ioc_SRCS += chop.c
 scs-cp-ioc_SRCS += chopControl.c
