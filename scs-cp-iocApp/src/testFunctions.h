@@ -94,7 +94,7 @@ void driveP1(void);
 
 void driveP2(void);
 
-void fillWfs(double value);
+void fillWfs(void *);
 
 void startGuideSim();
 

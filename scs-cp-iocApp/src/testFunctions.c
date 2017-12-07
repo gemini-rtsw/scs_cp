@@ -71,6 +71,7 @@
 #include <string.h>
 #include <math.h>           /* for trig functions */
 #include <stdlib.h>         /* Used for rand */
+#include <tcslib.h>         /* for tcsDcString */
 
 
 
@@ -91,7 +92,7 @@ int freeRunGuideSim = 0;  /* When true, this calls rmISR3(3) to pretend to be P2
 double xTiltGuideSimScale = 0.0;
 double yTiltGuideSimScale = 0.0;
 
-int guideSimTaskId = 0;  /* The taskId of the guideSimulation task */
+epicsThreadId guideSimTaskId = 0;  /* The taskId of the guideSimulation task */
 
 /* RANDnorm returns a bounded random variable between (-1.0 and 1.0-max_z) */
 double RANDnorm () {
@@ -630,7 +631,7 @@ void    printPage2 (const memMap * buffPtr)
     {
         pfaults  = (fault *)&(buffPtr->testResults.faults[i]); 
         printf ("fault[%2d]      Addr = %p, Index = %u, Subsys = %u, Code = %u\n", 
-                i, (pfaults, (unsigned)pfaults->index, 
+                i, pfaults, (unsigned)pfaults->index, 
                 (unsigned)pfaults->subsystem, (unsigned)pfaults->code);
     } 
 }
@@ -1052,8 +1053,10 @@ void showMaster(void)
 
 int printval = 0;
 
-void fillWfs(double value)
+void fillWfs(void *p)
 {
+
+   double value = 0.0; 
 
    for (;;) {
 
@@ -1088,7 +1091,7 @@ void fillWfs(double value)
       epicsThreadSleep(guideSimDelay);
    }
 
-   /* thread is deleted when it terminates */
+   /* thread is deletped when it terminates */
 }
 
 void startGuideSim(void) {
@@ -1096,11 +1099,13 @@ void startGuideSim(void) {
    stopGuideSim = 0;
    guideSimOn = 1;
 
-   guideSimTaskId = taskSpawn ("testWfs", 7, VX_FP_TASK, 20000, (FUNCPTR) fillWfs, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+   guideSimTaskId = epicsThreadCreate("testWfs", epicsThreadPriorityHigh, 
+                           epicsThreadGetStackSize(epicsThreadStackBig),
+                           (EPICSTHREADFUNC)fillWfs, (void *)NULL);
    
-   if ( guideSimTaskId == ERROR)
+   if (guideSimTaskId == NULL)
    {
-      printf("Unable to spawn guideSimTask task. guideSimOn set to 0.\n");
+      errlogMessage("Unable to spawn guideSimTask task. guideSimOn set to 0.\n");
       guideSimOn = 0;
    }
    else {
@@ -1418,7 +1423,7 @@ void driveP1(void)
         z += 0.0001;
 
 	/*delay 2 seconds */
-	taskDelay(sysClkRateGet()*2);
+	epicsThreadSleep(2.0);
     }
 }
 
@@ -1447,7 +1452,7 @@ void driveP2(void)
         z += 0.0001;
 
 	/*delay 2 seconds */
-	taskDelay(sysClkRateGet()*2);
+	epicsThreadSleep(2.0);
     }
 }
 

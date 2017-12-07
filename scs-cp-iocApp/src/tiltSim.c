@@ -43,7 +43,6 @@
 #include "utilities.h"      /* For tilt2act, errorLog */
 #include "chopControl.h"    /* For chopEventSem */
 
-#include <logLib.h>     /* For logMsg */
 
 #define CHOP_DRIVE_SCAN_RATE    20
 
@@ -155,36 +154,29 @@ long mechSim (struct genSubRecord * pgsub)
     {
     /* get demands from reflective memory */
 
-    if (semTake (m2MemFree, SEM_TIMEOUT) == OK)
-    {
-        tiltDemand.xTiltA = m2Ptr->page0.AxTilt;
-        tiltDemand.xTiltB = m2Ptr->page0.BxTilt;
-        tiltDemand.xTiltC = m2Ptr->page0.CxTilt;
+    epicsMutexLock(m2MemFree);
+    tiltDemand.xTiltA = m2Ptr->page0.AxTilt;
+    tiltDemand.xTiltB = m2Ptr->page0.BxTilt;
+    tiltDemand.xTiltC = m2Ptr->page0.CxTilt;
 
-        tiltDemand.yTiltA = m2Ptr->page0.AyTilt;
-        tiltDemand.yTiltB = m2Ptr->page0.ByTilt;
-        tiltDemand.yTiltC = m2Ptr->page0.CyTilt;
+    tiltDemand.yTiltA = m2Ptr->page0.AyTilt;
+    tiltDemand.yTiltB = m2Ptr->page0.ByTilt;
+    tiltDemand.yTiltC = m2Ptr->page0.CyTilt;
 
-        tiltDemand.xGuide = m2Ptr->page0.xTiltGuide;
-        tiltDemand.yGuide = m2Ptr->page0.yTiltGuide;
+    tiltDemand.xGuide = m2Ptr->page0.xTiltGuide;
+    tiltDemand.yGuide = m2Ptr->page0.yTiltGuide;
 
-        tiltDemand.zFocus = m2Ptr->page0.zFocusGuide;
-        tiltDemand.xPosition = m2Ptr->page0.xDemand;
-        tiltDemand.yPosition = m2Ptr->page0.yDemand;
+    tiltDemand.zFocus = m2Ptr->page0.zFocusGuide;
+    tiltDemand.xPosition = m2Ptr->page0.xDemand;
+    tiltDemand.yPosition = m2Ptr->page0.yDemand;
 
-        tolerance[XTILT] = m2Ptr->page0.xTiltTolerance;
-        tolerance[YTILT] = m2Ptr->page0.yTiltTolerance;
-        tolerance[FOCUS] = m2Ptr->page0.zFocusTolerance;
-        tolerance[XPOSITION] = m2Ptr->page0.xPositionTolerance;
-        tolerance[YPOSITION] = m2Ptr->page0.yPositionTolerance;
+    tolerance[XTILT] = m2Ptr->page0.xTiltTolerance;
+    tolerance[YTILT] = m2Ptr->page0.yTiltTolerance;
+    tolerance[FOCUS] = m2Ptr->page0.zFocusTolerance;
+    tolerance[XPOSITION] = m2Ptr->page0.xPositionTolerance;
+    tolerance[YPOSITION] = m2Ptr->page0.yPositionTolerance;
 
-        semGive (m2MemFree);
-    }
-    else
-    {
-        errorLog ("mechanism - m2MemFree timeout", 1, ON);
-        return (ERROR);
-    }
+    epicsMutexUnlock(m2MemFree);
 
     /* look at driveChop requirements */
 
@@ -213,7 +205,7 @@ long mechSim (struct genSubRecord * pgsub)
         else if (checkFreq < 0.1 || checkFreq > 10.0)
         {
         sprintf (msg, "chop freq error, pgsub->c = %f\n", checkFreq);
-        logMsg ("%s", (int) msg, 0, 0, 0, 0, 0);
+        errlogPrintf("%s", msg);
         return (ERROR);
         }
 
@@ -229,53 +221,52 @@ long mechSim (struct genSubRecord * pgsub)
 
         /* if the chop threshold has been exceeded, force a transition */
 
-        if (((syncSource == INTERNAL) && (ticker > tickThreshold)) || 
-		(syncSource == EXTERNAL && (semTake (chopEventSem, NO_WAIT) 
-	         == OK)))
+        if ( ((syncSource == INTERNAL) && (ticker > tickThreshold)) || 
+             ((syncSource == EXTERNAL) && (epicsEventTryWait(chopEventSem))))
         {
-        ticker = 0;
-        stateCount++;
+           ticker = 0;
+           stateCount++;
 
-        /*
-         * select count as modulo 3 for three point otherwise modulo
-         * 2
-         */
+           /*
+            * select count as modulo 3 for three point otherwise modulo
+            * 2
+            */
 
-        if (profile == THREEPOINT)
-        {
-            if (stateCount > 3)
-            stateCount = 0;
+           if (profile == THREEPOINT)
+           {
+               if (stateCount > 3)
+               stateCount = 0;
+           }
+           else
+           {
+               if (stateCount > 1)
+               stateCount = 0;
+           }
         }
         else
         {
-            if (stateCount > 1)
-            stateCount = 0;
-        }
-        }
-        else
-        {
-        /* no chop transition on this tick */
+           /* no chop transition on this tick */
 
-        ticker++;
+           ticker++;
 
-        /* calculate triangular chop demands for x and y tilts */
+           /* calculate triangular chop demands for x and y tilts */
 
-        if (profile == TRIANGLE)
-        {
-            if ((remainingTicks = (tickThreshold - ticker)) > 0)
-            {
-            if (stateCount == 0)
-            {
-                xTiltCustom = xTiltCustom + (tiltDemand.xTiltB - xTiltCustom) / remainingTicks;
-                yTiltCustom = yTiltCustom + (tiltDemand.yTiltB - yTiltCustom) / remainingTicks;
-            }
-            else
-            {
-                xTiltCustom = xTiltCustom + (tiltDemand.xTiltA - xTiltCustom) / remainingTicks;
-                yTiltCustom = yTiltCustom + (tiltDemand.yTiltA - yTiltCustom) / remainingTicks;
-            }
-            }
-        }
+           if (profile == TRIANGLE)
+           {
+               if ((remainingTicks = (tickThreshold - ticker)) > 0)
+               {
+                  if (stateCount == 0)
+                  {
+                      xTiltCustom = xTiltCustom + (tiltDemand.xTiltB - xTiltCustom) / remainingTicks;
+                      yTiltCustom = yTiltCustom + (tiltDemand.yTiltB - yTiltCustom) / remainingTicks;
+                  }
+                  else
+                  {
+                      xTiltCustom = xTiltCustom + (tiltDemand.xTiltA - xTiltCustom) / remainingTicks;
+                      yTiltCustom = yTiltCustom + (tiltDemand.yTiltA - yTiltCustom) / remainingTicks;
+                  }
+               }
+           }
         }
     }
     else
@@ -371,29 +362,22 @@ long mechSim (struct genSubRecord * pgsub)
 
     /* write results back to reflective memory */
 
-    if (semTake (m2MemFree, SEM_TIMEOUT) == OK)
-    {
-        m2Ptr->page1.xTilt = (float) xout[0];
-        m2Ptr->page1.yTilt = (float) yout[0];
-        m2Ptr->page1.zFocus = (float) zout[0];
-        m2Ptr->page1.xPosition = (float) xpout[0];
-        m2Ptr->page1.yPosition = (float) ypout[0];
+    epicsMutexLock(m2MemFree);
+    m2Ptr->page1.xTilt = (float) xout[0];
+    m2Ptr->page1.yTilt = (float) yout[0];
+    m2Ptr->page1.zFocus = (float) zout[0];
+    m2Ptr->page1.xPosition = (float) xpout[0];
+    m2Ptr->page1.yPosition = (float) ypout[0];
 
-        m2Ptr->page1.actuator1 = (float) position.actuator1;
-        m2Ptr->page1.actuator2 = (float) position.actuator2;
-        m2Ptr->page1.actuator3 = (float) position.actuator3;
+    m2Ptr->page1.actuator1 = (float) position.actuator1;
+    m2Ptr->page1.actuator2 = (float) position.actuator2;
+    m2Ptr->page1.actuator3 = (float) position.actuator3;
 
-        /* m2Ptr->page1.inPosition = !coincidence;*/
-        m2Ptr->page1.inPosition = coincidence;
-        m2Ptr->page1.beamPosition = beam;
+    /* m2Ptr->page1.inPosition = !coincidence;*/
+    m2Ptr->page1.inPosition = coincidence;
+    m2Ptr->page1.beamPosition = beam;
 
-        semGive (m2MemFree);
-    }
-    else
-    {
-        errorLog ("mechanism - m2MemFree timeout", 1, ON);
-        return (ERROR);
-    }
+    epicsMutexUnlock(m2MemFree);
 
     /* write calculated position to ouput ports */
 
