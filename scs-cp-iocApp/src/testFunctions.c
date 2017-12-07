@@ -64,18 +64,15 @@
 #include "testFunctions.h"
 #include "utilities.h"      /* For tcs2m2, errorLog, etc. */
 
-#include <sysLib.h>         /* For sysClkRateGet */
-#include <taskLib.h>	    /* For taskDelay */
-#include <timeLib.h>
 #include <vmi5588.h> 
+#include <timeLib.h>
 
-/* for vectorShow */
-#include <vxWorks.h>
-#include <intLib.h>
 #include <stdio.h>
 #include <string.h>
-#include <iv.h>
-#include <math.h>   /* Used for rand*/
+#include <math.h>           /* for trig functions */
+#include <stdlib.h>         /* Used for rand */
+
+
 
 /* define externals */
 
@@ -107,7 +104,8 @@ double vibfreq = 12.0;
 double vibamp = 1.0;
 double vibphase = 0.0;
 double guideSrate = 100.0;
-int guideSimDelayTicks = 1; /* Delay (ms) = guideSimDelayTicks / (sysClkRateGet()==usually 200) */
+//int guideSimDelayTicks = 1; /* Delay (ms) = guideSimDelayTicks / (sysClkRateGet()==usually 200) */
+double guideSimDelay = 0.001; /* Delay (ms) */
 
 void zeroMat(double mat[][1]) {
     int r,c;
@@ -630,9 +628,9 @@ void    printPage2 (const memMap * buffPtr)
 
     for (i=0; i<MAX_FAULTS; i++)   /* get ride of magic number 30 */
     {
-        pfaults  = &(buffPtr->testResults.faults[i]); 
-        printf ("fault[%2d]      Addr = %lx, Index = %u, Subsys = %u, Code = %u\n", 
-                i, (long)pfaults, (unsigned)pfaults->index, 
+        pfaults  = (fault *)&(buffPtr->testResults.faults[i]); 
+        printf ("fault[%2d]      Addr = %p, Index = %u, Subsys = %u, Code = %u\n", 
+                i, (pfaults, (unsigned)pfaults->index, 
                 (unsigned)pfaults->subsystem, (unsigned)pfaults->code);
     } 
 }
@@ -1087,10 +1085,10 @@ void fillWfs(double value)
        *    guideSimDelayTicks = 1; ==> 5ms delay
        *    guideSimDelayTicks = 2; ==> 10ms delay
        * */
-      taskDelay(guideSimDelayTicks);
+      epicsThreadSleep(guideSimDelay);
    }
 
-   taskDelete(guideSimTaskId);
+   /* thread is deleted when it terminates */
 }
 
 void startGuideSim(void) {

@@ -330,7 +330,7 @@ long readHealthInit(struct genSubRecord *pgsub);
 
 long readHealth(struct genSubRecord *pgsub);
 
-int loadInitFiles(void);
+int loadInitFiles(void *);
 
 double confine(double value, double upper, double lower);
 

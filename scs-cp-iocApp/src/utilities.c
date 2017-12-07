@@ -962,11 +962,14 @@ long readHealth(struct genSubRecord *pgsub)
     return(OK);
 }   
 
-int loadInitFiles(void)
+
+
+/* why aren't these being loaded in the startup script? */
+int loadInitFiles(void*p)
 {
    for(;;)
    {
-      epicsEventMustWait(dpPvLoad);
+      epicsEventMustWait(doPvLoad);
 
       errlogPrintf("pvload initialisation data\n");
 
