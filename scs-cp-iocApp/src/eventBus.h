@@ -1,5 +1,3 @@
-/* $Id: xycom.h,v 1.4 2008/04/16 23:23:49 mrippa Exp $ */
-/* INDENT OFF */
 /*+
  *
  * FILENAME
@@ -26,20 +24,37 @@
  * HISTORY
  * -------
  * 10-Jun-2000: Original
+ * 07-Dec-2017: Copied from xycom.h and deleted xycom-240 driver related stuff (mdw)
  *
  */
-/* INDENT ON */
 /* ===================================================================== */
 #ifndef _INCLUDED_EVENTBUS_H
 #define _INCLUDED_EVENTBUS_H
 
-int xyInit (void);
+
+#define PORT0  0
+#define PORT1  1
+#define PORT2  2
+#define PORT3  3
+#define PORT4  4
+#define PORT5  5
+#define PORT6  6
+#define PORT7  7
+
+#define BIT0   0
+#define BIT1   1
+#define BIT2   2
+#define BIT3   3
+#define BIT4   4
+#define BIT5   5
+#define BIT6   6
+#define BIT7   7
+
+
 void eventHandler (void);
-int xyStatus (void);
 long getSyncMask(void);
 void showInterruptCounts(void);
 void clearInterruptCounts(void);
-int xyWriteBit (int port, int bitnum, int val);
 
 
 #endif

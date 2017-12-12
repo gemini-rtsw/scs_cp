@@ -1366,7 +1366,7 @@ void processGuides (void)
 
          /* Set pin JK2/41 high to show guiding is appplied 
          */
-         xyWriteBit (7, 4, 1); 
+         xy240_writePortBit (0, 7, 4, 1); /* card 0, port 7, bit 4 */
 
          if (guideUpdate == TRUE) /* a new guide update has arrived */
          {

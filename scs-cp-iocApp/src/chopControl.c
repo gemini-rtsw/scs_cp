@@ -43,7 +43,7 @@
 #include "chopControl.h"
 #include "interlock.h"  /* For eventConnect */
 #include "utilities.h"  /* For errorLog, debugLevel */
-#include "xycom.h"      /* For eventHandler */
+#include "eventBus.h"      /* For eventHandler */
 
 
 /* Declare external variables */
@@ -100,7 +100,7 @@ int chopInit (void)
    /* Check for presence of Xycom, set up I/O and intr addresses and
     * set up semaphore to keep track of interrupts on the Xycom      */
 
-   if (xyInit() == OK)
+   if (eventBusInit() == OK)
    {
        eventConnect = ON;
    }

@@ -14,6 +14,7 @@ DBD += scs-cp-ioc.dbd
 
 # scs-cp-ioc.dbd will be made up from these files:
 scs-cp-ioc_DBD += base.dbd
+scs-cp-ioc_DBD += xy240.dbd
 
 # Include dbd files from all support modules:
 #scs-cp-ioc_DBD += xxx.dbd
