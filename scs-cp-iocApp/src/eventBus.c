@@ -1,5 +1,4 @@
 /* ===================================================================== */
-/* INDENT OFF */
 /*+
  *
  * FILENAME
@@ -35,13 +34,14 @@
  * 12-Jun-2000: Add new "eventHandler" routine to run as a new task
  * 06-Dec-2017: Begin EPICS OSI conversion (mdw)
  *              Copied from xycom.c and deleted all xycom driver related code
- *
+ * 12-Dec-2017: Major reworking of interaction with xycom card in order to use the
+                Common Code Base version of the xycom driver module. (mdw)
  */
-/* INDENT ON */
 /* ===================================================================== */
 
 #include <math.h>               /* For round */
 #include <timeLib.h>            /* For timeNow */
+#include <drvXy240.h>           /* for xy240 driver stuff */
 
 #include "utilities.h"
 #include "chop.h"               /* For getChopDuty, getChopFreq, chopIsPending,
@@ -53,7 +53,6 @@
 
 
 /* Interrupt mask values and variables */
-
 #define STROBES_MASK 0x1f    /* 00011111 */
 #define M2POWERON   0x1     /* 00000001 */
 #define M2POWEROFF  0xfe    /* 11111110 */
@@ -129,13 +128,15 @@ configStructure eventConfig =
     OFF,               /* m2 servo */
 };
 
-epicsEventId ICS_eventSem;           /* ICS event semaphore */
-epicsEventId inposition_eventSem;    /* In Position event semaphore */
-
-static unsigned char intRead = 0;    /* what we read during interrupt */
-static int eventBusInited = FALSE;      /* have we initialized the board? */
-static int icsTid = ERROR;         /* task id for interrupt helper */
-static int inposTid = ERROR;         /* task id for interrupt helper */
+/* static global variables are automatically initialized to zeroes */
+static epicsEventId ICS_eventSem;        /* ICS event semaphore */
+static epicsEventId inposition_eventSem; /* In Position event semaphore */
+static unsigned char intRead;            /* what we read during interrupt */
+static int eventBusInited;               /* have we initialized the board? */
+static int icsTid;                       /* task id for ics event watcher thread */
+static int inposTid;                     /* task id for inPosition watcher thread */
+static int icsThreadExit;                /* flag to tell ics thread to exit */
+static int inposThreadExit;              /* flag to tell inpos Thread to exit */
 
 /* function prototypes */
 static void    updateEventSys (void);
@@ -150,7 +151,7 @@ void clearInterruptCounts(void) {
 }
 
 void showInterruptCounts(void) {
-   printf("Total InPosition Interrupts Counted: %d\n", interruptCounter);
+   epicsPrintf("Total InPosition Interrupts Counted: %d\n", interruptCounter);
 }
 
 /***
@@ -172,25 +173,22 @@ void showInterruptCounts(void) {
 *
 *
 */
-void inPositionHandler(void) {
+void inPosition_eventHandler(void *p) {
 
    for(;;) {
-      epicsEVentWait(inposition_eventSem);
+      epicsEventWait(inposition_eventSem);
 
       interruptCounter++;
 
       /*Check whether we're interrupting on the rising or 
         falling edge of IN_POSITION. State is captured on JK1/32 */
 
-      //if ( (*(ports[2]) >> 4) & M2INPOS_STATE_INPUT_MASK ) { 
       if ( (xy240_readPortByte(XYCARDNUM, PORT2) >> 4) & M2INPOS_STATE_INPUT_MASK ) { 
-         /* printf("Inpos: high\n"); */
-         scsInPos = TRUE;
+         scsInPos = epicsTrue;
       }
 
       else {
-        /*  printf("Inpos: Low\n"); */
-         scsInPos = FALSE;
+         scsInPos = epicsFalse;
       }
 
       updateEventPage (scsInPos, presentBeam);
@@ -203,10 +201,9 @@ void inPositionHandler(void) {
 
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
- * xyIntHandler
+ * ICS_eventHandler
  * 
  * 
  * Purpose:
@@ -245,7 +242,6 @@ void inPositionHandler(void) {
  * 
  */
 
-/* INDENT ON */
 /* ===================================================================== */
 
 /*
@@ -255,7 +251,7 @@ void inPositionHandler(void) {
  * is spawned as a separate task by xySetupInterrupt() so that we
  * still have the command line
  */
-void xyIntHandler (void) {
+void ICS_eventHandler (void *p) {
 
    /* Fix pb extra interrupt: we know how much time we should have between
       two chop transitions or two interrupts, then reject all interrupts which
@@ -361,7 +357,7 @@ void xyIntHandler (void) {
             chopIsPendingLocal = 0;
          }
 
-         /* Only one more condition to meet before was can chop...
+         /* Only one more condition to meet before we can chop...
           * We need to ensure that the M2 is ready */
 
          if (!m2ChopResponseOK)
@@ -395,7 +391,7 @@ void xyIntHandler (void) {
          xy240_writeFlagBit(XYCARDNUM,M2_BIT, epicsFalse);
 
 
-         if ((epicsEventWaitWithTimeout(ICS_eventSem, ) == ERROR)) 
+         if ((epicsEventWaitWithTimeout(ICS_eventSem, timeToWait ) == epicsEventTimeout)) 
          {
             /* printf("timeout reached \n"); */
             /* timeout reached, we waited long enough for it
@@ -477,19 +473,17 @@ void xyIntHandler (void) {
 } 
 
 /* ===================================================================== */
-/* INDENT OFF */
 /*
  * Function name:
  * eventHandler
  * 
  * 
  * Purpose:
- * New routine to process changes to chop configuration and other TTL
- * signal changes. Frees up xyIntHandler to just process the Xycom 
- * interrupts. 
+ * Routine to process changes to chop configuration and other TTL
+ * signal changes.
  *
  * Invocation:
- * spawnTask ... eventHandler
+ * epicsThreadCreate ... eventHandler
  * 
  * Parameters in:
  * 
@@ -521,7 +515,7 @@ void eventHandler (void *p)
    double dutyCycle;
    double frequency;
 
-   printf ("eventHandler - watching for eventSem to be given...\n");
+   epicsPrintf ("eventHandler():  watching for eventSem to be signalled...\n");
 
    for (;;)
    {
@@ -578,11 +572,11 @@ void eventHandler (void *p)
          /* Check whether we're switching M2 power on|off */
          if (eventConfig.m2Power == ON)
          {  /* M2 Power on */
-            xy240_writePortBit(XYCARDNUM, 7, M2POWER_BIT, SET);
+            xy240_writePortBit(XYCARDNUM, PORT7, M2POWER_BIT, SET);
          }
          else
          {  /* M2 Power off */
-            xy240_writePortBit(XYCARDNUM, 7, M2POWER_BIT, RESET);
+            xy240_writePortBit(XYCARDNUM, PORT7, M2POWER_BIT, RESET);
          }
 
          /* Check whether we're switching M2 servos on|off */
@@ -599,9 +593,9 @@ void eventHandler (void *p)
          {
             /* Clear then enable interrupts */
 
-            if (xy240_intEnable(XYCARDNUM) == ERROR)
+            if (xyIntON == ERROR)
             {
-               errlogMessage("event Handler - error in xy240_intEnable\n");
+               errlogMessage("event Handler - error in xyIntON\n");
             }
             xy240_writeIMR(XYCARDNUM, currentMask);
 
@@ -665,11 +659,11 @@ void eventHandler (void *p)
 
             /* Disable interrupts and clear registers */
 
-            if (xy240_disableInterrupts(XYCARDNUM) == ERROR)
+            if (xyIntOFF == ERROR)
             {
                errlogMessage("eventHandler(): error in xyIntOFF\n");
             }
-            *intMaskReg = 0;
+            xy240_writeIMR(XYCARDNUM, 0);
 
             /* I don't think this is necessary here. 
              *flagOutReg = CLR_M2_BIT;
@@ -677,7 +671,7 @@ void eventHandler (void *p)
 
             /* Leave the green LED on after end of chopping */
 
-            *statConReg |= SC_GREEN_LED;   
+            xy240_ledCtl(XYCARDNUM, XY240_GREEN_LED, SET);   
 
             /* Reset the beam to A and post to RM so that 
              * guiding can work. Always move to BEAMA */
@@ -799,24 +793,24 @@ static int     readDemand (void)
 
     case ICS0:
         /* set the demand to the LSB of the 4 LSB of the port */
-        demand = (*(ports[0])) & portMask;
+        demand = xy240_readPortByte(XYCARDNUM, PORT0) & portMask;
         break;
 
     case ICS1:
         /* set the demand to the LSB of the 4 MSB of the port */
-        demand = (*(ports[0]) >> 4) & portMask;
+        demand = (xy240_readPortByte(XYCARDNUM, PORT0)>>4) & portMask;
         break;
 
     case ICS2:
-        demand = (*(ports[1])) & portMask;
+        demand = xy240_readPortByte(XYCARDNUM, PORT1) & portMask;
         break;
 
     case ICS3:
-        demand = (*(ports[1]) >> 4) & portMask;
+        demand = (xy240_readPortByte(XYCARDNUM, PORT1)>>4) & portMask;
         break;
 
     case ICS4:
-        demand = (*(ports[2])) & portMask;
+        demand = xy240_readPortByte(XYCARDNUM, PORT2) & portMask;
         break;
 
     default:
@@ -879,6 +873,8 @@ static int     readDemand (void)
 static void    updateEventSys (void)
 {
     int     posFlag;
+    
+    int port5, port6;
 
     /* Each output port in the xycom module has to talk to two channels
      * in the event system. Data to each channel are identical, and
@@ -892,10 +888,12 @@ static void    updateEventSys (void)
         posFlag = 4;
     else
         posFlag = 0;
-
-    *(ports[6]) = presentBeam + posFlag;
-    *(ports[5]) = ((*(ports[6])) << 4) + (*(ports[6]));
-    *(ports[4]) = *(ports[5]);
+    
+    port6 = presentBeam + posFlag;
+    port5 = (port6 << 4) + port6;
+    xy240_writePortByte(XYCARDNUM, PORT6, port6);
+    xy240_writePortByte(XYCARDNUM, PORT5, port5);
+    xy240_writePortByte(XYCARDNUM, PORT4, port5);
 
     /* Now pulse the FOR lines used to strobe the data into the event
      * system hub */
@@ -1015,92 +1013,7 @@ long getSyncMask(void)
     return (long)currentICSMask;
 }
 
-/*****************************************************************************/
-int xyIntON(void)
-{
-    int status;
-
-    xyInited = FALSE;   
-    xyInit();
-
-    if (!xyInited) { printf ("run xyInit first\n"); return ERROR; }
-
-    /* careful not to run it twice
-     */
-    if (icsTid != ERROR) {
-   printf ("It appears the interrupt tasks are already running\n");
-   return ERROR;
-    }
-
-    /* careful not to run it twice
-     */
-    if (inposTid != ERROR) {
-   printf ("It appears the interrupt tasks are already running\n");
-   return ERROR;
-    }
-
-    /* spawn the task which will keep an eye on our interrupts
-     */
-    if ((icsTid = taskSpawn ("tWatchInt", 9, 0, 20000, (FUNCPTR)xyIntHandler, 
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) == ERROR) {
-   printf ("Cannot watch for interrupt\n");
-   return ERROR;
-    }
-
-    /* spawn the task which will keep an eye on our interrupts
-     */
-    if ((inposTid = taskSpawn ("tWatchInpos", 7, 0, 20000, (FUNCPTR)inPositionHandler, 
-          0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) == ERROR) {
-   printf ("Cannot watch for interrupt\n");
-   return ERROR;
-    }
-
-    /* set up the MC680x0 so it has our routine in its interrupt vector
-     * table at position INT_VECTOR
-     */
-    if ((status = intConnect (INUM_TO_IVEC (INT_VECTOR), (VOIDFUNCPTR) isr, 0))
-       == ERROR) 
-    {
-   printf ("Can not install interrupt service routine\n");
-   return status;
-    }
-    /* clear the interrupt input register by writing to the
-     * interrupt clear register
-     */
-     *intClrReg = 0xFF;  
-
-    /* write the vector address to the xycom so that the MC680x0 can
-     * ask it for this when an interrupt occurs, and thus know what
-     * routine ought to be executed
-     */
-    *intVecReg = INT_VECTOR;
-
-    /* write a mask to the interrupt mask register to allow or disallow
-     * specific interrupts; initially we will mask out all interrupts
-     */
-    *intMaskReg = 0x00; 
-
-    /* enable interrupt capability by writing bit 3 of the status and
-     * control register
-     */
-    *statConReg |= SC_INTERRUPT_ENABLE;
-
-    /*
-     * Now we are ready to get interrupts, but two things have to be
-     * taken care of:
-     * 1) We have to set the interrupt mask register in the xy240 so
-     *    that interrupt signals are processed on the xy240.  Use the
-     *    xyWriteIMR() routine for this.
-     * 2) We have to set up the MC680x0 to recognize interrupts on the
-     *    appropriate interrupt level.  The interrupt level on which
-     *    the xy240 asserts an interrupt is configured by switch
-     *    settings on the card.  The only way to know this is to remove
-     *    the card and look.  So, figure out the setting, remember it,
-     *    and use it in the xySIE() call.
-     */
-    return OK;
-}
-
+/* This is our routine to handle xycom240 interrup requests */
 static void eventBusIntHandler(int dummy)
 {
    int ipr=xy240_readIPR(XYCARDNUM);
@@ -1112,6 +1025,55 @@ static void eventBusIntHandler(int dummy)
 
    if(ipr & M2INPOSITION_INT_MASK)
       epicsEventSignal(inposition_eventSem);
+}
+
+/*****************************************************************************/
+/* turn on handling of events detected by the xycom 240 card */
+int xyEventHandlingON(void)
+{
+    int status;
+
+    xyInited = FALSE;   
+    xyInit();
+
+    if (!xyInited) { printf ("run xyInit first\n"); return ERROR; }
+
+    /* careful not to run it twice */
+    if (icsTid) {
+       errlogPrintf("xyEventHandlingON(): ics thread %p is  already running\n" icsTid);
+       return ERROR;
+    }
+
+    /* careful not to run it twice */
+    if (inposTid) {
+       errlogPrintf("xyEventHandlingON(): inpos thread %p is  already running\n" inposTid);
+       return ERROR;
+    }
+
+    /* spawn the task which will keep an eye on our ICS events */
+    icsThreadExit = 0;
+    if(!(icsTid=epicsThreadCreate("icsEventWatcher", epicsThreadPriorityHigh,
+                epicsThreadGetStackSize(epicsThreadStackBig), 
+                (EPICSTHREADFUNC)ICS_eventHandler, (void *)NULL))) {
+       errlogMessage("xyEventHandlingON(): Cannot create ICS event watcher thread\n");
+       return ERROR;
+    }
+
+    /* spawn the task which will keep an eye on our inPositon  events */
+    inposThreadExit = 0;
+    if(!(icsTid=epicsThreadCreate("inposEventWatcher", epicsThreadPriorityHigh,
+                epicsThreadGetStackSize(epicsThreadStackBig), 
+                (EPICSTHREADFUNC)inPosition_eventHandler, (void *)NULL))) {
+       errlogMessage("xyEventHandlingON(): Cannot create inPosition event watcher thread\n");
+       return ERROR;
+    }
+
+    if(status=xy240_intConnect(XYCARDNUM, XY240_ANY_IRQ, eventBusIntHandler)) {
+       errlogMessage("xyEventHandlingON(): Can not install event bus handler interrupt service routine\n");
+       return status;
+    }
+
+    return OK;
 }
 
 
