@@ -22,11 +22,19 @@
 TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 
 PRODSUP=/gem_sw/prod/R3.14.12.6/support
+WORKSUP=/gem_sw/work/R3.14.12.6/support
 
-TIMELIB=$(PRODSUP)/timelib/1-9-5-BR314
+TIMELIB=$(PRODSUP)/timelib/1-9-5-BR314-1
+SLALIB=$(PRODSUP)/slalib/1-9-5-BR314-1
 GEMREC=$(PRODSUP)/geminiRec/4-1-5-BR314
 TCSLIB=$(PRODSUP)/tcslib/1-0-3-BR314
 VMIC=$(PRODSUP)/vmi5588/1-1-1-BR314
+SNCSEQ=$(PRODSUP)/seq/2-2-3-1-BR314
+PVLOAD=$(PRODSUP)/pvload/1-1-1-BR314
+BANCOMM=$(PRODSUP)/bancomm/1-6-4-BR314-1
+IOCSTATS=$(PRODSUP)/iocStats/3-1-14-3-BR314
+
+XYCOM=$(WORKSUP)/xycom-new
 
 
 # EPICS_BASE usually appears last so other apps can override stuff:

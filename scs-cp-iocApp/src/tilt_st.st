@@ -451,8 +451,7 @@ ss readRefMem
     {
         when(delay(0.2))
         {
-            if(semTake(m2MemFree, STATE_TIMEOUT) == OK)
-            {
+            epicsMutexLock(m2MemFree);
                 /* grab relevant data from the command buffer */
 
                 m2Deployable    = m2Ptr->page0.deployBaffle;
@@ -460,15 +459,15 @@ ss readRefMem
                 chopProfile = m2Ptr->page0.chopProfile;
                 chopFrequency   = m2Ptr->page0.chopFrequency;
 
-                semGive(m2MemFree);
+                epicsMutexUnlock(m2MemFree);
 
                 /* read command from message queue, returns ERROR if no message available   */
                 /* in which case assume that it's only a fast guide update          */
 
-                %{
-                if(msgQReceive (receiveQId, (char *) &receivedCommand, sizeof (long), NO_WAIT) == ERROR)
+                {
+                if(epicsMessageQueueTryReceive(receiveQId,  &receivedCommand, sizeof (long)) == ERROR)
                     receivedCommand = FAST_ONLY;
-                }%
+                }
 
                 if(receivedCommand == FAST_ONLY)
                 {
@@ -599,12 +598,6 @@ ss readRefMem
                         }
                     m2Ptr->testResults.number = 4;
                 }
-            }
-            else
-            {
-                errorLog("readRefMem - m2MemFree timeout", 1, ON);
-            }
-
             efSet(scsCommand);
 
             /* read and set error status bits */
@@ -647,21 +640,14 @@ ss readRefMem
 
             /* write current status back to buffer */
 
-            if(semTake(m2MemFree, STATE_TIMEOUT) == OK)
-            {
+            epicsMutexLock(m2MemFree);
                 m2Ptr->page1.statusWord.all = statusWord.all;
                 m2Ptr->page1.heartbeat      = m2Heartbeat;
                 m2Ptr->page1.deployBaffle   = m2Deployable;
                 m2Ptr->page1.centralBaffle  = m2Central;
                 m2Ptr->page1.enclosureTemp  = temperature;  
                 m2Ptr->page1.topEnd     = topEnd;
-
-                semGive(m2MemFree);
-            }
-            else
-            {
-                errorLog("readRefMem - m2MemFree timeout", 1, ON);
-            }
+            epicsMutexUnlock(m2MemFree);
 
         }   state waitUpdate
     }

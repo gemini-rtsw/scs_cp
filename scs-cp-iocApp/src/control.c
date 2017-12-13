@@ -80,7 +80,7 @@
 #include <timeLib.h>    /* For timeNow */
 //#include <vmi5578.h>    /* For rmIntSend */
 #include <vmi5588.h>    /* For rmIntSend */
-
+#include <drvXy240.h>   /* for xy240_writePortBit() */
 
 #include "utilities.h"  /* For debugLevel, ag2m2 */
 #include "archive.h"    /* For refMemFree */
@@ -90,8 +90,7 @@
                            weight */
 #include "interlock.h"  /* For lockPosition, scsState */
 #include "interp.h"     /* For AX, AY, ..., Z axis identifiers */
-#include "xycom.h"      /* For ports[7] (tests only), ticksToWait (temp) */
-#include "interp.h"     /* For getInterpolation */
+#include "eventBus.h"   /* fo XYCARDNUM */
 
  /* Define limits for incremental steps */
 #define TILT_GUIDE_STEP_LIMIT   32.0   /* arcsec  */
@@ -1366,7 +1365,7 @@ void processGuides (void)
 
          /* Set pin JK2/41 high to show guiding is appplied 
          */
-         xy240_writePortBit (0, 7, 4, 1); /* card 0, port 7, bit 4 */
+         xy240_writePortBit (XYCARDNUM, PORT7, BIT4, epicsTrue); /* card 0, port 7, bit 4 */
 
          if (guideUpdate == TRUE) /* a new guide update has arrived */
          {
@@ -1508,7 +1507,7 @@ void processGuides (void)
          /* Set pin JK2/41 high to show guiding is *NOT*
           * appplied 
           */
-         xyWriteBit (7, 4, 0);
+         xy240_writePortBit(XYCARDNUM, PORT7, BIT4, epicsFalse);
 
          /* If the guide gate has been turned off, zero ALL the corrections*/
          xNetGuideT = 0.0;

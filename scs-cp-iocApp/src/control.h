@@ -36,7 +36,7 @@
 
 #include "chopControl.h"        /* For BEAMA definition */
 #include "guide.h"
-#include "utilities.h"          /* For MAX_SOURCES */
+//#include "utilities.h"          /* For MAX_SOURCES */
 
 #define AUTOGUIDE 0
 #define PROJECT   1

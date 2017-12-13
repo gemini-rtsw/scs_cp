@@ -38,11 +38,13 @@
 /* INDENT ON */
 /* ===================================================================== */
 
+#include <drvXy240.h>
+
 #include "archive.h"        /* For refMemFree */
-#include "xycom.h"          /* For PORT_3_ADDR define */
 #include "control.h"        /* For scsPtr, interlockFlag, commandQId */
 #include "interlock.h"
 #include "utilities.h"      /* For reportHealth */
+#include "eventBus.h"       /* for XYCARDNUM */
 
 
 /* Define interlock port masks */
@@ -128,10 +130,13 @@ long    lockMonitor (struct subRecord * psub)
     {
         if(eventConnect == ON)
         {
-        if (( (*(unsigned char *) PORT_3_ADDR) & INTERLOCKMASK) == DEMANDCLEAR)
+           int interlocks = xy240_readPortByte(XYCARDNUM, PORT3) & INTERLOCKMASK;
+
+        //if (( (*(unsigned char *) PORT_3_ADDR) & INTERLOCKMASK) == DEMANDCLEAR)
+           if (interlocks == DEMANDCLEAR)
             interlockStatus = OFF;
-        else if (( (*(unsigned char *) PORT_3_ADDR) & INTERLOCKMASK) 
-		== DEMANDSET)
+        //else if (( (*(unsigned char *) PORT_3_ADDR) & INTERLOCKMASK) 
+        else if (interlocks == DEMANDSET)
             interlockStatus = ON;
         else
         {

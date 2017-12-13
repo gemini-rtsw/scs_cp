@@ -67,6 +67,15 @@
 /* INDENT ON */
 /* ===================================================================== */
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include <tcslib.h>
+#include <cad.h>
+#include <car.h>
+
 #include "guide.h"
 #include "archive.h"        /* For cadDirLog */
 #include "control.h"        /* For simLevel, scsBase, m2Ptr, m2MemFree, 
@@ -75,14 +84,8 @@
 #include "utilities.h"      /* For weight2string, errorLog, debugLevel */
 #include "chop.h"           /* For chopIsOn */
 
-#include <cad.h>
-#include <car.h>
 
-#include <tcslib.h>
 
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
 
 #define MAX_FILTER_CHANNELS 15  /* Used by dfilter to set array size */
 #define NUM_DECIMATORS  12      /* Number of channels needing decimation 

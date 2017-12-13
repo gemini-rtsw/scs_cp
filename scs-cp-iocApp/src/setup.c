@@ -38,6 +38,14 @@
 /* INDENT ON */
 /* ===================================================================== */
 
+#include <stdlib.h>     /* for malloc() */
+#include <string.h>
+#include <stdio.h>
+
+#include <dbAccess.h>   /* For dbNameToAddr */
+#include <devSup.h>     /* for S_dev_???   */
+#include <vmi5588.h>    /* FOr reflective memory card routines */
+
 #include "setup.h"
 #include "utilities.h"  /* For errorLog, loadInitFiles, compileStatus,
                            statusCompiled, doPvLoad, pvLoadComplete */
@@ -49,11 +57,6 @@
                            scsReceiveNow, commandQId, receiveQId 
                            SYSTEM_CLOCK_RATE */
 
-#include <string.h>
-#include <stdio.h>
-#include <dbAccess.h>   /* For dbNameToAddr */
-#include <devSup.h>     /* for S_dev_???   */
-#include <vmi5588.h>    /* FOr reflective memory card routines */
 
 #define TOP "m2:"
 

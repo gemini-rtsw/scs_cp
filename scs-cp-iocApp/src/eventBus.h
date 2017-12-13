@@ -50,8 +50,10 @@
 #define BIT6   6
 #define BIT7   7
 
+#define XYCARDNUM 0
 
-void eventHandler (void);
+int eventBusInit(void);
+void eventHandler (void *);
 long getSyncMask(void);
 void showInterruptCounts(void);
 void clearInterruptCounts(void);

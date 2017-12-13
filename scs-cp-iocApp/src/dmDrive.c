@@ -47,10 +47,9 @@
 #include "chop.h"           /* For chopIsOn, getSyncMask */
 #include "control.h"        /* For simLevel, scsPtr, scsBase, m2Ptr, 
                                        m2MemFree */
+#include "eventBus.h"       /* for getSyncMask() */
 #include "dmDrive.h"
 #include "utilities.h"      /* For errorLog, debugLevel */
-#include "xycom.h"          /* For xyStatus */
-
 
 /* ===================================================================== */
 /* INDENT OFF */

@@ -53,6 +53,11 @@
 #include <epicsMessageQueue.h>
 #include <epicsThread.h>
 
+
+#if defined (__rtems__)
+#include <os/RTEMS/devIocStatsOSD.h>   /* for reboot() */
+#endif
+
 /* Define true/false, on/off etc */
 
 #define OK              0

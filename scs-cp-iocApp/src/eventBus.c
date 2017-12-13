@@ -48,9 +48,7 @@
                decsIsPending */
 #include "chopControl.h"        /* For chopEventSem */
 #include "control.h"            /* For simLevel, updateEventPage, scsPtr, flip */
-
-#define XYCARDNUM 0             /* we're only using xycom240 card number 0 */
-
+#include "eventBus.h"
 
 /* Interrupt mask values and variables */
 #define STROBES_MASK 0x1f    /* 00011111 */
@@ -133,17 +131,17 @@ static epicsEventId ICS_eventSem;        /* ICS event semaphore */
 static epicsEventId inposition_eventSem; /* In Position event semaphore */
 static unsigned char intRead;            /* what we read during interrupt */
 static int eventBusInited;               /* have we initialized the board? */
-static int icsTid;                       /* task id for ics event watcher thread */
-static int inposTid;                     /* task id for inPosition watcher thread */
+static epicsThreadId icsTid;             /* task id for ics event watcher thread */
+static epicsThreadId inposTid;           /* task id for inPosition watcher thread */
 static int icsThreadExit;                /* flag to tell ics thread to exit */
 static int inposThreadExit;              /* flag to tell inpos Thread to exit */
 
 /* function prototypes */
 static void    updateEventSys (void);
 static int     readDemand (void);
-int            xyIntON (void);
-int            xyIntOFF (void);
 int            xySIE (int);
+int            xyEventHandlingON(void);
+int            xyEventHandlingOFF(void);
 
 
 void clearInterruptCounts(void) {
@@ -177,6 +175,9 @@ void inPosition_eventHandler(void *p) {
 
    for(;;) {
       epicsEventWait(inposition_eventSem);
+
+      if(inposThreadExit)
+         return;
 
       interruptCounter++;
 
@@ -284,7 +285,8 @@ void ICS_eventHandler (void *p) {
        * Xycom. */
 
       epicsEventWait(ICS_eventSem);
-
+      if(icsThreadExit) 
+         return;
 
       /* If all is well, this is the NEXT successive interrupt (and
        * so interruptCounter is 1. Even if this is not the case, but 
@@ -391,9 +393,8 @@ void ICS_eventHandler (void *p) {
          xy240_writeFlagBit(XYCARDNUM,M2_BIT, epicsFalse);
 
 
-         if ((epicsEventWaitWithTimeout(ICS_eventSem, timeToWait ) == epicsEventTimeout)) 
+         if ((epicsEventWaitWithTimeout(ICS_eventSem, timeToWait ) == epicsEventWaitTimeout)) 
          {
-            /* printf("timeout reached \n"); */
             /* timeout reached, we waited long enough for it
              * to get there, and so we ASSUME it is */
          }
@@ -461,7 +462,7 @@ void ICS_eventHandler (void *p) {
 
          if (!chopIsPendingLocal)
          {
-            beamIndex = (++beamIndex) % numBeams;
+            beamIndex = (beamIndex+1) % numBeams;
             presentBeam = beamSeq[beamIndex]; 
             /*  if ( counter < 20 )
                 logMsg("* count:%d !chopIsPendingLocal\n", 
@@ -593,7 +594,7 @@ void eventHandler (void *p)
          {
             /* Clear then enable interrupts */
 
-            if (xyIntON == ERROR)
+            if (xyEventHandlingON() == ERROR)
             {
                errlogMessage("event Handler - error in xyIntON\n");
             }
@@ -640,7 +641,7 @@ void eventHandler (void *p)
                /* intervalIT = 80 % of interval between two chop 
                 * transitions 
                 */
-               errlogPrintf("eventHandler(): timeToWait %d \n",timeToWait);
+               errlogPrintf("eventHandler(): timeToWait %f \n",timeToWait);
 
                intervalIT = ((1.0/frequency)/2.0) * 0.8 ;
             }
@@ -659,7 +660,7 @@ void eventHandler (void *p)
 
             /* Disable interrupts and clear registers */
 
-            if (xyIntOFF == ERROR)
+            if (xyEventHandlingOFF() == ERROR)
             {
                errlogMessage("eventHandler(): error in xyIntOFF\n");
             }
@@ -678,7 +679,7 @@ void eventHandler (void *p)
 
             /*      if (presentBeam != BEAMA)
                     { */
-            printf("eventHandler - setting presentBeam to BEAMA\n");
+            errlogMessage("eventHandler - setting presentBeam to BEAMA\n");
             presentBeam = BEAMA;
             /* } */
 
@@ -707,7 +708,7 @@ void eventHandler (void *p)
       else
       {
          /* Just a wake-up. Acknowledge */
-         printf ("eventHandler - no change to eventConfig\n");
+         errlogMessage("eventHandler - no change to eventConfig\n");
       }
 
    }
@@ -913,101 +914,6 @@ static void    updateEventSys (void)
 
 
 /*****************************************************************************/
-static void isr (int val)
-{
-   /* volatile  char *intClr = (char *)INTERRUPT_CLEAR_REG_ADDR; */
-
-   /* intRead = *intPendReg; */
-
-   /*  logMsg ("IIR: = 0x%02x\n", *intInReg, 0, 0, 0, 0, 0);  
-       logMsg ("IMR: = 0x%02x (%d)\n", *intMaskReg, *intMaskReg, 0, 0, 0, 0);
-       logMsg ("SCR: = 0x%02x (%d)\n", *statConReg, *statConReg, 0, 0, 0, 0);
-    */
-
-   if ( *intPendReg & currentICSMask)  {
-
-      intRead = *intPendReg;      /* store the pend register contents. 
-                                  * Use pend instead of in reg, because
-                                  * it is after the mask */
-
-      *intClrReg = currentICSMask;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg("Interrupt on currentICSMask: %02x \n\n", currentICSMask, 0, 0, 0, 0, 0);
-      semGive (ICS_eventSem); /* release the semaphore */
-   }
-
-   else if ( *intPendReg & ICS0_INT_MASK)  {
-
-      *intClrReg = ICS0_INT_MASK;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg("Interrupt on ICS0_INT_MASK: %02x \n\n", ICS0_INT_MASK, 0, 0, 0, 0, 0);
-   }
-
-   else if ( *intPendReg & ICS1_INT_MASK)  {
-
-      *intClrReg = ICS1_INT_MASK;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg("Interrupt on ICS1_INT_MASK: %02x \n\n", ICS1_INT_MASK, 0, 0, 0, 0, 0);
-   }
-
-   else if ( *intPendReg & ICS2_INT_MASK)  {
-
-      *intClrReg = ICS2_INT_MASK;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg("Interrupt on ICS2_INT_MASK: %02x \n\n", ICS2_INT_MASK, 0, 0, 0, 0, 0);
-   }
-
-   else if ( *intPendReg & ICS3_INT_MASK)  {
-
-      *intClrReg = ICS3_INT_MASK;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg("Interrupt on ICS3_INT_MASK: %02x \n\n", ICS3_INT_MASK, 0, 0, 0, 0, 0);
-   }
-
-   else if ( *intPendReg & ICS4_INT_MASK)  {
-
-      *intClrReg = ICS4_INT_MASK;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg("Interrupt on ICS4_INT_MASK: %02x \n\n", ICS4_INT_MASK, 0, 0, 0, 0, 0);
-   }
-
-   if ( *intPendReg & M2INPOSITION_INT_MASK) {
-
-      *intClrReg = M2INPOSITION_INT_MASK;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg ("Inposition interrupted\n\n", 0, 0, 0, 0, 0, 0);
-      semGive (inposition_eventSem);
-   }
-
-   if ( *intPendReg & M2SYNCIN_INT_MASK) {
-
-      *intClrReg = M2SYNCIN_INT_MASK;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg ("M2SyncIn interrupted with no action!\n\n", 0, 0, 0, 0, 0, 0);
-   }
-
-   if ( *intPendReg & FREE_INT_MASK) {
-
-      *intClrReg = FREE_INT_MASK;  /* clear the bits we just read */
-      if (debugLevel == DEBUG_RESERVED1)
-         logMsg ("FreeInterrupt interrupted with no action!\n\n", 0, 0, 0, 0, 0, 0);
-   }
-
-
-   /* *intClrReg = intRead; */    /* clear the bits we just read */
-   /* *intClrReg = 0xFF; */    /* clear all bits */
-   /* *intClrReg = 0x02; */    /* clear the bits we just read */
-   /* *statConReg ^= SC_RED_LED; */    /* toggle the red LED */
-   /* logMsg("isr = intRead %d \n", intRead, 0, 0, 0, 0, 0);  */
-
-   /* *intClrReg = *intPendReg;  */   /* clear the bits we just read */
-   /* interruptCounter++; */
-
-   /* *(char *) intClr = 0xFF; */ /* clear everything */
-   /* *intClrReg = 0xFF; */ /* clear the bits we just read */
-}
-
-/*****************************************************************************/
 long getSyncMask(void)
 {
     return (long)currentICSMask;
@@ -1033,20 +939,22 @@ int xyEventHandlingON(void)
 {
     int status;
 
-    xyInited = FALSE;   
-    xyInit();
+    if((status=xy240_status(XYCARDNUM)))
+       errlogPrintf("xyEventHandlingON(): Xycom-240 card %d not installed or not initialized\n",
+                      XYCARDNUM);
 
-    if (!xyInited) { printf ("run xyInit first\n"); return ERROR; }
+    if (!eventBusInited) 
+       eventBusInit(); 
 
     /* careful not to run it twice */
     if (icsTid) {
-       errlogPrintf("xyEventHandlingON(): ics thread %p is  already running\n" icsTid);
+       errlogPrintf("xyEventHandlingON(): ics thread %p is  already running\n", icsTid);
        return ERROR;
     }
 
     /* careful not to run it twice */
     if (inposTid) {
-       errlogPrintf("xyEventHandlingON(): inpos thread %p is  already running\n" inposTid);
+       errlogPrintf("xyEventHandlingON(): inpos thread %p is  already running\n", inposTid);
        return ERROR;
     }
 
@@ -1068,7 +976,7 @@ int xyEventHandlingON(void)
        return ERROR;
     }
 
-    if(status=xy240_intConnect(XYCARDNUM, XY240_ANY_IRQ, eventBusIntHandler)) {
+    if((status=xy240_intConnect(XYCARDNUM, XY240_ANY_IRQ, eventBusIntHandler))) {
        errlogMessage("xyEventHandlingON(): Can not install event bus handler interrupt service routine\n");
        return status;
     }
@@ -1079,55 +987,49 @@ int xyEventHandlingON(void)
 
 
 /*****************************************************************************/
-int xyIntOFF (void)
+int xyEventHandlingOFF (void)
 {
-   int status;
 
-   if (!xyInited) { printf ("run xyInit first\n"); return ERROR; }
+   if (!eventBusInited) { 
+      errlogMessage("xyEventHandlingOFF(): Event Bus handling not initialized"); 
+      return ERROR; 
+   }
+
+   /* check if something is going */
+   if (!icsTid) 
+      errlogMessage("xyEventHandlingOFF(): ICS event watcher thread wasn't running\n");
+   
 
    /* check if something is going
     */
-   if (icsTid == ERROR) {
-      printf ("It appears the interrupt tasks are not running\n");
-      return ERROR;
-   }
+   if (!inposTid) 
+      errlogMessage("xyEventHandlingOFF():  inPosition event watcher thread wasn't running\n");
+   
 
-   /* check if something is going
-    */
-   if (inposTid == ERROR) {
-      printf ("It appears the interrupt tasks are not running\n");
-      return ERROR;
-   }
+   /* disconnect interrupt request service routine */
+   xy240_intDisconnect(XYCARDNUM, XY240_ANY_IRQ);
 
-   /* turn off interrupt capability on the xycom
-    */
-   *statConReg &= ~SC_INTERRUPT_ENABLE; 
+   /* turn off the red led */
+   xy240_ledCtl(XYCARDNUM, XY240_RED_LED, RESET); 
 
-   /* turn off the red led
-    */
-   *statConReg |= SC_RED_LED; 
+   /* tell the ics event watcher thread to exit */
+   icsThreadExit = 1;
+   epicsEventSignal(ICS_eventSem);
 
-   /* remove the interrupt watcher task
-    */
-   if ((status = taskDelete (icsTid)) != OK) {
-      printf ("Can not delete interrupt watcher task\n");
-      return status;
-   }
+   /* tell the inPosition event watcher thread to exit */
+   inposThreadExit = 1;
+   epicsEventSignal(inposition_eventSem);
 
-   /* remove the interrupt watcher task
-    */
-   if ((status = taskDelete (inposTid)) != OK) {
-      printf ("Can not delete interrupt watcher task\n");
-      return status;
-   }
+   /* delete the event semaphores */
+   epicsEventDestroy(ICS_eventSem);
+   ICS_eventSem = NULL;
+   epicsEventDestroy(inposition_eventSem);
+   inposition_eventSem = NULL;
 
-   /* set to special value so we know there is no helper task running
-    */
-   inposTid = ERROR;
-   icsTid = ERROR;
-
-   semDelete(ICS_eventSem);
-   semDelete(inposition_eventSem);
+   /* The threads will have destroyed themselves. */
+   /* Indicate these threads are  no longer running */
+   inposTid = NULL;
+   icsTid = NULL;
 
    return OK;
 }
@@ -1136,7 +1038,6 @@ int xyIntOFF (void)
 int eventBusInit(void)
 {
     int status;
-    char dummy = '\0';
 
     if (eventBusInited)
     {
@@ -1145,7 +1046,7 @@ int eventBusInit(void)
     }
 
     /* check that XYCOM board is present */
-    if(status = xy240_status(XYCARDNUM)) {
+    if((status = xy240_status(XYCARDNUM))) {
        errlogPrintf("eventBusInit(): xy240 card %d not installed or not initialized\n",
                       XYCARDNUM);
        return status;

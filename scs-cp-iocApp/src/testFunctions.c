@@ -446,13 +446,13 @@ void    tiltState (const memMap *buffPtr)
 void    big (void)
 {
     printf ("sizes of types on this machine (bytes)\n\n");
-    printf ("char          %ld\n", sizeof (char));
-    printf ("int           %ld\n", sizeof (int));
-    printf ("long          %ld\n", sizeof (long));
-    printf ("float         %ld\n", sizeof (float));
-    printf ("double        %ld\n", sizeof (double));
-    printf ("unsigned int  %ld\n", sizeof (unsigned int));
-    printf ("short int     %ld\n", sizeof (short int));
+    printf ("char          %d\n", sizeof (char));
+    printf ("int           %d\n", sizeof (int));
+    printf ("long          %d\n", sizeof (long));
+    printf ("float         %d\n", sizeof (float));
+    printf ("double        %d\n", sizeof (double));
+    printf ("unsigned int  %d\n", sizeof (unsigned int));
+    printf ("short int     %d\n", sizeof (short int));
 
     printf ("m2 status word at %lx\n", (long) &scsPtr->page1.statusWord.all);
 }
