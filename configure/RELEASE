@@ -34,7 +34,8 @@ PVLOAD=$(PRODSUP)/pvload/1-1-1-BR314
 BANCOMM=$(PRODSUP)/bancomm/1-6-4-BR314-1
 IOCSTATS=$(PRODSUP)/iocStats/3-1-14-3-BR314
 
-XYCOM=$(WORKSUP)/xycom-new
+#XYCOM=$(WORKSUP)/xycom-new
+XYCOM=/home/mikew/work/xycom
 
 
 # EPICS_BASE usually appears last so other apps can override stuff:

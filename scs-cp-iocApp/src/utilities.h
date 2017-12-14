@@ -56,6 +56,7 @@
 
 #if defined (__rtems__)
 #include <os/RTEMS/devIocStatsOSD.h>   /* for reboot() */
+#include <bsp/bootcard.h>              /* for bsp_reset() */
 #endif
 
 /* Define true/false, on/off etc */

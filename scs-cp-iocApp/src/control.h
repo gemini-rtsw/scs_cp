@@ -28,7 +28,7 @@
  * 17-Nov-1999: Created new header files.
  * 16-Dec-1999: Added global variables
  * 19-OCT-2017: Begin conversion to EPICS OSI (mdw)
- *
+ * 14-Dec-2017: Changed VSTART to VIBSTART because of <sys/termios.h> conflict (mdw)
  */
 /* ===================================================================== */
 #ifndef _INCLUDED_CONTROL_H
@@ -474,7 +474,7 @@ enum
     CMD_TEST,            /* 10 */
     MSTART,              /* 11 */
     MEND,                /* 12 */
-    VSTART,              /* 13 */
+    VIBSTART,            /* 13 */  
     VEND,                /* 14 */
     MOFFLON,             /* 15 */
     MOFFLOFF,            /* 16 */
@@ -578,7 +578,6 @@ void swyon(void);
 void swxoff(void);
 void swyoff(void);
 
-extern long servoInPosition;
 extern long servoOnStatus;
 
 extern double SampleData[5][3];

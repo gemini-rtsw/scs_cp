@@ -91,6 +91,8 @@
    * 06-Jul-2000: Remove state set for baffles. Do steps in CADmoveBaffle
    *      instead.
    * 12-Dec-2017: Convert vxWorks calls to EPICS OSI calls (mdw)
+   * 14-Dec-2017: Changed all instances of VSTART to VIBSTART 
+   *              because of conflict with  <sys/termios.h> (mdw)
    *
    */
    /* INDENT ON */
@@ -168,14 +170,14 @@
       /* define park position for the m2 mechanism */
       /* Goofy that these are here. They should be moved to SCSInit.dat */
 
-      static double   xTiltPark   =   0.0;
-      static double   yTiltPark   =   0.0;
-      static double   zFocusPark  =   0.0;
-      static double   xPosPark    =   2125.0;
-      static double   yPosPark    =   1500.0;
+      // static double   xTiltPark   =   0.0;
+      // static double   yTiltPark   =   0.0;
+      // static double   zFocusPark  =   0.0;
+      // static double   xPosPark    =   2125.0;
+      // static double   yPosPark    =   1500.0;
 
       static location parkPosition;
-      static location xyInitPosition;
+      // static location xyInitPosition;
 
       static double   xTiltAdef;
       static double   yTiltAdef;
@@ -747,16 +749,16 @@ monitor guideSimStart;
 evflag guideSimChange;
 sync guideSimStart to guideSimChange;
 
-long tiltPidOn;
-assign tiltPidOn to "{T}tiltpidon.VAL";
-monitor tiltPidOn;
+long tiltPidOnSim;
+assign tiltPidOnSim to "{T}tiltpidon.VAL";
+monitor tiltPidOnSim;
 
 long tiltpidDir;
 assign tiltpidDir to "{T}tiltpidControl.DIR";
 
-long focusPidOn;
-assign focusPidOn to "{T}focuspidon.VAL";
-monitor focusPidOn;
+long focusPidOnSim;
+assign focusPidOnSim to "{T}focuspidon.VAL";
+monitor focusPidOnSim;
 
 long focuspidDir;
 assign focuspidDir to "{T}focuspidControl.DIR";
@@ -1860,7 +1862,7 @@ ss CADprocessor {
          /*
             writeCommand(ACT_PWR_ON);
             writeCommand(MOFFLON);
-            writeCommand(VSTART);
+            writeCommand(VIBSTART);
             writeCommand(MSTART);
          */
 
@@ -1898,7 +1900,7 @@ ss CADprocessor {
 
          writeCommand(ACT_PWR_ON);
          writeCommand(MOFFLON);
-         writeCommand(VSTART);
+         writeCommand(VIBSTART);
          writeCommand(MSTART);
 
          myscsState = SYSTEMIDLE;
@@ -2404,7 +2406,7 @@ ss CADprocessor {
 
          printf("in close range - turning on mirror control \n");
 
-         writeCommand(VSTART);
+         writeCommand(VIBSTART);
          writeCommand(MSTART); 
 
          /* send idle indication to the moveC record */
@@ -2558,7 +2560,7 @@ ss CADprocessor {
 
          printf("in close range - turning on mirror control\n");
 
-         writeCommand(VSTART);
+         writeCommand(VIBSTART);
          writeCommand(MSTART);
 
          /* send idle indication to the moveC record */
@@ -2710,7 +2712,7 @@ ss CADprocessor {
 
          printf("in close range - turning on mirror control\n");
 
-         writeCommand(VSTART);
+         writeCommand(VIBSTART);
          writeCommand(MSTART);
 
          /* send idle indication to the followC record */
@@ -2739,7 +2741,7 @@ ss CADprocessor {
 
          printf("in close range - turning on mirror control\n");
 
-         writeCommand(VSTART);
+         writeCommand(VIBSTART);
          writeCommand(MSTART);
 
          /* send idle indication to the followC record */
@@ -3435,8 +3437,8 @@ ss CADprocessor {
          else if(guideSimStart == 1) {
             myOldGuideSimState = 1;
 
-            tiltPidOn = 0;
-            pvPut(tiltPidOn);
+            tiltPidOnSim = 0;
+            pvPut(tiltPidOnSim);
         
             tiltpidDir = 2;
             pvPut(tiltpidDir);
@@ -3444,8 +3446,8 @@ ss CADprocessor {
             tiltpidDir = 3;
             pvPut(tiltpidDir);
 
-            focusPidOn = 0;
-            pvPut(focusPidOn);
+            focusPidOnSim = 0;
+            pvPut(focusPidOnSim);
             
             focuspidDir = 2;
             pvPut(focuspidDir);
@@ -3460,8 +3462,8 @@ ss CADprocessor {
          {
             myOldGuideSimState = 0;
 
-            tiltPidOn = 1;
-            pvPut(tiltPidOn);
+            tiltPidOnSim = 1;
+            pvPut(tiltPidOnSim);
         
             tiltpidDir = 2;
             pvPut(tiltpidDir);
@@ -3469,8 +3471,8 @@ ss CADprocessor {
             tiltpidDir = 3;
             pvPut(tiltpidDir);
 
-            focusPidOn = 1;
-            pvPut(focusPidOn);
+            focusPidOnSim = 1;
+            pvPut(focusPidOnSim);
             
             focuspidDir = 2;
             pvPut(focuspidDir);
@@ -4196,8 +4198,8 @@ ss rebootScs {
 
          /* if logging file is open, close it */
 
-         if(loggingNow != OFF)
-            %%scsLogDestruct();
+         //if(loggingNow != OFF)
+         //   %%scsLogDestruct();
 
          %%reboot(BOOT_QUICK_AUTOBOOT);
 

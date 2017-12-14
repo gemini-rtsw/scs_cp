@@ -529,7 +529,7 @@ ss readRefMem
                     statusWord.flags.mirrorCommanded    = 0;
                     statusWord.flags.mirrorResponding   = 0;
                 }
-                else if(receivedCommand == VSTART)
+                else if(receivedCommand == VIBSTART)
                 {
                     vibControl = ENABLED;
                     statusWord.flags.vibControlOn = ON;

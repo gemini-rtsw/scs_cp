@@ -102,7 +102,7 @@ static char *primitiveName[] =
     "CMD_TEST",
     "MSTART",
     "MEND",
-    "VSTART",
+    "VIBSTART",
     "VEND",
     "MOFFLON",
     "MOFFLOFF",
@@ -198,7 +198,7 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     int index = 0;
     double act1[21], act2[21], act3[21], sys[21];
     location position;
-    /* long servoInPosition; */
+    long servoInPosition; 
     memMap *ptr;
     char msg[80];
     long errorSystem, errorCode;
@@ -617,7 +617,7 @@ long    issueM2Primitive (struct cadRecord * pcad)
         }       
         else if(commandCode == MSTART)
         {
-            writeCommand(VSTART);
+            writeCommand(VIBSTART);
             writeCommand(MSTART);
         }
         else

@@ -74,11 +74,10 @@
  */
 /* ===================================================================== */
 #include <string.h>     /* For strncpy */
-#include <stdio.h>      /* For printf */
 #include <math.h>       /* For abs */
+#include <stdio.h>      /* for sprintf() */
 
 #include <timeLib.h>    /* For timeNow */
-//#include <vmi5578.h>    /* For rmIntSend */
 #include <vmi5588.h>    /* For rmIntSend */
 #include <drvXy240.h>   /* for xy240_writePortBit() */
 
@@ -149,7 +148,7 @@ static char *m2CmdName[] =
    "CMD_TEST            ",
    "MSTART              ",
    "MEND                ",
-   "VSTART              ",
+   "VIBSTART             ",
    "VEND                ",
    "MOFFLON             ",
    "MOFFLOFF            ",
@@ -314,7 +313,6 @@ static int positionUpdate = FALSE;
 
 int scstimeUpdate = 0; 
 long servoOnStatus;
-long servoInPosition;
 
 /* function prototypes */
 static int  frameConvert (converted *result, frameChange *f, const double x, 
@@ -734,7 +732,7 @@ void blendSources (void)
 
    if (debugLevel == DEBUG_RESERVED2)
    {
-      printf("blendSources - adjusted net guides are: %f %f %f\n", 
+      epicsPrintf("blendSources - adjusted net guides are: %f %f %f\n", 
             xNetGuide, yNetGuide, zNetGuide); 
    }
 }
@@ -1011,14 +1009,14 @@ void processGuides (void)
             {
                if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
                {
-                  printf("processGuides - increasing time detected for PWFS1\n");
+                  epicsPrintf("processGuides - increasing time detected for PWFS1\n");
                }
                updateInterval.pwfs1 = scsBase->pwfs1.interval;
                updateTime.pwfs1 = scsBase->pwfs1.time;
 
                if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
                {
-                  printf("processGuides - read RM data from PWFS1\n");
+                  epicsPrintf("processGuides - read RM data from PWFS1\n");
                }
 
                /* copy the data from reflective memory page */
@@ -1069,7 +1067,7 @@ void processGuides (void)
                /* Then check PWFS2 */
                if ((debugLevel > DEBUG_MIN ) & (debugLevel <= DEBUG_MED))
                {
-                  printf("increasing time detected for PWFS2\n"); 
+                  epicsPrintf("increasing time detected for PWFS2\n"); 
                }
 
                updateInterval.pwfs2 = scsBase->pwfs2.interval; 
@@ -1077,7 +1075,7 @@ void processGuides (void)
 
                if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
                {
-                  printf("processGuides - read RM data from PWFS2\n");
+                  epicsPrintf("processGuides - read RM data from PWFS2\n");
                }
 
                /* N.B. Use this if you're not guiding with P2 and want to check the
@@ -1117,14 +1115,14 @@ void processGuides (void)
                switch (filter[PWFS2][XTILT].type)
                {
                   case RAW:
-                     if (debugLevel == DEBUG_RESERVED2) printf("RAW\n");
+                     if (debugLevel == DEBUG_RESERVED2) epicsPrintf("RAW\n");
                      break;
                   case NOTUSED:
-                     if (debugLevel == DEBUG_RESERVED2) printf("NOTUSED\n");
+                     if (debugLevel == DEBUG_RESERVED2) epicsPrintf("NOTUSED\n");
                      break;
 
                   default:
-                     if (debugLevel == DEBUG_RESERVED2) printf("DEFAULT\n");
+                     if (debugLevel == DEBUG_RESERVED2) epicsPrintf("DEFAULT\n");
                      filtered[PWFS2].z1 = iir_filter 
                         ((double) filtered[PWFS2].z1, 
                          &filter[PWFS2][XTILT]);
@@ -1154,7 +1152,7 @@ void processGuides (void)
 
                if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
                {
-                  printf("processGuides - read RM data from OIWFS\n");
+                  epicsPrintf("processGuides - read RM data from OIWFS\n");
                }
 
                /* copy the data from reflective memory page */
@@ -1210,7 +1208,7 @@ void processGuides (void)
 
                if ((debugLevel > DEBUG_MIN) & (debugLevel <= DEBUG_MED))
                {
-                  printf("processGuides - read RM data from GAOS\n");
+                  epicsPrintf("processGuides - read RM data from GAOS\n");
                }
 
                /* copy the data from reflective memory page */
@@ -1388,14 +1386,14 @@ void processGuides (void)
                if (tiltPidOn == ON)
                {
                   if (debugLevel == DEBUG_RESERVED2) 
-                     printf("tiltPidOn is ON\n");
+                     epicsPrintf("tiltPidOn is ON\n");
                   xNetGuideT = control (XTILT, xNetGuide, 0.0);
                   yNetGuideT = control (YTILT, yNetGuide, 0.0);
                }
                else
                {
                   if (debugLevel == DEBUG_RESERVED2) 
-                     printf("tiltPidOn is OFF\n");
+                     epicsPrintf("tiltPidOn is OFF\n");
                   xNetGuideT = xNetGuide;
                   yNetGuideT = yNetGuide;
                }
@@ -1583,7 +1581,7 @@ void processGuides (void)
          scsBase->page0.NS = ++local.NS;
          if (fabs(lastNS - scsBase->page0.NS) > 1000)
          {
-            printf("SCS sending NS = %ld\n", lastNS);
+            epicsPrintf("SCS sending NS = %ld\n", lastNS);
          }
          scsBase->page0.heartbeat = local.scsHeartbeat++;
          scsBase->page0.checksum = 
@@ -1822,7 +1820,7 @@ void slowTransmit (void)
 
          if (mytimeshow) {
 
-            printf("mytime %s\n", cemtime);
+            epicsPrintf("mytime %s\n", cemtime);
          }
 
       }
@@ -2123,7 +2121,7 @@ void tiltReceive (void)
 
             if (oldHeartbeat == m2Ptr->page0.heartbeat) {
                errorLog ("tiltReceive - SCS heartbeat stuck", 1, ON);
-               if (myTiltRxErrcount++ < 100) printf("tiltReceive - SCS heartbeat stuck\n");
+               if (myTiltRxErrcount++ < 100) epicsPrintf("tiltReceive - SCS heartbeat stuck\n");
             }
 
             oldHeartbeat = m2Ptr->page0.heartbeat;
@@ -2142,7 +2140,7 @@ void tiltReceive (void)
                 {
                    errorLog ("timeout appending command to receiveQId", 1, ON);
                    if (myTiltRxErrcount++ < 100) 
-                      printf("timeout appending command to receiveQId\n");
+                      epicsPrintf("timeout appending command to receiveQId\n");
                 }
              }
 
@@ -2155,7 +2153,7 @@ void tiltReceive (void)
            else {
               errorLog ("tiltReceive - checksums fail", 1, ON);
               if (myTiltRxErrcount++ < 100) 
-                 printf ("tiltReceive - checksums fail\n");
+                 epicsPrintf ("tiltReceive - checksums fail\n");
            }
 
            /* package status data to return to SCS */
@@ -2179,7 +2177,7 @@ void tiltReceive (void)
       else {
          if(simLevel != 0) {
             errorLog ("tiltReceive - scsDataAvailable timeout", 1, ON);
-            if (myTiltRxErrcount++ < 100) printf("tiltReceive - scsDataAvailable timeout\n");
+            if (myTiltRxErrcount++ < 100) epicsPrintf("tiltReceive - scsDataAvailable timeout\n");
          }
       }
    }
@@ -2638,7 +2636,7 @@ long writeCommand (const long command)
 
       if (epicsMessageQueueSendWithTimeout(commandQId, (char *)&localCommand, sizeof (long), SEM_TIMEOUT) == ERROR)
       {
-         printf ("failed to append command message %s to message queue\n", 
+         epicsPrintf ("failed to append command message %s to message queue\n", 
                m2CmdName[command]);
          return (-1);
       }
@@ -2816,7 +2814,7 @@ int saveCb ()
 
     if ( pFile == (FILE *) NULL )
     {
-        printf ( "error opening file %s\n", fileName );
+        epicsPrintf ( "error opening file %s\n", fileName );
         return (ERROR);
     }
 
@@ -2976,63 +2974,63 @@ void vtkShowY() {
 
 void vtkResetX() {
     /**
-     * printf("VTK Reseting X...\n");
+     * epicsPrintf("VTK Reseting X...\n");
      */
     _vtkReset(&vtkX);
 }
 
 void vtkResetY() {
     /*
-     * printf("VTK Reseting Y...\n");
+     * epicsPrintf("VTK Reseting Y...\n");
      */
     _vtkReset(&vtkY);
 }
 
 void vtkxon() {
 
-    printf("VTK Turning on X...\n");
+    epicsPrintf("VTK Turning on X...\n");
     vibrationXTrackOn = 1;
     _vtkReset(&vtkX);
 }
 
 void vtkxoff() {
-    printf("VTK Turning off X...\n");
+    epicsPrintf("VTK Turning off X...\n");
     vibrationXTrackOn = 0;
 
 }
 
 void vtkyon() {
 
-    printf("VTK Turning on Y...\n");
+    epicsPrintf("VTK Turning on Y...\n");
     vibrationYTrackOn = 1;
     _vtkReset(&vtkY);
 }
 
 void vtkyoff() {
-    printf("VTK Turning off Y...\n");
+    epicsPrintf("VTK Turning off Y...\n");
     vibrationYTrackOn = 0;
 }
 
 void swxon() {
-    printf("SW Turning on X...\n");
+    epicsPrintf("SW Turning on X...\n");
     phasorXApply = 1;
     xTiltGuideSimScale = 1.0;
 }
 
 void swxoff() {
-    printf("SW Turning off X...\n");
+    epicsPrintf("SW Turning off X...\n");
     phasorXApply = 0;
     xTiltGuideSimScale = 1.0;
 }
 
 void swyon() {
-    printf("SW Turning on Y...\n");
+    epicsPrintf("SW Turning on Y...\n");
     phasorYApply = 1;
     yTiltGuideSimScale = 1.0;
 }
 
 void swyoff() {
-    printf("SW Turning off Y...\n");
+    epicsPrintf("SW Turning off Y...\n");
     phasorYApply = 0;
     yTiltGuideSimScale = 1.0;
 }
