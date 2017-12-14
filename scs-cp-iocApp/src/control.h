@@ -52,8 +52,6 @@
 #ifndef MK
 #define F2OI_NODE               8       /* Node 8 is the F2 OIWFS */   
 #define GPI_NODE                9       /* Node 9 is the GPI OIWFS */  
-#define F2OI_NODE               8       /* Node 8 is the F2 OIWFS */   
-#define GPI_NODE                9       /* Node 9 is the GPI OIWFS */  
 #endif
 
 
@@ -407,7 +405,12 @@ typedef struct
     wfsBlock        oiwfs;      /* page10 */
     wfsBlock        gaos;       /* page11 */
     wfsBlock        gyro;       /* page12 */
-    wfsBlock        altair;       /* page13 */
+    wfsBlock        altair;     /* page13 */
+#ifndef MK
+    unusedBlock     page14;
+    wfsBlock        gpi;        /* page15 */
+#endif
+
 }memMap;
 
 typedef struct                  /* data from m2 to log */

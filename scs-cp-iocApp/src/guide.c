@@ -2453,10 +2453,13 @@ long decimate (struct genSubRecord * pgsub)
 
      *(double *) pgsub->valq = xp; 
      *(double *) pgsub->valr = yp;
+
+#ifdef MK
      *(long *)   pgsub->vals = guideInfo.rate; /*Guide frequency 200Hz, 100Hz or 50Hz*/
 
      memcpy (vtkxdata, guideInfo.vtkXdata, 3*sizeof (double));
      memcpy (vtkydata, guideInfo.vtkYdata, 3*sizeof (double));
+#endif
 
      return (OK);
 }

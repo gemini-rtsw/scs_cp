@@ -68,7 +68,7 @@ enum
   GAOS,
 
 #ifndef GN
-  GPI
+  GPI,
 #endif
 
   GYRO

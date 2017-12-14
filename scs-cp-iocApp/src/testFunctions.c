@@ -1083,8 +1083,11 @@ int printval = 0;
 
 void fillWfs(void *p)
 {
-
    double value = 0.0; 
+
+#ifndef MK
+   double smallRand;
+#endif
 
    for (;;) {
 

@@ -935,9 +935,10 @@ void rmISR3 (int node)
 
 #ifdef GN
 int rxwaitticks = 0;
-int    waittime = 10;
 int useDynamicVtk =0;
 #endif
+
+int    waittime = 0.08;   
 
 void processGuides (void) 
 {
@@ -971,7 +972,10 @@ void processGuides (void)
 #endif
    
    /* Used to time stamp a set of data written to the ring buffers */
-   double cbTimeStamp, tsdiff=0.0;
+   double cbTimeStamp;
+
+#ifdef MK
+   double tsdiff=0.0;
    static double tsold=0.0;
 
    /* Initialize Vibration Tracking*/
@@ -986,6 +990,7 @@ void processGuides (void)
 
    vtkInit(&vtkY);
    showVtkRotation(&vtkY);
+#endif
 
    /* Initialize eventData structure */ 
    eventData.currentBeam = 0;
@@ -1015,9 +1020,6 @@ void processGuides (void)
        * as long as the rate the TCS sends at 20 Hz = 20 x per sec = 0.05 s 
        */
 
-#ifndef GN
-       waittime = 10; 
-#endif       
 
       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
@@ -1180,7 +1182,7 @@ void processGuides (void)
                guideUpdate = TRUE;
             }
          }
-#ifder GN
+#ifdef GN
          else if ( (nodeISR3 == AGOI_NODE) && (weight[OIWFS][currentBeam] > -2) )
 #else
          else if ( (nodeISR3 == AGOI_NODE || nodeISR3 == F2OI_NODE) && (weight[OIWFS][currentBeam] > -2) )
@@ -1302,7 +1304,7 @@ void processGuides (void)
              if (scsBase->gpi.interval > updateInterval.gpi) 
             { 
                if (debugLevel == DEBUG_RESERVED2) 
-                   logMsg("processGuides - GPI NODE interrupting me\n", 0, 0, 0, 0, 0, 0); 
+                   errlogMessage("processGuides - GPI NODE interrupting me\n"); 
   
                updateTime.gpi = scsBase->gpi.time;
                updateInterval.gpi = scsBase->gpi.interval; 
@@ -1531,9 +1533,8 @@ void processGuides (void)
     
                    /* Add the latest */
                    yNetGuideT += vtkY.command;
-#endif
-                   
                }
+#endif
 
                if (focusPidOn == ON)
                {
@@ -2384,7 +2385,7 @@ void scsReceive (void)
 
 #ifndef MK
              
-            m2CircBufferTask (scsBase);
+            // m2CircBufferTask (scsBase);
 #endif
             
          }
