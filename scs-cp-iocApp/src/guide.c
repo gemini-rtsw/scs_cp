@@ -127,7 +127,7 @@ char *wfsName[] =
     "OIWFS",
     "GAOS ",
     "GYRO ",
-#ifndef GN
+#ifndef MK
      "GPI"
 #endif
     NULL
@@ -147,7 +147,7 @@ static double dfilter(double newSample, int Id);
 
 anUpdateInterval updateInterval = { 0.0, 0.0, 0.0, 0.0  };
 
-#ifdef GN
+#ifdef MK
 GuideInfo guideInfo = { 0.0, 0, {1.557,-9.7, 198.9}, {1.557,-9.7, 198.9}};
 #endif
 
@@ -176,7 +176,7 @@ int guideMaster[MAX_SOURCES][MAX_BEAMS] =
 
 MATLAB filter[MAX_SOURCES][MAX_AXES];
 
-#ifdef GN
+#ifdef MK
 HighSpeed *highSpeedData;
 #endif
 
@@ -541,7 +541,7 @@ long CADguideControl (struct cadRecord * pcad)
                updateInterval.pwfs1 = 0.0;
                updateInterval.oiwfs = 0.0;
                updateInterval.gaos = 0.0;
-#ifndef GN
+#ifndef MK
                updateInterval.gpi = 0.0;
 #endif
 
@@ -660,7 +660,7 @@ long CADguideConfig (struct cadRecord * pcad)
      static double sampleFreq = 200.0, freq1 = 20.0, freq2 = 25.0 ;
 
      static double weightA, weightB, weightC;
-#ifdef GN
+#ifdef MK
      static char *sourceOpts[] = {"PWFS1", "PWFS2", "OIWFS", "GAOS", "GYRO",
 #else
      static char *sourceOpts[] = {"PWFS1", "PWFS2", "OIWFS", "GAOS", "GYRO", "GPI",
@@ -668,10 +668,6 @@ long CADguideConfig (struct cadRecord * pcad)
                                   NULL } ;
      static char *filterOpts[] = {"OFF", "RAW", "LOWPASS", "HIGHPASS",
                                   "BANDPASS", "BANDSTOP", NULL} ;
-#ifdef GN
-     static char *resetOpts[] = {"OFF", "ON", NULL} ;
-#endif
-
 
      cadDirLog ("guideConfig", pcad->dir, 10, pcad);
 
@@ -861,7 +857,7 @@ long CADguideConfig (struct cadRecord * pcad)
  *              < pcad->valc    *string oiwfs configuration
  *              < pcad->vald    *string gaos configuration
  *              < pcad->vale    *string gyro configuration
- *              < pcad->valf    *string gpi configuration (GN only)
+ *              < pcad->valf    *string gpi configuration (GS only)
  *
  * Return value:
  *              < status        long
@@ -953,7 +949,7 @@ long guideConfig (struct genSubRecord *pgsub)
           strncpy (pgsub->vale, filterString, MAX_STRING_SIZE - 1);
           break;
 
-#ifndef GN
+#ifndef MK
      case GPI:
           strncpy (pgsub->valf, filterString, MAX_STRING_SIZE - 1);
           break;
@@ -981,7 +977,7 @@ long guideConfig (struct genSubRecord *pgsub)
           strncpy (pgsub->valc, filterString, MAX_STRING_SIZE - 1);
           strncpy (pgsub->vald, filterString, MAX_STRING_SIZE - 1);
           strncpy (pgsub->vale, filterString, MAX_STRING_SIZE - 1);
-#ifndef GN
+#ifndef MK
           strncpy (pgsub->valf, filterString, MAX_STRING_SIZE - 1);
 #endif
 
@@ -1184,11 +1180,11 @@ long CADguideReset (struct cadRecord * pcad)
      long status = CAD_REJECT;
      static int reset;
 
-#ifdef GN
+#ifdef MK
      // static double weightA, weightB, weightC;
 #endif
 
-     static char *resetOpts[] = {"OFF", "ON", NULL} ;
+    static char *resetOpts[] = {"OFF", "ON", NULL} ;
 
 
      printf("CADguideReset: BEGIN \n");
@@ -1326,7 +1322,7 @@ long resetGuideConfig (struct genSubRecord *pgsub)
           strncpy (pgsub->valc, filterString, MAX_STRING_SIZE - 1);
           strncpy (pgsub->vald, filterString, MAX_STRING_SIZE - 1);
           strncpy (pgsub->vale, filterString, MAX_STRING_SIZE - 1);
-#ifndef GN
+#ifndef MK
           strncpy (pgsub->valf, filterString, MAX_STRING_SIZE - 1);
 #endif
 
@@ -1868,7 +1864,7 @@ static int readFilters (MATLAB * testFilter, int type, double freq1, double freq
      }
 }
 
-#ifdef GN
+#ifdef MK
 void printHS() {
 
     int i;

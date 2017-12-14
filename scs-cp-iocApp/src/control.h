@@ -425,7 +425,7 @@ typedef struct                  /* data from m2 to log */
 } m2History;
 
 
-#ifdef GN
+#ifdef MK
 #define HS_RECORD_LENGTH 4000
 
 typedef struct {
@@ -562,7 +562,7 @@ extern int flip;
 extern int guideType;
 extern PID controller[MAX_AXES];
 
-#ifdef GN
+#ifdef MK
 extern HighSpeed *highSpeedData;
 #endif
 

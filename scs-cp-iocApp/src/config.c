@@ -802,7 +802,7 @@ long    CADcontroller (struct cadRecord * pcad)
     return (status);
 }
 
-#ifdef GN
+#ifdef MK
 long    CADsetPhasorControl (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;

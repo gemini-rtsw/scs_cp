@@ -67,14 +67,14 @@ enum
   OIWFS,
   GAOS,
 
-#ifndef GN
+#ifndef MK
   GPI,
 #endif
 
   GYRO
 };
 
-#ifdef GN
+#ifdef MK
 enum
 {
     GUIDE_200_HZ = 200,

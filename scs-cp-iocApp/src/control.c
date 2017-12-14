@@ -218,7 +218,7 @@ static struct
 };
 
 
-#ifdef GN
+#ifdef MK 
 static Phasor phasorX = {
         {{1.0},{0.0}},      /* Snew */
         {{1.0},{0.0}},      /* Sold*/
@@ -307,7 +307,7 @@ static double xNetGuideT = 0.0;
 static double yNetGuideT = 0.0;
 static double zNetGuideT = 0.0;
 static double xNetGuideU = 0.0;
-#ifdef GN
+#ifdef MK 
 static double xRecycleGuideU = 0.0;
 static double yRecycleGuideU = 0.0;
 #endif
@@ -324,7 +324,7 @@ static int  frameConvert (converted *result, frameChange *f, const double x,
       const double y, const double z);
 
 
-#ifdef GN
+#ifdef MK 
 void phasorShow(void);
 #endif
 
@@ -399,7 +399,7 @@ long followOn = OFF;
 long tiltPidOn = ON;
 long focusPidOn = ON;
 
-#ifdef GN
+#ifdef MK
 long vibrationXTrackOn = OFF;
 long vibrationYTrackOn = OFF;
 #endif
@@ -933,7 +933,7 @@ void rmISR3 (int node)
 
 /* ===================================================================== */
 
-#ifdef GN
+#ifdef MK
 int rxwaitticks = 0;
 int useDynamicVtk =0;
 #endif
@@ -949,7 +949,7 @@ void processGuides (void)
    //char message[200];
    long lastNS = 0;
 
-#ifdef GN
+#ifdef MK 
    long sensedGuideRate = GUIDE_200_HZ;
 #endif
 
@@ -961,11 +961,11 @@ void processGuides (void)
       double gaos;
       double gyro;
 
-#ifndef GN
+#ifndef MK
       double gpi;
 #endif
 
-#ifdef GN
+#ifdef MK
    } updateTime = { 0.0, 0.0, 0.0, 0.0, 0.0 };  
 #else
    } updateTime = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };  
@@ -1109,7 +1109,7 @@ void processGuides (void)
                   epicsPrintf("processGuides - read RM data from PWFS2\n");
                }
 
-#ifdef GN
+#ifdef MK
                /* N.B. Use this if you're not guiding with P2 and want to check the
                 * functionality of VTK. Here we recycle the previous output
                 * xNetGuideU. It is scaled by the P2 Signal Scale factor 
@@ -1148,18 +1148,18 @@ void processGuides (void)
                switch (filter[PWFS2][XTILT].type)
                {
                   case RAW:
-#ifdef GN
+#ifdef MK
                      if (debugLevel == DEBUG_RESERVED2) epicsPrintf("RAW\n");
 #endif
                      break;
                   case NOTUSED:
-#ifdef GN
+#ifdef MK
                      if (debugLevel == DEBUG_RESERVED2) epicsPrintf("NOTUSED\n");
 #endif
                      break;
 
                   default:
-#ifdef GN
+#ifdef MK
                      if (debugLevel == DEBUG_RESERVED2) epicsPrintf("DEFAULT\n");
 #endif
                      filtered[PWFS2].z1 = iir_filter 
@@ -1182,7 +1182,7 @@ void processGuides (void)
                guideUpdate = TRUE;
             }
          }
-#ifdef GN
+#ifdef MK
          else if ( (nodeISR3 == AGOI_NODE) && (weight[OIWFS][currentBeam] > -2) )
 #else
          else if ( (nodeISR3 == AGOI_NODE || nodeISR3 == F2OI_NODE) && (weight[OIWFS][currentBeam] > -2) )
@@ -1298,7 +1298,7 @@ void processGuides (void)
             } 
          }
 
-#ifndef GN
+#ifndef MK
         else if ( (nodeISR3 == GPI_NODE) && (weight[OIWFS][currentBeam] > -2) )
          {
              if (scsBase->gpi.interval > updateInterval.gpi) 
@@ -1430,7 +1430,7 @@ void processGuides (void)
          guideUpdate = FALSE;         
       }
 
-#ifdef GN
+#ifdef MK
       if (debugLevel == DEBUG_RESERVED2)
       {
          errlogPrintf ("currentBeam = %1d, (0=BEAMA,3=A2BRAMP); guideOnA = %1d\n",
@@ -1510,7 +1510,7 @@ void processGuides (void)
                   yNetGuideT = yNetGuide;
                }
 
-#ifdef GN
+#ifdef MK
                if (vibrationXTrackOn == ON) {
 
                    /* Calculate new vtk X Command and 
