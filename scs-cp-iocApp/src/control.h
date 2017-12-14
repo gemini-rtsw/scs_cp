@@ -49,6 +49,14 @@
 #define AGOI_NODE               4       /* Node 4 is the A&G OIWFS */   
 #define GAOS_NODE               5       /* Node 5 is the ALTAIR    */   
 
+#ifndef MK
+#define F2OI_NODE               8       /* Node 8 is the F2 OIWFS */   
+#define GPI_NODE                9       /* Node 9 is the GPI OIWFS */  
+#define F2OI_NODE               8       /* Node 8 is the F2 OIWFS */   
+#define GPI_NODE                9       /* Node 9 is the GPI OIWFS */  
+#endif
+
+
 #define SYSTEM_CLOCK_RATE      200      /* Number of ticks per second */ 
 
 #define SEM_TIMEOUT            0.5      /* This had been 100 ticks (@ 200 ticks/sec) */
@@ -413,6 +421,8 @@ typedef struct                  /* data from m2 to log */
     double  setZ;
 } m2History;
 
+
+#ifdef GN
 #define HS_RECORD_LENGTH 4000
 
 typedef struct {
@@ -433,6 +443,7 @@ typedef struct {
     double vtkYPhase[HS_RECORD_LENGTH]; /*Set FTV<output> to numsamples*/
 
 } HighSpeed;
+#endif
 
 enum
 {
@@ -547,7 +558,11 @@ extern int currentBeam;
 extern int flip;
 extern int guideType;
 extern PID controller[MAX_AXES];
+
+#ifdef GN
 extern HighSpeed *highSpeedData;
+#endif
+
 /* not used extern wfs raw[MAX_SOURCES];*/
 extern wfs filtered[MAX_SOURCES];
 /* Structure to hold position demands */
@@ -562,6 +577,8 @@ extern long followOn;
 /* flag to show tilt, focus PIDs active { ON | OFF } */
 extern long tiltPidOn;
 extern long focusPidOn;
+
+#ifdef MK
 extern long vibrationXTrackOn;
 extern long vibrationYTrackOn;
 extern long phasorXApply;
@@ -577,6 +594,7 @@ void swxon(void);
 void swyon(void);
 void swxoff(void);
 void swyoff(void);
+#endif
 
 extern long servoOnStatus;
 

@@ -289,7 +289,8 @@ int scsInit (void)
 
    memset ((void *) scsBase, 0, sizeof (memMap));
 
-   /* spawn communication tasks */
+   /* spawn communication tasks */  
+   /* these had been medium priority for GS */
    epicsThreadMustCreate("tscsRx", epicsThreadPriorityHigh,
                   epicsThreadGetStackSize(epicsThreadStackBig),
                   (EPICSTHREADFUNC)scsReceive, (void *)NULL);

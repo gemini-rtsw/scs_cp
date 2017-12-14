@@ -1563,6 +1563,7 @@ int   showFrame (int source)
     return (OK);
 }
 
+#ifdef MK
 double vtkscale = 1.0;
 
 int vtkControl (Vtk *vtk, double guideError) {
@@ -1722,6 +1723,8 @@ int myround_nearest10(int n) {
     return tmp; 
     
 }
+
+#endif
 
 /* ===================================================================== */
 /* INDENT OFF */

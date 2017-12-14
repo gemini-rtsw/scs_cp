@@ -566,6 +566,7 @@ assign moveYInputPos to "{T}move.H";
 long pidDir;
 assign pidDir to "{T}setController.DIR";
 
+#ifdef MK
 /* VTK control record connections*/
 
 long vtkXCtrl;
@@ -612,6 +613,7 @@ assign phasorXDir to "{T}X:setPhasorControl.DIR";
 
 long phasorYDir;
 assign phasorYDir to "{T}Y:setPhasorControl.DIR";
+#endif
 
 /* ===================================================================== */
 
@@ -1210,7 +1212,9 @@ ss CADprocessor {
          efClear(inPositionChange);
          efClear(followCadChange);
          efClear(actuatorCadChange);
+#ifdef MK
          efClear(vtkChange);
+#endif
 
          puts("Cleared flags, starting INIT in 10.0 secs...");
 
@@ -1325,12 +1329,14 @@ ss CADprocessor {
          efClear(guideSimChange);
       } state startGuideSimChange
 
+#ifdef MK
       when(efTest(vtkChange))
       {
          /* clear event flag */
          efClear(vtkChange);
 
       }   state startVtkChange
+#endif
 
    }
 
@@ -1998,7 +2004,7 @@ ss CADprocessor {
          pidDir = 3;
          pvPut(pidDir);
 
-        
+#ifdef MK        
         /* send VTK command to setup VTK values*/
         vtkXDir = 2;
         pvPut(vtkXDir);
@@ -2022,6 +2028,7 @@ ss CADprocessor {
         pvPut(phasorYDir);
         phasorYDir = 3;
         pvPut(phasorYDir);
+#endif
 
       }   state idle
    }
@@ -2902,6 +2909,7 @@ ss CADprocessor {
          writeCommand(VEND);
          writeCommand(MOFFLON);
 
+#ifdef MK
         /* Turn VTK OFF*/
         vtkXCtrl = 0;
         vtkYCtrl = 0;
@@ -2917,6 +2925,7 @@ ss CADprocessor {
         pvPut(vtkYCtrlDir);
         vtkYCtrlDir = 3;
         pvPut(vtkYCtrlDir);
+#endif
 
 
       } state proceedWithPark
@@ -3390,6 +3399,9 @@ ss CADprocessor {
       }   state idle
    }
 
+
+
+#ifdef MK
    /* ==================================================================== */
    /* INDENT OFF */
    /*
@@ -3416,6 +3428,7 @@ ss CADprocessor {
 
         } state idle
    }
+#endif
 
    /* ==================================================================== */
    /* INDENT OFF */

@@ -101,6 +101,7 @@ double RANDnorm () {
    return result;
 }
 
+#ifdef MK
 double vibfreq = 12.0;
 double vibamp = 1.0;
 double vibphase = 0.0;
@@ -340,6 +341,8 @@ double sinus(int n) {
     double t = (double)n/guideSrate; 
     return vibamp * cos(2*PI * vibfreq * t  ) ;
 }
+#endif
+
 
 /*bitFieldM2 statusWord;*/
 /*
@@ -505,9 +508,14 @@ void    testMem (const memMap * buffPtr)
     printPage12 (buffPtr);
     printPage13a (buffPtr);
     printPage13b (buffPtr);
+
+#ifndef MK
+    printPage15  (buffPtr);
+#endif
+
 }
 
-/* ===================================================================== */
+/*i ===================================================================== */
 
 void    printPage0 (const memMap * buffPtr)
 {
@@ -850,6 +858,26 @@ void    printPage13b (const memMap * buffPtr)
 
 }
 
+
+#ifndef MK
+/* ===================================================================== */
+
+void    printPage15 (const memMap * buffPtr)
+{
+    printf ("\nPage 15 - GPI oiwfs data\n");
+    printf ("oiwfs      Addr = %lx,           \n", (long) &buffPtr->gpi.z1);
+    printf ("z1     Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.z1, buffPtr->gpi.z1);
+    printf ("z2     Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.z2, buffPtr->gpi.z2);
+    printf ("z3     Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.z3, buffPtr->gpi.z3);
+    printf ("err1       Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.err1, buffPtr->gpi.err1);
+    printf ("err2       Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.err2, buffPtr->gpi.err2);
+    printf ("err3       Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.err3, buffPtr->gpi.err3);
+    printf ("name       Addr = %lx, Value = %s\n", (long) buffPtr->gpi.name, buffPtr->gpi.name);
+    printf ("interval   Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.interval, buffPtr->gpi.interval);
+    printf ("time       Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.time, buffPtr->gpi.time);
+}
+#endif
+
 /* ===================================================================== */
 /* INDENT OFF */
 /*
@@ -1060,6 +1088,7 @@ void fillWfs(void *p)
 
    for (;;) {
 
+#ifdef MK
 /*
       scsBase->pwfs2.z1 = xTiltGuideSimScale * phasor.command;
       scsBase->pwfs2.z2 = yTiltGuideSimScale * phasor.command;
@@ -1069,6 +1098,19 @@ void fillWfs(void *p)
       scsBase->pwfs2.err3 = phasor.command * 0.2;
 */
       scsBase->pwfs2.z3 = 0.0;
+#else
+      smallRand = RANDnorm();
+
+      scsBase->pwfs2.z1 = xTiltGuideSimScale * (smallRand + 0.1);
+      scsBase->pwfs2.z2 = yTiltGuideSimScale * (smallRand + 0.1);
+      scsBase->pwfs2.z3 = 0.0;
+      scsBase->pwfs2.err1 = smallRand * 0.2;
+      scsBase->pwfs2.err2 = smallRand * 0.2;
+      scsBase->pwfs2.err3 = smallRand * 0.2;
+      scsBase->pwfs2.time = value++;
+      scsBase->pwfs2.interval += (float)(gInterval);
+#endif
+
       scsBase->pwfs2.time = value++;
       scsBase->pwfs2.interval += (float)(gInterval);
 
@@ -1078,6 +1120,7 @@ void fillWfs(void *p)
       if (freeRunGuideSim)
          rmISR3(3);
          
+#ifdef MK
       /* guideSimDelayTicks could be set to match the intended 100Hz 
        * sample frequency seen by M2TS (CEM). This normally depends
        * on the incomming WFS interrupt rate, then cut in half
@@ -1089,6 +1132,9 @@ void fillWfs(void *p)
        *    guideSimDelayTicks = 2; ==> 10ms delay
        * */
       epicsThreadSleep(guideSimDelay);
+#else
+      epicsThreadSleep(0.001);  /* wait only one clock tick */
+#endif
    }
 
    /* thread is deletped when it terminates */

@@ -802,6 +802,7 @@ long    CADcontroller (struct cadRecord * pcad)
     return (status);
 }
 
+#ifdef GN
 long    CADsetPhasorControl (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
@@ -956,8 +957,9 @@ long    CADsetPhasorControl (struct cadRecord * pcad)
 
 } 
 
+#endif
 
-
+#ifdef MK
 long    CADsetVTKControl (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
@@ -1197,6 +1199,7 @@ long    CADsetVTKControl (struct cadRecord * pcad)
     return(status);
 
 } 
+#endif
 
 /* ===================================================================== */
 /*
@@ -2460,11 +2463,12 @@ long CADtiltPidControl (struct cadRecord * pcad)
         {
             tiltPidOn = tiltPidRqst;
 
+#if 0
             if (debugLevel == DEBUG_RESERVED2)
             {
                 printf("Setting tiltPidOn to %d\n", (int)tiltPidOn);
             }
-
+#endif
             *(long *)pcad->vala = (long)tiltPidRqst;
         }
         break;
@@ -2573,11 +2577,12 @@ long CADfocusPidControl (struct cadRecord * pcad)
         else
         {
             focusPidOn = focusPidRqst;
-
+#if 0
             if (debugLevel == DEBUG_RESERVED2)
             {
                 printf("Setting focusPidOn to %d\n", (int)focusPidOn);
             }
+#endif
 
             *(long *)pcad->vala = (long)focusPidRqst;
         }
@@ -2596,6 +2601,8 @@ long CADfocusPidControl (struct cadRecord * pcad)
 }
 
 
+
+#ifdef MK
 /*
  *
  *
@@ -2849,6 +2856,9 @@ long CADvtkControl (struct cadRecord * pcad)
 
     return (status);
 }
+
+#endif
+
 
 
 /* ===================================================================== */
