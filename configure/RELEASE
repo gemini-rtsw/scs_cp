@@ -31,9 +31,10 @@ TCSLIB=$(PRODSUP)/tcslib/1-0-5
 VMIC=$(PRODSUP)/vmi5588/1-1-2
 SNCSEQ=$(PRODSUP)/seq/2-2-3-2
 PVLOAD=$(PRODSUP)/pvload/1-1-3
-BANCOMM=$(PRODSUP)/bancomm/1-6-5
+#BANCOMM=$(PRODSUP)/bancomm/1-6-5
 IOCSTATS=$(PRODSUP)/iocStats/3-1-14-4
 
+BANCOMM=$(WORKSUP)/bancomm
 XYCOM=$(WORKSUP)/xycom-new
 
 
