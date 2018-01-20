@@ -8,9 +8,73 @@ scs_cp_ioc_registerRecordDeviceDriver(pdbbase)
 
 ## Load record instances
 #dbLoadTemplate("db/scs-cp-ioc.substitutions")
-#dbLoadRecords("db/scs-cp-ioc.db", "user=mikew")
+dbLoadRecords("db/scs-cp-ioc.db", "m2:")
 
+## Load record instances
+dbLoadRecords("db/iocAdminRTEMS.db"," IOC=m2:iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
+dbLoadRecords("db/timeProbe.db","top=m2:")
+dbLoadRecords("db/m2.db")
+dbLoadRecords("db/m2sad.db")
+
+# Configure BANCOMM card
+# - set the bc635 Time Provider priority to something other than the default
+# or set it to a negative value to disable the bc635 Time Provider
+# Must be called before BCconfigure
+bc635TimeSetTpPrio (60)
+# - Master ? Simulate ? intPerSecond, intPerTick, timeOffset (microsec)
+BCconfigure (0, 0, 200, 1, 0)
+
+var drvPmacDebug 0
+#var devPmacMbxDebug 2
+
+# initialise reflective memory
+#vmi5588_init
+drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
+
+# initialise data and error logging
+# Obsolete now
+#elgInit
+
+# initialise system, first xycom (via chopInit), then then rest.
+# Note: scsInit spawns processGuides which writes to the xycom if compiled
+# with the USR C FLAG for TIME_LATENCY, so chopInit goes first.
+chopInit
+scsInit
+
+# connect rm interrupts to handler routines
+rmIntConnect(2, rmISR2)
+rmIntConnect(3, rmISR3)
+
+#Start EPICS
 iocInit
 
-## Start any sequence programs
-#seq(sncxxx, "user=mikew")
+# set debug level for test debugging
+#
+# TODO: Rippa confirm if these are obsolete, then remove
+#debugLevel = 0
+#loggingEnable = 1
+#CADlogging = 1
+
+
+####dbpf "m2:guideConfigReset.DIR","0"
+###### Start any sequence programs
+####seq &timeSeq, "sys=m2:, top=tcs:"
+####seq &tilt_st, "S=m2:tilt:"
+####seq &tilt_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
+#####dbpr "m2:interlock"
+##### Comment out during testing signal from GIS:
+####dbpf "m2:interlockOverride","1"
+####
+####dbpf "m2:guideConfigReset.DIR","3"
+#####taskDelay(200)
+####dbpf "m2:guideConfigReset.DIR","3"
+####
+####dbpf "m2:byte3:b6","OFF"
+####dbpf "m2:byte3:b7","OFF"
+####dbpf "m2:byte0:b7","OFF"
+####dbpf "m2:byte1:b0","OFF"
+####dbpf "m2:byte1:b4","NO"
+####dbpf "m2:byte0:b6","DISABLED"
+####dbpf "m2:byte0:b2","DISABLED"
+####
+
