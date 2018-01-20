@@ -38,25 +38,23 @@
 /* INDENT ON */
 /* ===================================================================== */
 
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <epicsExport.h>
+#include <registryFunction.h>
+#include <cad.h>
+#include <devLib.h>
+
 #include "showEngineering.h"
 #include "m2ParseMsg.h"
-#include "control.h"            /* For writeCommand, simLevel, scsBase,
-                                               m2Ptr */
-#include "xycom.h"              /* For PORT_7_ADDR define */
-#include "m2Log.h"              /* For m2LogActive */
+#include "control.h"            /* For writeCommand,
+                                   simLevel, scsBase, m2Ptr */
+#include "drvXy240.h"              /* For PORT_7_ADDR define */
+//#include "m2Log.h"              /* For m2LogActive */
 #include "utilities.h"          /* For tilt2act */
 
-#include <cad.h>
-#include <logLib.h>             /* For logMsg */
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <sysLib.h>             /* For sysClkRateGet */
-#include <taskLib.h>            /* Spawning and deleting tasks */
-
-
 /* specify constant definitions */
-
 #define M2_DIAGNOSTIC_PAGE_ADDRESS (0xf0a00840)
 #define CEM_ON           47
 #define CEM_OFF          48
@@ -68,10 +66,10 @@
 #define STOP_LOG         54
 #define CLOSE_LOG        55
 
-#define M2POWERON   0x1 /* 00000001 */
-#define M2POWEROFF  0xfe    /* 11111110 */
-#define M2SERVOON   0x2 /* 00000010 */
-#define M2SERVOOFF  0xfd    /* 11111101 */
+#define M2POWERON   0x1 	/* 00000001 */
+#define M2POWEROFF  0xfe    	/* 11111110 */
+#define M2SERVOON   0x2 	/* 00000010 */
+#define M2SERVOOFF  0xfd    	/* 11111101 */
 
 #define IN_POSITION_LIMIT 100.0 /* actuator error within this range (microns), OK to turn on servos */
 
@@ -194,7 +192,7 @@ static char *primitiveName[] =
 
 long    readM2Diagnostics (struct genSubRecord * pgsub)
 { 
-    char junk;
+    short junk;
     int index = 0;
     double act1[21], act2[21], act3[21], sys[21];
     location position;
@@ -219,9 +217,13 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
 
     /* check 5588 synchro card memory location, exit if not found */
 
-    if (vxMemProbe ((void *)ptr, VX_READ, 1, &junk) != OK)    
+    //if (vxMemProbe ((void *)ptr, VX_READ, 1, &junk) != OK)    
+    if (devReadProbe(sizeof(char), ptr, &junk) != OK )
     {
-      logMsg("readM2Diagnostics - synchro card not detected at address %p\n", (int)ptr, 0, 0, 0, 0, 0);
+        char errMsg[100];
+
+        sprintf(errMsg, "readM2Diagnostics - synchro card not detected at address %p\n", (void *)ptr);
+        errlogPrintf("%s\n", errMsg);
         return(ERROR);
     }
 
@@ -431,16 +433,20 @@ long    gensubFanDoubles (struct genSubRecord * pgsub)
 
 long    fillDiagnostics (double seed)
 { 
-    char junk;
+    short junk;
     engData *ptr;
 
     ptr = (engData *)M2_DIAGNOSTIC_PAGE_ADDRESS;
 
     /* check 5588 synchro card memory location, exit if not found */
 
-    if (vxMemProbe ((void *)ptr, VX_READ, 1, &junk) != OK)    
+    /*if (vxMemProbe ((void *)ptr, VX_READ, 1, &junk) != OK)    */
+    if (devReadProbe(sizeof(char), ptr, &junk) != OK )
     {
-        logMsg("readM2Diagnostics - synchro card not detected at address %p\n", (int)ptr, 0, 0, 0, 0, 0);
+        char errMsg[100];
+
+        sprintf(errMsg, "fillDiagnostics - synchro card not detected at address %p\n", (void *)ptr);
+        errlogPrintf("%s\n", errMsg);
         return(ERROR);
     }
 
@@ -638,4 +644,9 @@ long    issueM2Primitive (struct cadRecord * pcad)
 
     return (status);
 }
+
+
+epicsRegisterFunction(readM2Diagnostics);
+epicsRegisterFunction(gensubFanDoubles);
+
 

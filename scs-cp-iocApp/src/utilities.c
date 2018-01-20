@@ -52,6 +52,15 @@
 /* INDENT ON */
 /* ===================================================================== */
 
+#include <stdio.h>          /* For atoi */
+#include <stdlib.h>         /* For atoi */
+#include <string.h>
+#include <math.h>           /* For sin, cos */
+#include <time.h>           /* For date2secs */
+#include <timeLib.h>        /* For timeNow */
+#include <epicsExport.h>
+#include <registryFunction.h>
+
 #include "utilities.h"
 #include "chopControl.h"     /* For chopEventSem */
 #include "control.h"         /* For controller */
@@ -63,12 +72,6 @@
 #define _INCLUDED_SUBRECORD_H
 #include <subRecord.h>
 #endif
-#include <stdio.h>          /* For atoi */
-#include <stdlib.h>         /* For atoi */
-#include <string.h>
-#include <math.h>           /* For sin, cos */
-#include <time.h>           /* For date2secs */
-#include <timeLib.h>        /* For timeNow */
 
 #define SCSTOP "top = m2:"
 #define INSTTOP "I = m2:inst:"
@@ -2083,3 +2086,11 @@ long    snlStateStringConvert (struct genSubRecord * pgsub)
 }
 
 /* ===================================================================== */
+epicsRegisterFunction(readHealthInit);
+epicsRegisterFunction(readHealth);
+epicsRegisterFunction(scsStateStringInit);
+epicsRegisterFunction(scsStateStringConvert);
+epicsRegisterFunction(snlStateStringInit);
+epicsRegisterFunction(snlStateStringConvert);
+
+

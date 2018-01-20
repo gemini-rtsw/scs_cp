@@ -71,6 +71,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <epicsExport.h>
+#include <registryFunction.h>
 
 #include <tcslib.h>
 #include <cad.h>
@@ -105,6 +107,11 @@
 
 #define DECIM_CUTOFF        0.05 /* cutoff for decimation filters 
                                     (1.0 = half sample frequency) */
+
+
+/* Local Declarations*/
+long highSpeed (struct genSubRecord *pgsub);
+long initHighSpeed (struct genSubRecord *pgsub);
 
 /* Guide source names */
 
@@ -2633,4 +2640,14 @@ static double dfilter(double newSample, int Id)
 
      return(sum);
 }
+
+
+epicsRegisterFunction(highSpeed);
+epicsRegisterFunction(guideConfig);
+epicsRegisterFunction(resetGuideConfig);
+epicsRegisterFunction(initDecimate);
+epicsRegisterFunction(decimate);
+epicsRegisterFunction(lookupGuide);
+epicsRegisterFunction(initHighSpeed);
+
 

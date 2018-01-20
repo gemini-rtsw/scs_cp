@@ -60,14 +60,17 @@
 
 /* ===================================================================== */
 
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>         /* For calloc */
 #include <stdio.h>         /* For calloc */
+#include <stdlib.h>         /* For calloc */
+#include <string.h>
+#include <math.h>
 
 #include <cad.h>
 #include <car.h>
 #include <timeLib.h>        /* For timeNow */
+#include <epicsExport.h>
+#include <registryFunction.h>
+
 
 #include "utilities.h"      /* For act2tilt, errorLog, modifyFrame,
                                        debugLevel, ag2m2 */
@@ -1356,3 +1359,11 @@ static void tcsTimeout (void)
       errlogMessage("tcsTimeout - tcs 20Hz follow demand missed for > 1 sec\n");
 }
 #endif
+
+
+epicsRegisterFunction(initFollowGenSub);
+epicsRegisterFunction(dummyInitGenSub);
+epicsRegisterFunction(receiveTcsDemand);
+epicsRegisterFunction(ticker);
+
+

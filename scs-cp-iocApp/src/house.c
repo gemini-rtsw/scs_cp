@@ -50,18 +50,19 @@
 /* INDENT ON */
 /* ===================================================================== */
 
+#include <stdio.h>
+#include <string.h>
+#include <epicsExport.h>
+#include <registryFunction.h>
+
+#include <cad.h>
+#include <car.h>
+#include <tcslib.h>
+
 #include "house.h"
 #include "archive.h"        /* For cadDirLog */
 #include "control.h"            /* For simLevel, interlockFlag */
 #include "utilities.h"      /* For errorLog */
-
-#include <tcslib.h>
-
-#include <cad.h>
-#include <car.h>
-
-#include <string.h>
-#include <stdio.h>
 
 /* ===================================================================== */
 /* INDENT OFF */
@@ -1040,4 +1041,7 @@ long    carDrive3 (struct genSubRecord * pgsub)
     return (OK);
 }
 
+epicsRegisterFunction(carDrive1);
+epicsRegisterFunction(carDrive2);
+epicsRegisterFunction(carDrive3);
 

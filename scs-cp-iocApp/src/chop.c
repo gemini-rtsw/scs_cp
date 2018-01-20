@@ -42,6 +42,8 @@
 /* ===================================================================== */
 #include <stdio.h>
 #include <string.h>
+#include <epicsExport.h>
+#include <registryFunction.h>
 
 #include <cad.h>
 #include <tcslib.h>
@@ -784,4 +786,6 @@ double  percentCalc (struct subRecord * psub)
 
    return(OK);
 }
+
+epicsRegisterFunction(calcEnvelope);
 

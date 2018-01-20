@@ -22,6 +22,8 @@ scs-cp-ioc_DBD += bancomm.dbd
 scs-cp-ioc_DBD += pvload.dbd
 scs-cp-ioc_DBD += iocAdmin.dbd
 scs-cp-ioc_DBD += menuScan.dbd
+scs-cp-ioc_DBD += scs.dbd
+
 
 # Include dbd files from all support modules:
 #scs-cp-ioc_DBD += xxx.dbd
@@ -58,6 +60,8 @@ scs-cp-ioc_SRCS += testFunctions.c
 scs-cp-ioc_SRCS += tiltSim.c
 scs-cp-ioc_SRCS += utilities.c
 scs-cp-ioc_SRCS += eventBus.c
+scs-cp-ioc_SRCS += m2ParseMsg.c
+scs-cp-ioc_SRCS += showEngineering.c
 
 scs-cp-ioc_SRCS += scs_st.st
 scs-cp-ioc_SRCS += tilt_st.st

@@ -43,6 +43,9 @@
 /* INDENT ON */
 /* ===================================================================== */
 #include <timeLib.h>        /* For timeNow */
+#include <epicsExport.h>
+#include <registryFunction.h>
+
 #include "archive.h"        /* For refMemFree */
 #include "chop.h"           /* For chopIsOn, getSyncMask */
 #include "control.h"        /* For simLevel, scsPtr, scsBase, m2Ptr, 
@@ -510,4 +513,11 @@ long    statusDrive (struct genSubRecord * pgsub)
 
     return (OK);
 }
+
+
+epicsRegisterFunction(realDrive);
+epicsRegisterFunction(real2Drive);
+epicsRegisterFunction(displayScs);
+epicsRegisterFunction(displayScs2);
+epicsRegisterFunction(statusDrive);
 
