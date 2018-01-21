@@ -104,6 +104,9 @@
 /* ===================================================================== */
 #include <stdio.h>
 #include <math.h>
+#include <epicsExport.h>
+#include <registryFunction.h>
+
 long mechSim (struct genSubRecord * pgsub)
 {
     long coincidence;
@@ -402,4 +405,5 @@ long mechSim (struct genSubRecord * pgsub)
 
     return (OK);
 }
+epicsRegisterFunction(mechSim);
 

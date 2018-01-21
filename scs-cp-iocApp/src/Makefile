@@ -50,7 +50,6 @@ scs-cp-ioc_SRCS += chopControl.c
 scs-cp-ioc_SRCS += config.c
 scs-cp-ioc_SRCS += control.c
 scs-cp-ioc_SRCS += dmDrive.c
-scs-cp-ioc_SRCS += guide.c
 scs-cp-ioc_SRCS += house.c
 scs-cp-ioc_SRCS += interlock.c
 scs-cp-ioc_SRCS += interp.c
@@ -62,6 +61,7 @@ scs-cp-ioc_SRCS += utilities.c
 scs-cp-ioc_SRCS += eventBus.c
 scs-cp-ioc_SRCS += m2ParseMsg.c
 scs-cp-ioc_SRCS += showEngineering.c
+scs-cp-ioc_SRCS += guide.c
 
 scs-cp-ioc_SRCS += scs_st.st
 scs-cp-ioc_SRCS += tilt_st.st

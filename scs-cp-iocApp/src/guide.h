@@ -66,15 +66,10 @@ enum
   PWFS2,
   OIWFS,
   GAOS,
-
-#ifndef MK
   GPI,
-#endif
-
   GYRO
 };
 
-#ifdef MK
 enum
 {
     GUIDE_200_HZ = 200,
@@ -83,7 +78,6 @@ enum
     GUIDE_25_HZ = 25,
     GUIDE_20_HZ = 20
 };
-#endif
 
 
 /* Processing available to guide sources */
@@ -134,12 +128,9 @@ typedef struct
    float pwfs1;
    float oiwfs;
    float gaos;
-#ifndef MK
    float gpi;
-#endif
 } anUpdateInterval;
 
-#ifdef MK
 typedef struct
 {
     double sensedRate;
@@ -147,7 +138,6 @@ typedef struct
     double vtkXdata[3]; /*vtk gain, scale and actual sampleRate (198.9Hz, 99.5Hz or 49.5Hz)*/
     double vtkYdata[3]; /*vtk gain, scale and actual sampleRate (198.9Hz, 99.5Hz or 49.5Hz)*/
 } GuideInfo;
-#endif
 
 /* Public functions */
 
@@ -170,9 +160,7 @@ int createFilter(int source, int filterType,
 /* Global variables */
 
 extern anUpdateInterval updateInterval;
-#ifdef MK
 extern GuideInfo guideInfo;
-#endif
 extern long guideOn;
 extern long guideSimOn;
 extern int guideOnA;

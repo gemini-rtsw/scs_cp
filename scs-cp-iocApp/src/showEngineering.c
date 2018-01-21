@@ -50,8 +50,7 @@
 #include "m2ParseMsg.h"
 #include "control.h"            /* For writeCommand,
                                    simLevel, scsBase, m2Ptr */
-#include "drvXy240.h"              /* For PORT_7_ADDR define */
-//#include "m2Log.h"              /* For m2LogActive */
+#include "eventBus.h"           /* For Xycom 240 access */
 #include "utilities.h"          /* For tilt2act */
 
 /* specify constant definitions */
@@ -73,6 +72,7 @@
 
 #define IN_POSITION_LIMIT 100.0 /* actuator error within this range (microns), OK to turn on servos */
 
+M2ErrorContainer *m2errs = NULL;
 typedef struct
 {
     double  item1;
@@ -153,6 +153,23 @@ static char *primitiveName[] =
 };
 
 
+/* Initialize the Error structure.
+ * 
+ *
+ */
+long  readM2DiagnosticsInit (struct genSubRecord * pgsub)
+{ 
+
+    
+    /*Get the M2ErrorContainer */
+    m2errs = m2ErrorInit();
+
+    if (m2errs == NULL) {return (ERROR);}
+
+    return(OK);
+}
+
+
 /* ===================================================================== */
 /*
  *+
@@ -198,32 +215,28 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     location position;
     long servoInPosition; 
     memMap *ptr;
-    char msg[80];
-    long errorSystem, errorCode;
+    char msg[M2_ERROR_MSG_SIZE];
     static long lastErrorSystem, lastErrorCode;  
 
     if(simLevel == 0)
-      ptr = scsBase;
+        ptr = scsBase;
     else
-      ptr = m2Ptr;
+        ptr = m2Ptr;
 
     for(index = 0; index < 21; index++)
-      {
+    {
         act1[index] = 0.0;
         act2[index] = 0.0;
         act3[index] = 0.0;
         sys[index] = 0.0;
-      }
+    }
 
     /* check 5588 synchro card memory location, exit if not found */
 
     //if (vxMemProbe ((void *)ptr, VX_READ, 1, &junk) != OK)    
     if (devReadProbe(sizeof(char), ptr, &junk) != OK )
     {
-        char errMsg[100];
-
-        sprintf(errMsg, "readM2Diagnostics - synchro card not detected at address %p\n", (void *)ptr);
-        errlogPrintf("%s\n", errMsg);
+        errlogSevPrintf(errlogMajor, "readM2Diagnostics - synchro card not detected at address %p\n", (void *)ptr);
         return(ERROR);
     }
 
@@ -283,8 +296,8 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     tilt2act (&position);
 
     if((fabs(position.actuator1-ptr->page1.actuator1) < (IN_POSITION_LIMIT+7)) &&
-       (fabs(position.actuator2-ptr->page1.actuator2) < (IN_POSITION_LIMIT+7)) &&
-       (fabs(position.actuator3-ptr->page1.actuator3) < (IN_POSITION_LIMIT+7))   )
+            (fabs(position.actuator2-ptr->page1.actuator2) < (IN_POSITION_LIMIT+7)) &&
+            (fabs(position.actuator3-ptr->page1.actuator3) < (IN_POSITION_LIMIT+7))   )
     {
         servoInPosition = 1;
     }
@@ -297,56 +310,59 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
 
     *(long *)pgsub->vale = servoInPosition;
 
-        /* Tracking down the corrupted RM values. The following 
-           are copies of the MCDSP raw values and the frame number */
-        *(long *) pgsub->valf = ptr->m2Eng.rawXTilt;
-        *(long *) pgsub->valg = ptr->m2Eng.rawYTilt;
-        *(long *) pgsub->valh = ptr->m2Eng.rawZFocus;
-        *(long *) pgsub->vali = ptr->m2Eng.NR;
+    /* Tracking down the corrupted RM values. The following 
+       are copies of the MCDSP raw values and the frame number */
+    *(long *) pgsub->valf = ptr->m2Eng.rawXTilt;
+    *(long *) pgsub->valg = ptr->m2Eng.rawYTilt;
+    *(long *) pgsub->valh = ptr->m2Eng.rawZFocus;
+    *(long *) pgsub->vali = ptr->m2Eng.NR;
 
-        /* write progress of initialization to output port j */
-        *(long *) pgsub->valj = ptr->m2Eng.initState;
+    /* write progress of initialization to output port j */
+    *(long *) pgsub->valj = ptr->m2Eng.initState;
 
-        /* read last recorded M2 error from RM */
-        errorSystem = (long)(ptr->m2Eng.errorSystem);
-        errorCode   = (long)(ptr->m2Eng.errorCode);
+    /* read last recorded M2 error from RM */
+    m2errs->sysid = (long)(ptr->m2Eng.errorSystem);
+    m2errs->code   = (long)(ptr->m2Eng.errorCode);
 
-        /* based on these values, determine the error msg */
-	/* note: errorSystem and errorCode must be > 0    */
-        if ((errorSystem > 0) && (errorCode > 0))	
-	{
-            strcpy(msg, parseM2Msg(errorSystem, errorCode));
+    /* based on these values, determine the error msg */
+    /* note: m2errs->sysid and m2errs->code must be > 0    */
+    if ((m2errs->sysid > 0) && (m2errs->code > 0))	
+    {
+        strcpy(msg, parseM2Msg(m2errs));
 
-            /* if requested, display the error on the crate's display */
-            if ((debugLevel > DEBUG_MIN) && (debugLevel <= DEBUG_MED))
+        /* if requested, display the error on the crate's display */
+        if ((debugLevel > DEBUG_MIN) && (debugLevel <= DEBUG_MED))
+        {
+            printf("Last reported M2 error message: %s Sys=%ld; Code=%ld\n",
+                    msg, m2errs->sysid, m2errs->code);
+        }
+
+        /* Also log it once, whenever it changes */
+        if ((m2errs->sysid != lastErrorSystem) & (m2errs->code != lastErrorCode))
+        {
+            printf("M2 error: %s Sys=%ld; Code=%ld\n", 
+                    msg, m2errs->sysid, m2errs->code); 
+            if ( (m2errs->sysid == ERRLOG_XY ) ||
+                    (m2errs->sysid == ERRLOG_DBAF ) ||
+                    (m2errs->sysid == ERRLOG_CBAF ) ||
+                    (m2errs->sysid == ERRLOG_VCD && m2errs->code == VC_INIT_FOLLOW_TIMEOUT ) ||
+                    (m2errs->sysid == ERRLOG_MCD && m2errs->code == MC_INIT_SENSOR_SWITCH_TIMEOUT ) ||
+                    (m2errs->sysid == ERRLOG_MCD && m2errs->code == MC_INIT_OFFLOAD_TIMEOUT ) ||
+                    (m2errs->sysid == ERRLOG_MISC && m2errs->code == NO_DSP_DATA )
+               ) 
             {
-                printf("Last reported M2 error message: %s Sys=%ld; Code=%ld\n",
-                    msg, errorSystem, errorCode);
+                reportHealth(WARNING,msg); 
             }
-
-            /* Also log it once, whenever it changes */
-            if ((errorSystem != lastErrorSystem) & (errorCode != lastErrorCode))
+            else
             {
-                printf("M2 error: %s Sys=%ld; Code=%ld\n", 
-                    msg, errorSystem, errorCode); 
-		if ( (errorSystem == ERRLOG_XY ) ||
-		     (errorSystem == ERRLOG_DBAF ) ||
-		     (errorSystem == ERRLOG_CBAF ) ||
-		     (errorSystem == ERRLOG_VCD && errorCode == VC_INIT_FOLLOW_TIMEOUT ) ||
-		     (errorSystem == ERRLOG_MCD && errorCode == MC_INIT_SENSOR_SWITCH_TIMEOUT ) ||
-		     (errorSystem == ERRLOG_MCD && errorCode == MC_INIT_OFFLOAD_TIMEOUT ) ||
-		     (errorSystem == ERRLOG_MISC && errorCode == NO_DSP_DATA )) 
-		   {
-		   reportHealth(WARNING,msg); 
-		   }
-		else
-		   {
-		   reportHealth(BAD,msg); 
-		   }
-                lastErrorSystem = errorSystem;
-                lastErrorCode = errorCode;
+                reportHealth(BAD,msg); 
             }
-	}
+            lastErrorSystem = m2errs->sysid;
+            lastErrorCode = m2errs->code;
+        }
+    }
+
+    free(m2errs);
 
     return (OK);
 }
@@ -514,138 +530,163 @@ long    issueM2Primitive (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
     static  long commandCode;
-    char    test;
-    volatile unsigned char    *portPtr;
-
-    portPtr = (unsigned char *)PORT_7_ADDR;
 
     switch (pcad->dir)
     {
-    case menuDirectiveMARK:
-        break;
+        case menuDirectiveMARK:
+            break;
 
-    case menuDirectiveCLEAR:
-        break;
+        case menuDirectiveCLEAR:
+            break;
 
-    case menuDirectivePRESET:
+        case menuDirectivePRESET:
 
-        /* search through recognised commands to identify command string */
+            /* search through recognised commands to identify command string */
 
-        for(commandCode = FAST_ONLY; commandCode <= CLOSE_LOG; commandCode++)
-        {
-            if(!strcmp((char *)pcad->a, primitiveName[commandCode]))
-               break;
-        }
-        
-        /* check that command is in range */
-
-        if (commandCode < FAST_ONLY || commandCode > CLOSE_LOG)
-        {
-            printf("command code = %ld\n", commandCode);
-            strncpy (pcad->mess, "cmd not recognised", (MAX_STRING_SIZE - 1));
-            status = CAD_REJECT;
-        }
-        else
-        {
-            strncpy (pcad->mess, "", (MAX_STRING_SIZE - 1));
-        }
-
-        /* if command uses the xycom card, check that it's there */
-
-        if (commandCode >= CEM_ON && commandCode <= TOGGLE_CEM_POWER)
-        {
-            if (vxMemProbe ((void *) portPtr, READ, sizeof (char), &test) != OK)
+            for(commandCode = FAST_ONLY; commandCode <= CLOSE_LOG; commandCode++)
             {
-                strncpy (pcad->mess, "no xycom detected", (MAX_STRING_SIZE - 1));
+                if(!strcmp((char *)pcad->a, primitiveName[commandCode]))
+                    break;
+            }
+
+            /* check that command is in range */
+
+            if (commandCode < FAST_ONLY || commandCode > CLOSE_LOG)
+            {
+                errlogSevPrintf(errlogMajor, "command code = %ld\n", commandCode);
+                strncpy (pcad->mess, "cmd not recognised", (MAX_STRING_SIZE - 1));
                 status = CAD_REJECT;
             }
-        }
+            else
+            {
+                strncpy (pcad->mess, "", (MAX_STRING_SIZE - 1));
+            }
 
-        break;
+            /* if command uses the xycom card, check that it's there */
 
-    case menuDirectiveSTART:
+            if (commandCode >= CEM_ON && commandCode <= TOGGLE_CEM_POWER)
+            {
+                /*
+                 * TODO Test readport is functional. Matt, Mike, Ignacio.
+                 */
+                if (xy240_readPortByte(XYCARDNUM, PORT7) == ERROR);
+                {
+                    errlogSevPrintf(errlogMajor, "No xycom detected.");
+                    strncpy(pcad->mess, "no xycom detected", (MAX_STRING_SIZE - 1));
+                    status = CAD_REJECT;
+                }
+            }
 
-        /* write command number and name to output ports */
+            break;
 
-        *(long *)pcad->vala = (long)commandCode;
-        strncpy(pcad->valb, primitiveName[commandCode], (MAX_STRING_SIZE - 1));
+        case menuDirectiveSTART:
 
-        if(commandCode == CEM_ON)
-        {
-            *portPtr = *portPtr | M2POWERON;
-        }
-        else if(commandCode == CEM_OFF)
-        {
-            *portPtr = *portPtr & M2POWEROFF;           
-        }
-        else if(commandCode == TTL_SERVO_ON)
-        {
-            *portPtr = *portPtr | M2SERVOON;
-        }
-        else if(commandCode == TTL_SERVO_OFF)
-        {
-            *portPtr = *portPtr & M2SERVOOFF;           
-        }
-        else if(commandCode == TOGGLE_CEM_POWER)
-        {
-            /* off */
-            printf("Shutting off CEM power\n");
-            *portPtr = *portPtr & M2SERVOOFF;  
-            *portPtr = *portPtr & M2POWEROFF;
+            /* write command number and name to output ports */
 
-            /* ensure task is delayed for 2 seconds, instead
-               of a time which depends on the internal clock rate */
-            taskDelay(sysClkRateGet()*2);
+            *(long *)pcad->vala = (long)commandCode;
+            strncpy(pcad->valb, primitiveName[commandCode], (MAX_STRING_SIZE - 1));
 
-            /* and on */
-            printf("Turning CEM power back on\n");
-            *portPtr = *portPtr | M2POWERON;
-            *portPtr = *portPtr | M2SERVOON;
-        }
-        else if(commandCode == OPEN_LOG)
-        {
-            m2LogInit();
-        }
-        else if(commandCode == START_LOG)
-        {
-            m2LogActive = 1;
-            printf("logging m2 active\n");
-        }
-        else if(commandCode == STOP_LOG)
-        {
-            m2LogActive = 0;
-            printf("logging m2 stopped\n");
-        }
-        else if(commandCode == CLOSE_LOG)
-        {
-            m2LogActive = 0;
-            m2LogClose();
-        }       
-        else if(commandCode == MSTART)
-        {
-            writeCommand(VIBSTART);
-            writeCommand(MSTART);
-        }
-        else
-        {
-            writeCommand(commandCode);
-        }
+            if(commandCode == CEM_ON)
+            {
+                //*portPtr = *portPtr | M2POWERON;
+                //
+                //TODO: Test CEM_ON
+                if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWERON) == ERROR)
+                    errlogSevPrintf(errlogMajor, "xy240: M2POWERON Failed.");
+            }
+            else if(commandCode == CEM_OFF)
+            {
+                //*portPtr = *portPtr & M2POWEROFF;           
+                //
+                //TODO: Test CEM_OFF
+                if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWEROFF) == ERROR)
+                    errlogSevPrintf(errlogMajor, "xy240: M2POWEROFF Failed.");
+            }
+            else if(commandCode == TTL_SERVO_ON)
+            {
+                //*portPtr = *portPtr | M2SERVOON;
+                //
+                //TODO: Test M2SERVOON
+                if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOON) == ERROR)
+                    errlogSevPrintf(errlogMajor, "xy240: M2SERVOON Failed.");
+            }
+            else if(commandCode == TTL_SERVO_OFF)
+            {
+                //*portPtr = *portPtr & M2SERVOOFF;           
+                //
+                //TODO: Test M2SERVOOFF
+                if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOOFF) == ERROR)
+                    errlogSevPrintf(errlogMajor, "xy240: M2SERVOOF Failed.");
+            }
+            else if(commandCode == TOGGLE_CEM_POWER)
+            {
+                /* off */
+                printf("Shutting off CEM power\n");
+                //*portPtr = *portPtr & M2SERVOOFF;  
+                //*portPtr = *portPtr & M2POWEROFF;
 
-        break;
+                //
+                //TODO: Test This TOGGLE implementation
+                //      
+                //         
+                /* Turn SERVO OFF*/
+                if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOOFF) == ERROR)
+                    errlogSevPrintf(errlogMajor, "xy240: M2SERVOOFF Failed.");
 
-    case menuDirectiveSTOP:
-        break;
+                /* Then, turn POWER OFF*/
+                if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWEROFF) == ERROR)
+                    errlogSevPrintf(errlogMajor, "xy240: M2POWEROFF Failed.");
 
-    default:
-        strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
-        status = CAD_REJECT;
-        break;
+                /* ensure task is delayed for 2 seconds, instead
+                 *  of a time which depends on the internal clock rate
+                 * taskDelay(sysClkRateGet()*2);
+                 *
+                 * TODO: Check timing requirements. Matt, Mike, Ignacio
+                 * 2 Seconds seems quite resonable here.
+                 */
+                 epicsThreadSleep(2.0);
+                 
+
+                /* ... and on */
+                errlogSevPrintf(errlogInfo, "Turning CEM power back on\n");
+                //*portPtr = *portPtr | M2POWERON;
+                //*portPtr = *portPtr | M2SERVOON;
+
+                /* Turn SERVO ON*/
+                if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOON) == ERROR)
+                    errlogSevPrintf(errlogMajor, "xy240: M2SERVOON Failed.");
+
+                /* Then, turn POWER OFF*/
+                if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWERON) == ERROR)
+                    errlogSevPrintf(errlogMajor, "xy240: M2POWERON Failed.");
+
+            }
+            else if(commandCode == MSTART)
+            {
+                writeCommand(VIBSTART);
+                writeCommand(MSTART);
+            }
+            else
+            {
+                writeCommand(commandCode);
+            }
+
+            break;
+
+        case menuDirectiveSTOP:
+            break;
+
+        default:
+            strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
+            status = CAD_REJECT;
+            break;
     }
 
     return (status);
 }
 
 
+epicsRegisterFunction(readM2DiagnosticsInit);
 epicsRegisterFunction(readM2Diagnostics);
 epicsRegisterFunction(gensubFanDoubles);
 

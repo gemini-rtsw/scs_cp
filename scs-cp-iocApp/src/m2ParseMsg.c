@@ -42,122 +42,150 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
+#include <errlog.h>
 #include "m2ParseMsg.h"
 
-char *parseM2Msg( long errorSystem, long errorCode )
-{
+/* m2ErrorInit(M2ErrorContainer)
+ *
+ *
+ */
+M2ErrorContainer *m2ErrorInit () {
 
-#ifdef DEBUG
-    char msg[80];
-    int i, j;
-#endif
+    M2ErrorContainer *m2Errors = NULL;
 
-    m2ErrorContainer m2Errors;
-  
-    /* Do range checking on errorSystem and errorCode */
-    if (((errorSystem < 1) || (errorCode <1)) ||
-	(errorSystem > NUM_M2SUBSYS ))
-	return (char *)NULL;
+    /*Protect from mallocing again!*/
+    //if (m2Errors != NULL) { return m2Errors; }
 
-    /* It is still possible that errorCode number is invalid
-     * for a given errorSystem. Do this test after setup.
-     */
+    m2Errors = malloc(sizeof(M2ErrorContainer) );
+    if (m2Errors == NULL) {
+        errlogSevPrintf(errlogMajor, "M2ErrorContainer failed to malloc.\n");
+        return m2Errors;
+    }
 
-    /* This setup could be moved to an init routine called only once */
-    m2Errors.sys[ERRLOG_MISC].numerrs = 10;
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_OPEN_GAIN].msgBody, 
+    m2Errors->sysid = 0;
+    m2Errors->code = 0;
+
+    /* Init routine called only once */
+    m2Errors->sys[ERRLOG_MISC].numerrs = 10;
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_OPEN_GAIN].msgBody, 
            "Can't open file for init'l MC gains");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_READ_GAIN].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_READ_GAIN].msgBody, 
            "Can't read properly from gain file");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_SCS_HBEAT].msgBody,
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_SCS_HBEAT].msgBody,
            "SCS heartbeat hasn't changed for awhile");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_OPEN_NONLIN].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_OPEN_NONLIN].msgBody, 
            "Can't open file for non-lin compenstation");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_READ_NONLIN].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_READ_NONLIN].msgBody, 
            "trouble reading non-lin compensation");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_ACT_POWER].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_ACT_POWER].msgBody, 
            "Actuator power refuses to turn on");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[ADC_HANGUP].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[ADC_HANGUP].msgBody, 
            "A/D timed out waiting for EOC");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_OPEN_DPBLIM].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_OPEN_DPBLIM].msgBody, 
            "Can't open file for dbaf position limits");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_READ_DPBLIM].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_READ_DPBLIM].msgBody, 
            "Can't read properly from dbaf file");
-    strcpy(m2Errors.sys[ERRLOG_MISC].msg[NO_DSP_DATA].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MISC].msg[NO_DSP_DATA].msgBody, 
            "Can't get GRON data from DSP    (NGI)");
 
-    m2Errors.sys[ERRLOG_MCD].numerrs = 7;
-    strcpy(m2Errors.sys[ERRLOG_MCD].msg[MC_NO_OPEN_NOTCH].msgBody, 
+    m2Errors->sys[ERRLOG_MCD].numerrs = 7;
+    strcpy(m2Errors->sys[ERRLOG_MCD].msg[MC_NO_OPEN_NOTCH].msgBody, 
            "Can't open file for notch filter params");
-    strcpy(m2Errors.sys[ERRLOG_MCD].msg[MC_NO_READ_NOTCH].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MCD].msg[MC_NO_READ_NOTCH].msgBody, 
            "Can't read properly from notch filter file");
-    strcpy(m2Errors.sys[ERRLOG_MCD].msg[MC_NO_LOAD].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MCD].msg[MC_NO_LOAD].msgBody, 
            "Can't load DSP program");
-    strcpy(m2Errors.sys[ERRLOG_MCD].msg[MC_NO_RUN].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MCD].msg[MC_NO_RUN].msgBody, 
            "Can't run DSP program");
-    strcpy(m2Errors.sys[ERRLOG_MCD].msg[MC_NO_SUCH_BANDWIDTH].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MCD].msg[MC_NO_SUCH_BANDWIDTH].msgBody, 
            "Bandwidth selection not supported");
-    strcpy(m2Errors.sys[ERRLOG_MCD].msg[MC_INIT_OFFLOAD_TIMEOUT].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MCD].msg[MC_INIT_OFFLOAD_TIMEOUT].msgBody, 
            "Offloader init timeout");
-    strcpy(m2Errors.sys[ERRLOG_MCD].msg[MC_INIT_SENSOR_SWITCH_TIMEOUT].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_MCD].msg[MC_INIT_SENSOR_SWITCH_TIMEOUT].msgBody, 
            "Switch to microEs timeout");
 
-    m2Errors.sys[ERRLOG_VCD].numerrs = 5;
-    strcpy(m2Errors.sys[ERRLOG_VCD].msg[VC_NO_OPEN_NOTCH].msgBody, 
+    m2Errors->sys[ERRLOG_VCD].numerrs = 5;
+    strcpy(m2Errors->sys[ERRLOG_VCD].msg[VC_NO_OPEN_NOTCH].msgBody, 
            "Can't open file for notch filter params");
-    strcpy(m2Errors.sys[ERRLOG_VCD].msg[VC_NO_READ_NOTCH].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_VCD].msg[VC_NO_READ_NOTCH].msgBody, 
            "Can't read properly from notch filter file");
-    strcpy(m2Errors.sys[ERRLOG_VCD].msg[VC_NO_LOAD].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_VCD].msg[VC_NO_LOAD].msgBody, 
            "Can't load DSP program");
-    strcpy(m2Errors.sys[ERRLOG_VCD].msg[VC_NO_RUN].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_VCD].msg[VC_NO_RUN].msgBody, 
            "Can't run DSP program");
-    strcpy(m2Errors.sys[ERRLOG_VCD].msg[VC_INIT_FOLLOW_TIMEOUT].msgBody, 
+    strcpy(m2Errors->sys[ERRLOG_VCD].msg[VC_INIT_FOLLOW_TIMEOUT].msgBody, 
            "Follower init timeout");
 
-    m2Errors.sys[ERRLOG_XY].numerrs = 5;
-    strcpy(m2Errors.sys[ERRLOG_XY].msg[XY_TOO_CLOSE].msgBody,
+    m2Errors->sys[ERRLOG_XY].numerrs = 5;
+    strcpy(m2Errors->sys[ERRLOG_XY].msg[XY_TOO_CLOSE].msgBody,
            "XY positioner too close to rotational axis of upper bearing");
-    strcpy(m2Errors.sys[ERRLOG_XY].msg[XY_TOO_FAR].msgBody,
+    strcpy(m2Errors->sys[ERRLOG_XY].msg[XY_TOO_FAR].msgBody,
            "XY positioner too far out (fully extended 'arms'");
-    strcpy(m2Errors.sys[ERRLOG_XY].msg[XY_INIT_TIMEOUT].msgBody,
+    strcpy(m2Errors->sys[ERRLOG_XY].msg[XY_INIT_TIMEOUT].msgBody,
            "XY positioner init timeout");
-    strcpy(m2Errors.sys[ERRLOG_XY].msg[XY_NEG_SQ_ROOT].msgBody,
+    strcpy(m2Errors->sys[ERRLOG_XY].msg[XY_NEG_SQ_ROOT].msgBody,
            "XY positioner algorithm has negative number in square root sign");
 
-    m2Errors.sys[ERRLOG_DBAF].numerrs = 3;
-    strcpy(m2Errors.sys[ERRLOG_DBAF].msg[DB_BAD_POS_CMD].msgBody,
+    m2Errors->sys[ERRLOG_DBAF].numerrs = 3;
+    strcpy(m2Errors->sys[ERRLOG_DBAF].msg[DB_BAD_POS_CMD].msgBody,
            "Deployable baffle command is out of range"); 
-    strcpy(m2Errors.sys[ERRLOG_DBAF].msg[DB_UPPER_LIMIT].msgBody,
+    strcpy(m2Errors->sys[ERRLOG_DBAF].msg[DB_UPPER_LIMIT].msgBody,
            "Deployable baffle hit upper limit");
-    strcpy(m2Errors.sys[ERRLOG_DBAF].msg[DB_LOWER_LIMIT].msgBody,
+    strcpy(m2Errors->sys[ERRLOG_DBAF].msg[DB_LOWER_LIMIT].msgBody,
            "Deployable baffle hit lower limit");
 
-    m2Errors.sys[ERRLOG_CBAF].numerrs = 3;
-    strcpy(m2Errors.sys[ERRLOG_CBAF].msg[CB_BAD_POS_CMD].msgBody,
+    m2Errors->sys[ERRLOG_CBAF].numerrs = 3;
+    strcpy(m2Errors->sys[ERRLOG_CBAF].msg[CB_BAD_POS_CMD].msgBody,
            "Periscope command is out of range"); 
-    strcpy(m2Errors.sys[ERRLOG_CBAF].msg[CB_UPPER_LIMIT].msgBody,
+    strcpy(m2Errors->sys[ERRLOG_CBAF].msg[CB_UPPER_LIMIT].msgBody,
            "Periscope hit upper limit");
-    strcpy(m2Errors.sys[ERRLOG_CBAF].msg[CB_LOWER_LIMIT].msgBody,
+    strcpy(m2Errors->sys[ERRLOG_CBAF].msg[CB_LOWER_LIMIT].msgBody,
            "Periscope hit lower limit");
 
-/*
-    for (i=1; i<NUM_M2SUBSYS; i++)
-      {
-      printf("number of errors for system[%1d] is %d\n", i, m2Errors.sys[i].numerrs);
-      for (j=1; j<=m2Errors.sys[i].numerrs; j++)
-        printf("msgs are %s\n", m2Errors.sys[i].msg[j].msgBody);
-      printf("\n"); 
-      }
-    sprintf(msg, "%d %d\n", errorSystem, errorCode);
-    return msg;
-*/
+    return m2Errors;
+}
 
-    /* Do more range checking on errorCode */
-    if (errorCode > m2Errors.sys[errorSystem].numerrs)
+char *parseM2Msg( M2ErrorContainer *m2Errors )
+{
+
+    long sysid, code;
+
+    if(m2Errors == NULL) {return (char*) NULL;}
+
+    sysid = m2Errors->sysid;
+    code = m2Errors->code;
+  
+    /* Do range checking on sysid and code */
+    if (((sysid < 1) || (code <1)) ||
+	(sysid > NUM_M2SUBSYS ))
 	return (char *)NULL;
 
-    return m2Errors.sys[errorSystem].msg[errorCode].msgBody;
+    /* It is still possible that code number is invalid
+     * for a given sysid. Do this test after setup.
+     */
+
+    /* Do more range checking on code */
+    if (code > m2Errors->sys[sysid].numerrs)
+	return (char *)NULL;
+
+    return m2Errors->sys[sysid].msg[code].msgBody;
+}
+
+void showM2Errors(M2ErrorContainer *m2Errors) {
+    int i, j;
+
+    if(m2Errors == NULL) {return;}
+
+    for (i=1; i<NUM_M2SUBSYS; i++)
+    {
+        errlogSevPrintf(errlogInfo, "Number of errors for system[%1d] is %d\n", i, m2Errors->sys[i].numerrs);
+        for (j=1; j<=m2Errors->sys[i].numerrs; j++)
+            errlogSevPrintf(errlogInfo, "msgs are %s\n", m2Errors->sys[i].msg[j].msgBody);
+        printf("\n"); 
+    }
+    errlogSevPrintf(errlogInfo, "%ld %ld\n", m2Errors->sysid, m2Errors->code);
+
 }
 

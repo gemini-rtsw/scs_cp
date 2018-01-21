@@ -69,6 +69,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <epicsExport.h>
+#include <registryFunction.h>
 #include <math.h>           /* for trig functions */
 #include <stdlib.h>         /* Used for rand */
 #include <tcslib.h>         /* for tcsDcString */
@@ -101,13 +103,11 @@ double RANDnorm () {
    return result;
 }
 
-#ifdef MK
 double vibfreq = 12.0;
 double vibamp = 1.0;
 double vibphase = 0.0;
 double guideSrate = 100.0;
-//int guideSimDelayTicks = 1; /* Delay (ms) = guideSimDelayTicks / (sysClkRateGet()==usually 200) */
-double guideSimDelay = 0.001; /* Delay (ms) */
+double guideSimDelay = 0.005; /* Delay ( 5 ms) */
 
 void zeroMat(double mat[][1]) {
     int r,c;
@@ -341,7 +341,6 @@ double sinus(int n) {
     double t = (double)n/guideSrate; 
     return vibamp * cos(2*PI * vibfreq * t  ) ;
 }
-#endif
 
 
 /*bitFieldM2 statusWord;*/
@@ -441,7 +440,6 @@ void    tiltState (const memMap *buffPtr)
     printf ("topEnd     Addr = %lx, Value = %ld\n", (long) &buffPtr->page1.topEnd, buffPtr->page1.topEnd);
     printf ("temperature    Addr = %lx, Value = %f\n", (long) &buffPtr->page1.enclosureTemp, buffPtr->page1.enclosureTemp);
 
-
 }
 
 /* ===================================================================== */
@@ -508,11 +506,7 @@ void    testMem (const memMap * buffPtr)
     printPage12 (buffPtr);
     printPage13a (buffPtr);
     printPage13b (buffPtr);
-
-#ifndef MK
     printPage15  (buffPtr);
-#endif
-
 }
 
 /*i ===================================================================== */
@@ -859,7 +853,6 @@ void    printPage13b (const memMap * buffPtr)
 }
 
 
-#ifndef MK
 /* ===================================================================== */
 
 void    printPage15 (const memMap * buffPtr)
@@ -876,7 +869,6 @@ void    printPage15 (const memMap * buffPtr)
     printf ("interval   Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.interval, buffPtr->gpi.interval);
     printf ("time       Addr = %lx, Value = %f\n", (long) &buffPtr->gpi.time, buffPtr->gpi.time);
 }
-#endif
 
 /* ===================================================================== */
 /* INDENT OFF */
@@ -1085,13 +1077,8 @@ void fillWfs(void *p)
 {
    double value = 0.0; 
 
-#ifndef MK
-   double smallRand;
-#endif
-
    for (;;) {
 
-#ifdef MK
 /*
       scsBase->pwfs2.z1 = xTiltGuideSimScale * phasor.command;
       scsBase->pwfs2.z2 = yTiltGuideSimScale * phasor.command;
@@ -1101,19 +1088,6 @@ void fillWfs(void *p)
       scsBase->pwfs2.err3 = phasor.command * 0.2;
 */
       scsBase->pwfs2.z3 = 0.0;
-#else
-      smallRand = RANDnorm();
-
-      scsBase->pwfs2.z1 = xTiltGuideSimScale * (smallRand + 0.1);
-      scsBase->pwfs2.z2 = yTiltGuideSimScale * (smallRand + 0.1);
-      scsBase->pwfs2.z3 = 0.0;
-      scsBase->pwfs2.err1 = smallRand * 0.2;
-      scsBase->pwfs2.err2 = smallRand * 0.2;
-      scsBase->pwfs2.err3 = smallRand * 0.2;
-      scsBase->pwfs2.time = value++;
-      scsBase->pwfs2.interval += (float)(gInterval);
-#endif
-
       scsBase->pwfs2.time = value++;
       scsBase->pwfs2.interval += (float)(gInterval);
 
@@ -1123,7 +1097,6 @@ void fillWfs(void *p)
       if (freeRunGuideSim)
          rmISR3(3);
          
-#ifdef MK
       /* guideSimDelayTicks could be set to match the intended 100Hz 
        * sample frequency seen by M2TS (CEM). This normally depends
        * on the incomming WFS interrupt rate, then cut in half
@@ -1135,9 +1108,6 @@ void fillWfs(void *p)
        *    guideSimDelayTicks = 2; ==> 10ms delay
        * */
       epicsThreadSleep(guideSimDelay);
-#else
-      epicsThreadSleep(0.001);  /* wait only one clock tick */
-#endif
    }
 
    /* thread is deletped when it terminates */
@@ -1540,4 +1510,7 @@ void testtcs2m2(double xp, double yp)
            m2Position.xPosNew, m2Position.yPosNew); 
 }
 
+epicsRegisterFunction(initSelector);
+epicsRegisterFunction(selector);
+epicsRegisterFunction(guideSimProc);
 

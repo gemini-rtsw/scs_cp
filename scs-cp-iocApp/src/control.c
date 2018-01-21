@@ -218,7 +218,6 @@ static struct
 };
 
 
-#ifdef MK 
 static Phasor phasorX = {
         {{1.0},{0.0}},      /* Snew */
         {{1.0},{0.0}},      /* Sold*/
@@ -296,8 +295,6 @@ static Vtk vtkY = {
        0,                                    /* counter */
 };
 
-#endif
-
 int applyGuide = FALSE;
 int guideUpdate = FALSE;
 static double xNetGuide = 0.0;
@@ -307,10 +304,8 @@ static double xNetGuideT = 0.0;
 static double yNetGuideT = 0.0;
 static double zNetGuideT = 0.0;
 static double xNetGuideU = 0.0;
-#ifdef MK 
 static double xRecycleGuideU = 0.0;
 static double yRecycleGuideU = 0.0;
-#endif
 static double yNetGuideU = 0.0;
 static double zNetGuideU = 0.0;
 static int positionUpdate = FALSE;
@@ -324,9 +319,7 @@ static int  frameConvert (converted *result, frameChange *f, const double x,
       const double y, const double z);
 
 
-#ifdef MK 
 void phasorShow(void);
-#endif
 
 int flipGuide = 0;
 int simLevel = 0;
@@ -399,10 +392,8 @@ long followOn = OFF;
 long tiltPidOn = ON;
 long focusPidOn = ON;
 
-#ifdef MK
 long vibrationXTrackOn = OFF;
 long vibrationYTrackOn = OFF;
-#endif
 
 /* Circular buffers for FG + chopping debugging purposes */
 /* The data type is chosen based on the type of the variable 
@@ -444,7 +435,6 @@ static float cbAYDemand[CB_RECORD_NB];
 static float cbBXDemand[CB_RECORD_NB];
 static float cbBYDemand[CB_RECORD_NB];
 
-#ifdef MK
 static double cbVTKXIntegrator0[CB_RECORD_NB];
 static double cbVTKXIntegrator1[CB_RECORD_NB];
 
@@ -471,7 +461,6 @@ static double     cbVTKYdeltaPhase[CB_RECORD_NB];
 
 static double     cbXGuidePhasor[CB_RECORD_NB];
 static double     cbYGuidePhasor[CB_RECORD_NB];
-#endif
 
 
 void setNS(int value)
@@ -933,10 +922,8 @@ void rmISR3 (int node)
 
 /* ===================================================================== */
 
-#ifdef MK
 int rxwaitticks = 0;
 int useDynamicVtk =0;
-#endif
 
 int    waittime = 0.08;   
 
@@ -949,9 +936,7 @@ void processGuides (void)
    //char message[200];
    long lastNS = 0;
 
-#ifdef MK 
    long sensedGuideRate = GUIDE_200_HZ;
-#endif
 
    static struct
    {
@@ -960,21 +945,13 @@ void processGuides (void)
       double oiwfs;
       double gaos;
       double gyro;
-
-#ifndef MK
       double gpi;
-#endif
 
-#ifdef MK
-   } updateTime = { 0.0, 0.0, 0.0, 0.0, 0.0 };  
-#else
    } updateTime = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };  
-#endif
    
    /* Used to time stamp a set of data written to the ring buffers */
    double cbTimeStamp;
 
-#ifdef MK
    double tsdiff=0.0;
    static double tsold=0.0;
 
@@ -990,7 +967,6 @@ void processGuides (void)
 
    vtkInit(&vtkY);
    showVtkRotation(&vtkY);
-#endif
 
    /* Initialize eventData structure */ 
    eventData.currentBeam = 0;
@@ -1109,7 +1085,6 @@ void processGuides (void)
                   epicsPrintf("processGuides - read RM data from PWFS2\n");
                }
 
-#ifdef MK
                /* N.B. Use this if you're not guiding with P2 and want to check the
                 * functionality of VTK. Here we recycle the previous output
                 * xNetGuideU. It is scaled by the P2 Signal Scale factor 
@@ -1128,7 +1103,6 @@ void processGuides (void)
 
                     scsBase->pwfs2.z2 = yRecycleGuideU * (-0.7/ DEFAULT_TILT_SCALE) ;
                }
-#endif
 
                /* copy the data from reflective memory page */
                frameConvert(&result, ag2m2[PWFS2], 
@@ -1148,20 +1122,14 @@ void processGuides (void)
                switch (filter[PWFS2][XTILT].type)
                {
                   case RAW:
-#ifdef MK
                      if (debugLevel == DEBUG_RESERVED2) epicsPrintf("RAW\n");
-#endif
                      break;
                   case NOTUSED:
-#ifdef MK
                      if (debugLevel == DEBUG_RESERVED2) epicsPrintf("NOTUSED\n");
-#endif
                      break;
 
                   default:
-#ifdef MK
                      if (debugLevel == DEBUG_RESERVED2) epicsPrintf("DEFAULT\n");
-#endif
                      filtered[PWFS2].z1 = iir_filter 
                         ((double) filtered[PWFS2].z1, 
                          &filter[PWFS2][XTILT]);
@@ -1298,7 +1266,6 @@ void processGuides (void)
             } 
          }
 
-#ifndef MK
         else if ( (nodeISR3 == GPI_NODE) && (weight[OIWFS][currentBeam] > -2) )
          {
              if (scsBase->gpi.interval > updateInterval.gpi) 
@@ -1356,7 +1323,7 @@ void processGuides (void)
                guideUpdate = TRUE;
              } 
          }
-#endif
+
          else if (scsBase->gyro.time > updateTime.gyro)
          {
             updateTime.gyro = scsBase->gyro.time;
@@ -1430,7 +1397,6 @@ void processGuides (void)
          guideUpdate = FALSE;         
       }
 
-#ifdef MK
       if (debugLevel == DEBUG_RESERVED2)
       {
          errlogPrintf ("currentBeam = %1d, (0=BEAMA,3=A2BRAMP); guideOnA = %1d\n",
@@ -1439,7 +1405,6 @@ void processGuides (void)
          errlogPrintf("guideOn = %1ld; applyGuide = %1d, guideUpdate = %1d\n",
              guideOn, applyGuide, guideUpdate); 
       } 
-#endif
 
       /* Notes about all these conditions...
        *
@@ -1510,7 +1475,6 @@ void processGuides (void)
                   yNetGuideT = yNetGuide;
                }
 
-#ifdef MK
                if (vibrationXTrackOn == ON) {
 
                    /* Calculate new vtk X Command and 
@@ -1534,7 +1498,6 @@ void processGuides (void)
                    /* Add the latest */
                    yNetGuideT += vtkY.command;
                }
-#endif
 
                if (focusPidOn == ON)
                {
@@ -1544,7 +1507,6 @@ void processGuides (void)
                {
                   zNetGuideT = zNetGuide;
 
-#ifdef MK
                }
 
                /* Synthesized Signal in X TILT axis*/
@@ -1563,26 +1525,27 @@ void processGuides (void)
                    phasorY.command = phasorY.amp * phasorY.Snew[0][0];      /* New Value = A*cos(wt); */
                    memcpy(phasorY.Sold, phasorY.Snew, 2*1*sizeof(double)); /* Store new Svector Snew into Sold*/
                    yNetGuideT +=  yTiltGuideSimScale * phasorY.command * DEFAULT_TILT_SCALE;
-#endif
  
                }
 
-               /* Clamp the values of the guide. 
-                  Tell the TCS the clamped values too, to keep 
-                  it in sync with what the M2 receives. 
-                  And, do this after the PID */
+               /* Clamp the values of the guide.
+                * Tell the TCS the clamped values too,
+                * to keep it in sync with what the M2
+                * receives.
+                *
+                * And, do this after the PID
+                */
                xNetGuideU = confine (xNetGuideT, TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor,
-                 -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
-          yNetGuideU = confine (yNetGuideT, TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor,
-                      -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
-          zNetGuideU = confine (zNetGuideT, Z_GUIDE_STEP_LIMIT*focusGuideLimitFactor,
-                 -Z_GUIDE_STEP_LIMIT*focusGuideLimitFactor);
+                     -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
+               yNetGuideU = confine (yNetGuideT, TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor,
+                     -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
+               zNetGuideU = confine (zNetGuideT, Z_GUIDE_STEP_LIMIT*focusGuideLimitFactor,
+                     -Z_GUIDE_STEP_LIMIT*focusGuideLimitFactor);
 
                /* write values to TCS variables */
                xGuideTcs = xNetGuideU;
                yGuideTcs = yNetGuideU;
                zGuideTcs = zNetGuideU;
-
 
             } /* guideType == AUTOGUIDE */
 
@@ -1620,6 +1583,10 @@ void processGuides (void)
 
          /* Set pin JK2/41 high to show guiding is *NOT*
           * appplied 
+          *
+          *
+          * TODO: Test Reimplementation of xy240 port. 
+          *       Matt, Mike, Ignacio
           */
          xy240_writePortBit(XYCARDNUM, PORT7, BIT4, epicsFalse);
 
@@ -1631,8 +1598,8 @@ void processGuides (void)
                -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor);
          yNetGuideU = confine (yNetGuideT, TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor, 
                -TILT_GUIDE_STEP_LIMIT*tiptiltGuideLimitFactor); 
-        
-      if (focusPidOn == ON)
+
+         if (focusPidOn == ON)
          {
             zNetGuideT = control (FOCUS, 0.0, 0.0);
          }
@@ -1653,7 +1620,6 @@ void processGuides (void)
 
       if (simLevel == 0) /* No simulation, write to real reflective memory */
       {
-#ifdef MK
           xRecycleGuideU = xNetGuideU;
           yRecycleGuideU = yNetGuideU;
 
@@ -1662,7 +1628,6 @@ void processGuides (void)
 
           if (yvtkGuideRecycle)
             yNetGuideU = 0.0;
-#endif
 
           scsBase->page0.xTiltGuide = (float) xNetGuideU;
           scsBase->page0.yTiltGuide = (float) yNetGuideU;
@@ -1720,15 +1685,7 @@ void processGuides (void)
 
          /* Send Every Pulse */
          else {
-
-#ifndef MK
-            if(command > FAST_ONLY) {
-               rmIntSend (INT2, M2_NODE);
-            }
-#else
            rmIntSend (INT2, M2_NODE);
-#endif
-
          }
          /*Start timer to profile interrupt cycle times between SCS and CEM*/
          /*
@@ -1822,17 +1779,15 @@ void processGuides (void)
       cbYGuideAfterPID[cbCounter] = yNetGuideT;
       cbZGuideAfterPID[cbCounter] = zNetGuideT;
 
-#ifdef MK
+      /* 
+       * x and y RecycleGuideU contains the
+       * x and y NetGuideU information
+       * */
       cbXGuideDemand[cbCounter] = xRecycleGuideU;
       cbYGuideDemand[cbCounter] = yRecycleGuideU;
-#else
-      cbXGuideDemand[cbCounter] = xNetGuideU;
-      cbYGuideDemand[cbCounter] = yNetGuideU;
-#endif
 
       cbZGuideDemand[cbCounter] = zNetGuideU;
 
-#ifdef MK
       cbVTKXCommand[cbCounter] = vtkX.command;
       cbVTKYCommand[cbCounter] = vtkY.command;
 
@@ -1859,7 +1814,6 @@ void processGuides (void)
 
      cbXGuidePhasor[cbCounter] = phasorX.command;
      cbYGuidePhasor[cbCounter] = phasorY.command;
-#endif
 
       /* increment the counter and wrap around if necessary,
        * it is a circular buffer after all. */
@@ -1867,7 +1821,19 @@ void processGuides (void)
       {
          cbCounter = 0;
       }
-#ifdef MK
+
+      /*
+       *TODO: Check rounding implemention below.
+       *      Just use RTEMS/BSP implementation now since we're off VxWorks.
+       *
+       *      Matt, Mike, Ignacio
+       *
+       *      Check the sensedGuideRate carefully as the 
+       *      Guiding system dynamics can change dramatically
+       *      if this is incorrect.
+       *
+       */
+
       tsdiff = cbTimeStamp - tsold;
       tsold = cbTimeStamp;
       guideInfo.sensedRate = 1/(double)tsdiff;
@@ -1879,7 +1845,6 @@ void processGuides (void)
        * */
       if (useDynamicVtk && checkGuideModeChange(sensedGuideRate) != ERROR) 
          guideInfo.rate = sensedGuideRate;
-#endif 
 
    } /* end for(;;) FOREVER*/
 }
@@ -2383,10 +2348,10 @@ void scsReceive (void)
              * make it toggle-able via dm screen access and global
              * variable: m2CircBufferActive, for eg. */
 
-#ifndef MK
-             
+            // TODO: 
+            //       Implement OSI conversion for m2CircBufferTask in m2Log.c
+            //       Mike, Matt, Ignacio
             // m2CircBufferTask (scsBase);
-#endif
             
          }
          else
@@ -2759,6 +2724,10 @@ int updateEventPage (int scsInPosition, int scsPresentBeam)
  * History:
  * 05-Dec-1997: Original(srp)
  *
+ *
+ *
+ * TODO: Check change in timing for thread sleep. Matt, Mike, Ignacio
+ * Check SEM_TIMEOUT and verify the need for threadSleep.
  */
 /* ===================================================================== */
 
@@ -2978,12 +2947,10 @@ int saveCb ()
         fprintf ( pFile, " 11 %+4.2f %+4.2f %4.2f %4.2f\n", 
       cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
 
-#ifdef MK
         fprintf ( pFile, " 13 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
       cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
         fprintf ( pFile, " 15 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
       cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
-#endif
     }
 
     /* write from beginning of array to newest data */
@@ -3007,12 +2974,10 @@ int saveCb ()
         fprintf ( pFile, " 11 %+4.2f %+4.2f %4.2f %4.2f\n", 
       cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
 
-#ifdef MK
         fprintf ( pFile, " 13 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
       cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
         fprintf ( pFile, " 15 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
       cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
-#endif
 
     }
 
@@ -3098,7 +3063,6 @@ double newDfilter
 }
 
 
-#ifdef MK
 /****
  *
  *
@@ -3298,6 +3262,4 @@ int checkGuideModeChange( long mode) {
     currentmode = mode;
     return(OK);
 }
-
-#endif
 

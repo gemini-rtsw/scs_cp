@@ -91,9 +91,10 @@ ms */
 
 #define MAX_SYS_MSGS 11
 #define NUM_M2SUBSYS  7
+#define M2_ERROR_MSG_SIZE 80
 
 typedef struct {
-    char msgBody[80];
+    char msgBody[M2_ERROR_MSG_SIZE];
 } msgContainer;
 
 typedef struct {
@@ -103,9 +104,13 @@ typedef struct {
 
 typedef struct {
     sysErrContainer sys[NUM_M2SUBSYS];
-} m2ErrorContainer;
+    long sysid;         /* current system */
+    long code;     /* current error  */
+} M2ErrorContainer;
 
 
+char *parseM2Msg( M2ErrorContainer *m2Errors);
+M2ErrorContainer *m2ErrorInit(void);
+void showM2Errors(M2ErrorContainer *m2Errors);
 
-char *parseM2Msg( long errorSystem, long errorCode );
 

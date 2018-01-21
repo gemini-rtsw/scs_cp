@@ -86,9 +86,6 @@
 #include "utilities.h"      /* For weight2string, errorLog, debugLevel */
 #include "chop.h"           /* For chopIsOn */
 
-
-
-
 #define MAX_FILTER_CHANNELS 15  /* Used by dfilter to set array size */
 #define NUM_DECIMATORS  12      /* Number of channels needing decimation 
                                    filters */
@@ -110,8 +107,8 @@
 
 
 /* Local Declarations*/
-long highSpeed (struct genSubRecord *pgsub);
 long initHighSpeed (struct genSubRecord *pgsub);
+long highSpeed (struct genSubRecord *pgsub);
 
 /* Guide source names */
 
@@ -154,9 +151,7 @@ static double dfilter(double newSample, int Id);
 
 anUpdateInterval updateInterval = { 0.0, 0.0, 0.0, 0.0  };
 
-#ifdef MK
 GuideInfo guideInfo = { 0.0, 0, {1.557,-9.7, 198.9}, {1.557,-9.7, 198.9}};
-#endif
 
 long guideOn;
 long guideSimOn;
@@ -183,9 +178,7 @@ int guideMaster[MAX_SOURCES][MAX_BEAMS] =
 
 MATLAB filter[MAX_SOURCES][MAX_AXES];
 
-#ifdef MK
 HighSpeed *highSpeedData;
-#endif
 
 
 /* ===================================================================== */
@@ -548,9 +541,7 @@ long CADguideControl (struct cadRecord * pcad)
                updateInterval.pwfs1 = 0.0;
                updateInterval.oiwfs = 0.0;
                updateInterval.gaos = 0.0;
-#ifndef MK
                updateInterval.gpi = 0.0;
-#endif
 
                /* zero the filtered error values for all sources */
 
@@ -667,14 +658,8 @@ long CADguideConfig (struct cadRecord * pcad)
      static double sampleFreq = 200.0, freq1 = 20.0, freq2 = 25.0 ;
 
      static double weightA, weightB, weightC;
-#ifdef MK
-     static char *sourceOpts[] = {"PWFS1", "PWFS2", "OIWFS", "GAOS", "GYRO",
-#else
-     static char *sourceOpts[] = {"PWFS1", "PWFS2", "OIWFS", "GAOS", "GYRO", "GPI",
-#endif
-                                  NULL } ;
-     static char *filterOpts[] = {"OFF", "RAW", "LOWPASS", "HIGHPASS",
-                                  "BANDPASS", "BANDSTOP", NULL} ;
+     static char *sourceOpts[] = {"PWFS1", "PWFS2", "OIWFS", "GAOS", "GYRO", "GPI", NULL } ;
+     static char *filterOpts[] = {"OFF", "RAW", "LOWPASS", "HIGHPASS", "BANDPASS", "BANDSTOP", NULL} ;
 
      cadDirLog ("guideConfig", pcad->dir, 10, pcad);
 
@@ -956,12 +941,9 @@ long guideConfig (struct genSubRecord *pgsub)
           strncpy (pgsub->vale, filterString, MAX_STRING_SIZE - 1);
           break;
 
-#ifndef MK
      case GPI:
           strncpy (pgsub->valf, filterString, MAX_STRING_SIZE - 1);
           break;
-#endif
-
 
      default:
           break;
@@ -984,9 +966,7 @@ long guideConfig (struct genSubRecord *pgsub)
           strncpy (pgsub->valc, filterString, MAX_STRING_SIZE - 1);
           strncpy (pgsub->vald, filterString, MAX_STRING_SIZE - 1);
           strncpy (pgsub->vale, filterString, MAX_STRING_SIZE - 1);
-#ifndef MK
           strncpy (pgsub->valf, filterString, MAX_STRING_SIZE - 1);
-#endif
 
      }
 
@@ -1187,9 +1167,6 @@ long CADguideReset (struct cadRecord * pcad)
      long status = CAD_REJECT;
      static int reset;
 
-#ifdef MK
-     // static double weightA, weightB, weightC;
-#endif
 
     static char *resetOpts[] = {"OFF", "ON", NULL} ;
 
@@ -1329,9 +1306,7 @@ long resetGuideConfig (struct genSubRecord *pgsub)
           strncpy (pgsub->valc, filterString, MAX_STRING_SIZE - 1);
           strncpy (pgsub->vald, filterString, MAX_STRING_SIZE - 1);
           strncpy (pgsub->vale, filterString, MAX_STRING_SIZE - 1);
-#ifndef MK
           strncpy (pgsub->valf, filterString, MAX_STRING_SIZE - 1);
-#endif
 
 
      /* set reset widget back to NULL */
@@ -1871,7 +1846,6 @@ static int readFilters (MATLAB * testFilter, int type, double freq1, double freq
      }
 }
 
-#ifdef MK
 void printHS() {
 
     int i;
@@ -2135,7 +2109,6 @@ long highSpeed (struct genSubRecord *pgsub) {
 
      return (OK);
 }
-#endif
 
 /* ===================================================================== */
 /* INDENT OFF */
@@ -2275,10 +2248,8 @@ long decimate (struct genSubRecord * pgsub)
      double xp;
      double yp;
 
-#ifdef MK
      double *vtkxdata = (double *) pgsub->valt;
      double *vtkydata = (double *) pgsub->valu;
-#endif
 
      if(simLevel != 0)
      {
@@ -2444,6 +2415,10 @@ long decimate (struct genSubRecord * pgsub)
 /*      *(double *) pgsub->valq = position1.xDmd - position1.xPos;
      *(double *) pgsub->valr = position1.yDmd - position1.yPos; */
 
+     /*
+      *
+      * TODO: Check if 0 block Mike, Matt, Ignacio
+      */
 #if 0
      if (debugLevel == DEBUG_RESERVED2)
         printf("xdem %f ydem %f xpos %f ypos %f \n",scsBase->page0.xDemand, 
@@ -2457,12 +2432,10 @@ long decimate (struct genSubRecord * pgsub)
      *(double *) pgsub->valq = xp; 
      *(double *) pgsub->valr = yp;
 
-#ifdef MK
      *(long *)   pgsub->vals = guideInfo.rate; /*Guide frequency 200Hz, 100Hz or 50Hz*/
 
      memcpy (vtkxdata, guideInfo.vtkXdata, 3*sizeof (double));
      memcpy (vtkydata, guideInfo.vtkYdata, 3*sizeof (double));
-#endif
 
      return (OK);
 }
@@ -2641,13 +2614,11 @@ static double dfilter(double newSample, int Id)
      return(sum);
 }
 
-
-epicsRegisterFunction(highSpeed);
 epicsRegisterFunction(guideConfig);
 epicsRegisterFunction(resetGuideConfig);
 epicsRegisterFunction(initDecimate);
 epicsRegisterFunction(decimate);
 epicsRegisterFunction(lookupGuide);
+epicsRegisterFunction(highSpeed);
 epicsRegisterFunction(initHighSpeed);
-
 

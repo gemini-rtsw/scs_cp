@@ -108,83 +108,88 @@ int eventConnect = OFF;
 
 long    initInterlock (struct subRecord * psub)
 {
-    return (OK);
+   return (OK);
 }
 
 
 
+/* TODO: Describe changes to legacy and Test it works.
+ *
+ * Matt, Mike, Ignacio
+ *
+ */
 long    lockMonitor (struct subRecord * psub)
 {
-    long    received;
-    static int Qcleared = 0;
-    long    interlockStatus = OFF;
-    long    interlockOverride = OFF;
+   long    received;
+   static int Qcleared = 0;
+   long    interlockStatus = OFF;
+   long    interlockOverride = OFF;
 
-    /* read current interlock status from the event system   */
-    /* for test purposes make this input port A      */
+   /* read current interlock status from the event system   */
+   /* for test purposes make this input port A      */
 
-    interlockStatus = (long) psub->a;
-    interlockOverride = (long)psub->b;
+   interlockStatus = (long) psub->a;
+   interlockOverride = (long)psub->b;
 
-    if(interlockOverride == OFF)
-    {
-        if(eventConnect == ON)
-        {
-           int interlocks = xy240_readPortByte(XYCARDNUM, PORT3) & INTERLOCKMASK;
+   if(interlockOverride == OFF)
+   {
+      if(eventConnect == ON)
+      {
+         int interlocks = xy240_readPortByte(XYCARDNUM, PORT3) & INTERLOCKMASK;
 
-        //if (( (*(unsigned char *) PORT_3_ADDR) & INTERLOCKMASK) == DEMANDCLEAR)
-           if (interlocks == DEMANDCLEAR)
+         //if (( (*(unsigned char *) PORT_3_ADDR) & INTERLOCKMASK) == DEMANDCLEAR)
+         if (interlocks == DEMANDCLEAR)
             interlockStatus = OFF;
-        //else if (( (*(unsigned char *) PORT_3_ADDR) & INTERLOCKMASK) 
-        else if (interlocks == DEMANDSET)
+         //else if (( (*(unsigned char *) PORT_3_ADDR) & INTERLOCKMASK) 
+         else if (interlocks == DEMANDSET)
             interlockStatus = ON;
-        else
-        {
+         else
+         {
             interlockStatus = ON;
             reportHealth(WARNING, "interlock undefined - default to active");
-        }
-        }
-    }
+         }
+      }
+   }
 
-    if (interlockStatus == ON)
-    {
-        /* set interlockFlag to lockout further commands */
-        interlockFlag = ON;
+   if (interlockStatus == ON)
+   {
+      /* set interlockFlag to lockout further commands */
+      interlockFlag = ON;
 
-        /* record current mirror position */
-        epicsMutexLock(refMemFree);
-        lockPosition.xTilt = scsPtr->page1.xTilt;
-        lockPosition.yTilt = scsPtr->page1.yTilt;
-        lockPosition.zFocus = scsPtr->page1.zFocus;
-        lockPosition.xPos = scsPtr->page1.xPosition;
-        lockPosition.yPos = scsPtr->page1.yPosition;
-        epicsMutexUnlock(refMemFree);
+      /* record current mirror position */
+      epicsMutexLock(refMemFree);
+      lockPosition.xTilt = scsPtr->page1.xTilt;
+      lockPosition.yTilt = scsPtr->page1.yTilt;
+      lockPosition.zFocus = scsPtr->page1.zFocus;
+      lockPosition.xPos = scsPtr->page1.xPosition;
+      lockPosition.yPos = scsPtr->page1.yPosition;
+      epicsMutexUnlock(refMemFree);
 
 
-        /* clear command message queues */
-        if (Qcleared == 0)
-        {
-            errlogMessage("interlock detected - begin clearing message queue");
+      /* clear command message queues */
+      if (Qcleared == 0)
+      {
+         errlogMessage("interlock detected - begin clearing message queue");
 
-            /* read out and discard messages until none left */
-            while ( epicsMessageQueueTryReceive(commandQId, (char *) &received, sizeof (long)) != MSG_Q_EMPTY)
-                ;
+         /* read out and discard messages until none left */
+         while ( epicsMessageQueueTryReceive(commandQId, (char *) &received, sizeof (long)) != MSG_Q_EMPTY)
+            ;
 
-            Qcleared = 1;
-            errlogMessage("message queue cleared\n");
-        }
-    }
-    else
-    {
-        /* set interlockFlag to enable commands again */
+         Qcleared = 1;
+         errlogMessage("message queue cleared\n");
+      }
+   }
+   else
+   {
+      /* set interlockFlag to enable commands again */
 
-        Qcleared = 0;
-        interlockFlag = OFF;
-    }
+      Qcleared = 0;
+      interlockFlag = OFF;
+   }
 
-    psub->val = (double)interlockFlag;
+   psub->val = (double)interlockFlag;
 
-    return (OK);
+   return (OK);
 }
 
 

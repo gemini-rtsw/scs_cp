@@ -31,7 +31,7 @@
 #ifndef _INCLUDED_EVENTBUS_H
 #define _INCLUDED_EVENTBUS_H
 
-
+#include <drvXy240.h>           /* for xy240 driver stuff */
 #define PORT0  0
 #define PORT1  1
 #define PORT2  2

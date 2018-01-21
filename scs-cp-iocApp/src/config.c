@@ -802,7 +802,6 @@ long    CADcontroller (struct cadRecord * pcad)
     return (status);
 }
 
-#ifdef MK
 long    CADsetPhasorControl (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
@@ -957,9 +956,6 @@ long    CADsetPhasorControl (struct cadRecord * pcad)
 
 } 
 
-#endif
-
-#ifdef MK
 long    CADsetVTKControl (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
@@ -1199,7 +1195,6 @@ long    CADsetVTKControl (struct cadRecord * pcad)
     return(status);
 
 } 
-#endif
 
 /* ===================================================================== */
 /*
@@ -2602,11 +2597,7 @@ long CADfocusPidControl (struct cadRecord * pcad)
 
 
 
-#ifdef MK
 /*
- *
- *
- *
  *
  */
 long CADphasorControl (struct cadRecord * pcad)
@@ -2725,14 +2716,7 @@ long CADphasorControl (struct cadRecord * pcad)
 }
 
 
-
-
-
 /* 
- *
- *
- *
- *
  *
  *
  *
@@ -2857,9 +2841,6 @@ long CADvtkControl (struct cadRecord * pcad)
     return (status);
 }
 
-#endif
-
-
 
 /* ===================================================================== */
 /*
@@ -2972,3 +2953,5 @@ long    CADmovePeriscope (struct cadRecord * pcad)
 
     return (status);
 }
+
+

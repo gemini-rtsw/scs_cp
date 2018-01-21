@@ -41,7 +41,6 @@
 
 #include <math.h>               /* For round */
 #include <timeLib.h>            /* For timeNow */
-#include <drvXy240.h>           /* for xy240 driver stuff */
 
 #include "utilities.h"
 #include "chop.h"               /* For getChopDuty, getChopFreq, chopIsPending,

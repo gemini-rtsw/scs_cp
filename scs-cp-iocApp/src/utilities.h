@@ -95,16 +95,10 @@
                                SCS internal state name */
 #define RUNNING         2
 
-#ifdef MK
-#define MAX_SOURCES     5       /* number of guide sources - 
-                   pwfs1, pwfs2, oiwfs, gaos, gyro    */
-#else
 #define MAX_SOURCES     6       /* number of guide sources - 
-                   pwfs1, pwfs2, oiwfs, gaos, gpi, gyro    */
-#endif
+                                   pwfs1, pwfs2, oiwfs, gaos, gpi, gyro    */
 
 /* health related items */
-
 typedef struct
 {
   int severity;
@@ -381,7 +375,6 @@ extern epicsEventId pvLoadComplete;
 
 extern frameOfReference frame;
 
-#ifdef MK
 typedef struct {
     double Snew[2][1];
     double Sold[2][1];
@@ -506,8 +499,6 @@ int checkGuideModeChange( long mode);
 #define PHASOR_AMPLITUDE_HIGHLIMIT 1.0
 #define PHASOR_SR_LOWLIMIT 25.0
 #define PHASOR_SR_HIGHLIMIT 200.0
-#endif
-
 
 #endif
 
