@@ -75,7 +75,8 @@
 #include "utilities.h"      /* For act2tilt, errorLog, modifyFrame,
                                        debugLevel, ag2m2 */
 #include "scs.h"
-#include "archive.h"        /* For cadDirLog */
+#include "m2Log.h"          /* For cadDirLog */
+//#include "archive.h"        /* For cadDirLog */
 #include "chop.h"           /* For chopIsOn */
 #include "control.h"        /* For scsPtr, interlockFlag, followOn, scsBase */
 #include "guide.h"          /* For enum define of instrument indices */
@@ -1367,3 +1368,8 @@ epicsRegisterFunction(receiveTcsDemand);
 epicsRegisterFunction(ticker);
 
 
+epicsRegisterFunction(CADstop);
+epicsRegisterFunction(CADmove);
+epicsRegisterFunction(CADfollow);
+epicsRegisterFunction(CADactuators);
+epicsRegisterFunction(CADpark);

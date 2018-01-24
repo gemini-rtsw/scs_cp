@@ -41,6 +41,8 @@
 #include <stdlib.h>     /* for malloc() */
 #include <string.h>
 #include <stdio.h>
+#include <iocsh.h>
+#include <epicsExport.h>
 
 #include <dbAccess.h>   /* For dbNameToAddr */
 #include <devSup.h>     /* for S_dev_???   */
@@ -50,7 +52,8 @@
 #include "utilities.h"  /* For errorLog, loadInitFiles, compileStatus,
                            statusCompiled, doPvLoad, pvLoadComplete */
 #include "guide.h"      /* For createFilter, setPointFree */
-#include "archive.h"    /* For loggerTask, refMemFree, logCAddr */
+#include "m2Log.h"          /* For cadDirLog */
+//#include "archive.h"    /* For loggerTask, refMemFree, logCAddr */
 #include "control.h"    /* For fireLoops, slowTransmit, scsReceive, scsPtr, 
                            scsBase, m2Ptr, m2MemFree, slowUpdate, wfsFree
                            diagnosticsAvailable, scsDataAvailable,
@@ -58,7 +61,7 @@
                            SYSTEM_CLOCK_RATE */
 
 
-#define TOP "m2:"
+//#define TOP "m2:"
 
 /* #define TRUESCSBASE     0xf0A00040      / * Base address of node 0 */
 #define TRUESCSBASE     0xfAA00040      /* Base address of node 0 
@@ -128,22 +131,11 @@ epicsMessageQueueId  healthQId = NULL;
 int scsInit (void)
 {
    int source = PWFS1;
-   char pRecordName[MAX_STRING_SIZE];
 
 
    /* create semaphores to control pvload of initialisation files */
    doPvLoad = epicsEventMustCreate(epicsEventEmpty);
    pvLoadComplete = epicsEventMustCreate(epicsEventEmpty);
-
-   /* get address of logging CAR record */
-
-   strncpy (pRecordName, TOP "logC.IVAL", MAX_STRING_SIZE);
-
-   if (dbNameToAddr (pRecordName, &logCAddr) != 0)
-   {
-      errlogPrintf("scsLogInit - unable to fetch address of logC CAR\n");
-      return (ERROR);
-   }
 
    /* mutex semaphore to prevent multiple access to guide data */
    for (source = PWFS1; source <= GYRO; source++)
@@ -318,5 +310,17 @@ int scsInit (void)
 }
 
 
+static const iocshFuncDef scsInitFuncDef ={"scsInit", 0, NULL};
+static void scsInitCallFunc(const iocshArgBuf *args)
+{
+    scsInit();
+}
 
+static void scsRegisterCommands(void)
+{
+    iocshRegister(&scsInitFuncDef, scsInitCallFunc);
+
+}
+
+epicsExportRegistrar(scsRegisterCommands);
 

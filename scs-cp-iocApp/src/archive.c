@@ -84,15 +84,12 @@ static int loggingArmed = OFF;
 
 //static int logChoice = TILTS;
 //static int startLog, endLog;
-static int CADlogging = OFF;
 
 /* declare externals */
 int loggingNow = OFF;
 int logThreshold = 20;
-epicsMutexId refMemFree = NULL;
 DBADDR logCAddr;
 
-#if 0          // This isn;t being used by anybody
 /* ===================================================================== */
 /*
  * Function name:
@@ -238,7 +235,6 @@ static int writeArchive (double xTilt, double yTilt, double zFocus, double setX,
     return (OK);
 }
 
-#endif
 
 /* ===================================================================== */
 /*
@@ -576,126 +572,16 @@ void showArchive (void)
     }
 }
 
+void CADLogToggle() {
+   char msg[10];
+   CADlogging = !CADlogging;
+   
+   if (CADlogging)
+        strncpy(msg, "ON");
+   else
+        strncpy(msg, "OFF");
 
-/* ===================================================================== */
-/*
- * Function name:
- * cadDirLog
- * 
- * Purpose:
- * Log the time and type of each CAD directive
- *
- * Invocation:
- * cadDirLog(cadName, directive)
- *
- * Parameters in:
- *      > cadName   string  name of cad record
- *      > directive string  directive
- * 
- * Parameters out:
- * None
- *
- * Return value:
- *      < status    int OK or ERROR
- * 
- * Globals: 
- *  External functions:
- *  None
- *
- *  External variables:
- *      > debugLevel    long
- * 
- * Requirements:
- * 
- * Author:
- * Sean Prior  (srp@roe.ac.uk)
- * 
- * History:
- * 04-Dec-1997: Original(srp)
- * 01-Feb-1998: Write parameters to screen as well as directives
- */
-
-/* ===================================================================== */
-int cadDirLog (char *cadName, int directive, int argc, struct cadRecord * pcad)
-{
-    double timeStamp;
-    char message1[50], message2[500], message3[100];
-    int i;
-
-    /* define structure of CAD directive names */
-
-    char *dirNames[] =
-    {
-    "MARK  ", "CLEAR ", "PRESET", "START ", "STOP  ", NULL
-    };
-
-    /* define structure of CAD port names */
-
-    char *portNames[] =
-    {
-    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", NULL
-    };
-
-    if (CADlogging != ON)
-    return (OK);
-
-    if (timeNow (&timeStamp) != OK)
-    {
-       errlogMessage("loggerTask - error reading timeStamp\n");
-    return (ERROR);
-    }
-
-    /* create message strings of CAD directive and current time */
-
-    /* message 1 length fixed at 44 + terminator */
-
-    sprintf (message1, "%16.6f-%-.20s-%-.6s%c", timeStamp, cadName, dirNames[directive], '\0');
-
-    /* initial message 2 length 17 + terminator */
-
-    sprintf (message2, "%16.6f-%c", timeStamp, '\0');
-
-    /* read input port arguments from pcad structure */
-    /* the cad input string size is currently 40 chars */
-
-    i = 0;
-
-    while (i < argc)
-    {
-
-    /*
-     * read next port and compile message, each port takes up to 43 +
-     * forced terminator
-     */
-
-    sprintf (message3, "%.1s = %.*s, %c", portNames[i], (MAX_STRING_SIZE - 1), (pcad->a + CAD_INPUT_STRING_SIZE * i), '\0');
-
-    /*
-     * check for available space in message2 then concatenate to message
-     * 2
-     */
-
-    if ((499 - strlen (message2)) > strlen (message3))
-    {
-        strcat (message2, message3);
-    }
-    else
-    {
-        printf ("message 2 full, cannot append next port\n");
-        printf ("message 3 > %s\n", message3);
-    }
-
-    i++;
-    }
-
-    if ((debugLevel > DEBUG_NONE) & (debugLevel <= DEBUG_MED ))
-    {
-    /* write to screen */
-
-    printf ("%s\n", message1);
-    printf ("%s\n", message2);
-    }
-    return (OK);
+    errlogSevPrintf(errlogInfo, "CADlogging %s\n", msg);
 }
 
 /*
@@ -706,3 +592,18 @@ int isLoggingArmed(void)
 {
   return loggingArmed == ON;
 }
+
+static const iocshFuncDef CADlogTogFuncDef ={"CADLogToggle", 0, NULL};
+static void CADlogTogCallFunc(const iocshArgBuf *args)
+{
+    CADLogToggle();
+}
+
+static void CADlogTogRegisterCommands(void)
+{
+    iocshRegister(&CADlogTogFuncDef, CADlogTogCallFunc);
+
+}
+
+epicsExportRegistrar(scsRegisterCommands);
+

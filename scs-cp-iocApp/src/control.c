@@ -70,8 +70,8 @@
  *              since only used by control.c
  * 27-Sep-2002: Freeze last guide values when stopping guide loop
  * 19-Oct-2017: Begin conversion to EPIS OSI (mdw)
- *
- */
+*
+*/
 /* ===================================================================== */
 #include <string.h>     /* For strncpy */
 #include <math.h>       /* For abs */
@@ -82,7 +82,7 @@
 #include <drvXy240.h>   /* for xy240_writePortBit() */
 
 #include "utilities.h"  /* For debugLevel, ag2m2 */
-#include "archive.h"    /* For refMemFree */
+//#include "archive.h"    /* For refMemFree */
 #include "chop.h"       /* For jogBeam, chopIsOn */
 #include "control.h"    /* For logThreshold, SYSTEM_CLOCK_RATE */
 #include "guide.h"      /* For updateInterval, guideOn, guideOnA, guideOnB,
@@ -91,14 +91,14 @@
 #include "interp.h"     /* For AX, AY, ..., Z axis identifiers */
 #include "eventBus.h"   /* fo XYCARDNUM */
 
- /* Define limits for incremental steps */
+/* Define limits for incremental steps */
 #define TILT_GUIDE_STEP_LIMIT   32.0   /* arcsec  */
 
- /* This limit is now so big that it really isn't a limit at all.
-    It could be removed completely and maybe for the TILT_GUIDE_STEP_LIMIT
-    as well. But of course, doing this may introduce new problems - for eg.
-    the offload to the mount - and so leave in for now
-  */
+/* This limit is now so big that it really isn't a limit at all.
+   It could be removed completely and maybe for the TILT_GUIDE_STEP_LIMIT
+   as well. But of course, doing this may introduce new problems - for eg.
+   the offload to the mount - and so leave in for now
+   */
 #define Z_GUIDE_STEP_LIMIT      3000.0   /* microns */
 
 #define DEFAULT_VARIANCE 0.01
@@ -120,7 +120,7 @@ static void reportTimes();
 struct timespec timeStart, timeEnd;
 int mytimeshow = 0;
 
- typedef struct
+typedef struct
 {
    double  x;
    double  y;
@@ -219,27 +219,27 @@ static struct
 
 
 static Phasor phasorX = {
-        {{1.0},{0.0}},      /* Snew */
-        {{1.0},{0.0}},      /* Sold*/
-        0.0,                /* command result*/
-        12.3,               /* Frequency of signal*/
-        0.1,                /* Amplitude of signal*/
-        198.9,              /* Sample Rate*/
-        0.0050277,          /* Sample time = 1/Fs    ==> 5ms @ 200Hz  */
-        0.0,                /* Theta Initial Valie*/
-        {{0.0, 0.0}, {0.0, 0.0}}, /* Rotation Matrix Initial values*/
+   {{1.0},{0.0}},      /* Snew */
+   {{1.0},{0.0}},      /* Sold*/
+   0.0,                /* command result*/
+   12.3,               /* Frequency of signal*/
+   0.1,                /* Amplitude of signal*/
+   198.9,              /* Sample Rate*/
+   0.0050277,          /* Sample time = 1/Fs    ==> 5ms @ 200Hz  */
+   0.0,                /* Theta Initial Valie*/
+   {{0.0, 0.0}, {0.0, 0.0}}, /* Rotation Matrix Initial values*/
 };
 
 static Phasor phasorY = {
-        {{1.0},{0.0}},      /* Snew */
-        {{1.0},{0.0}},      /* Sold*/
-        0.0,                /* command result*/
-        12.5,               /* Frequency of signal*/
-        0.1,                /* Amplitude of signal*/
-        198.9,              /* Sample Rate*/
-        0.0050277,          /* Sample time = 1/Fs    ==> 5ms @ 200Hz  */
-        0.0,                /* Theta Initial Valie*/
-        {{0.0, 0.0}, {0.0, 0.0}}, /* Rotation Matrix Initial values*/
+   {{1.0},{0.0}},      /* Snew */
+   {{1.0},{0.0}},      /* Sold*/
+   0.0,                /* command result*/
+   12.5,               /* Frequency of signal*/
+   0.1,                /* Amplitude of signal*/
+   198.9,              /* Sample Rate*/
+   0.0050277,          /* Sample time = 1/Fs    ==> 5ms @ 200Hz  */
+   0.0,                /* Theta Initial Valie*/
+   {{0.0, 0.0}, {0.0, 0.0}}, /* Rotation Matrix Initial values*/
 };
 
 
@@ -257,42 +257,42 @@ long yvtkGuideRecycle = 0;
 #define DEFAULT_TILT_SCALE 3.917
 
 static Vtk vtkX = {
-       {{{1.0},{0.0}},  {{1.0},{0.0}}},     /* Oscillator {newval , oldval}*/
-       198.9,                               /* Vtk Sample Rate (Hz) matches P2 for now*/ 
-       0.0050277,                           /* Vtk Sample period (seconds) matches P2 for now*/ 
-       {0.0050, 0.00},                      /* {Gain.phase, Gain.frequency}*/
-       {12.0, 0.2, 0.0, 0.0},               /* {Frequency.initialValue, Frequency.tolerance, Frequency.error, Frequency.current} */
-       1.0,                                 /* Maxamplitude (arc-seconds in skyangle) Vtk will attempt to correct for. */
-       1.557,                               /* Scale */
-       -9.7,                                /* Angle of Rotation (degrees)*/
-       {{0.0, 0.0}, {0.0, 0.0}},            /* Rotation Matrix Initial values*/
-       {{{0.0},{0.0}},  {{0.0},{0.0}}},      /* Local Oscillator {newval , oldval}*/
-       {{0.0},{0.0}},                        /* Integral {{Avalue}, {Bvalue}}*/
-       0.0,                                  /* phase*/
-       0.0,                                  /* phaseOld */
-       0.0,                                  /* deltaPhase */
-       0.0,                                  /* command */
-       0,                                    /* counter */
-  
+   {{{1.0},{0.0}},  {{1.0},{0.0}}},     /* Oscillator {newval , oldval}*/
+   198.9,                               /* Vtk Sample Rate (Hz) matches P2 for now*/ 
+   0.0050277,                           /* Vtk Sample period (seconds) matches P2 for now*/ 
+   {0.0050, 0.00},                      /* {Gain.phase, Gain.frequency}*/
+   {12.0, 0.2, 0.0, 0.0},               /* {Frequency.initialValue, Frequency.tolerance, Frequency.error, Frequency.current} */
+   1.0,                                 /* Maxamplitude (arc-seconds in skyangle) Vtk will attempt to correct for. */
+   1.557,                               /* Scale */
+   -9.7,                                /* Angle of Rotation (degrees)*/
+   {{0.0, 0.0}, {0.0, 0.0}},            /* Rotation Matrix Initial values*/
+   {{{0.0},{0.0}},  {{0.0},{0.0}}},      /* Local Oscillator {newval , oldval}*/
+   {{0.0},{0.0}},                        /* Integral {{Avalue}, {Bvalue}}*/
+   0.0,                                  /* phase*/
+   0.0,                                  /* phaseOld */
+   0.0,                                  /* deltaPhase */
+   0.0,                                  /* command */
+   0,                                    /* counter */
+
 };
 
 static Vtk vtkY = {
-       {{{1.0},{0.0}},  {{1.0},{0.0}}},     /* Oscillator {newval , oldval}*/
-       198.9,                               /* Vtk Sample Rate (Hz) matches P2 for now*/ 
-       0.0050277,                           /* Vtk Sample period (seconds) matches P2 for now*/ 
-       {0.0050, 0.00},                       /* {Gain.phase, Gain.frequency}*/
-       {12.0, 0.2,0.0,0.0},                 /* {Frequency.initialValue, Frequency.tolerance, Frequency.error, Frequency.current} */
-       1.0,                                 /* Maxamplitude (arc-seconds in skyangle) Vtk will attempt to correct for. */
-       1.557,                              /* Scale */
-       -9.7,                                /* Angle of Rotation (degrees)*/
-       {{0.0, 0.0}, {0.0, 0.0}},            /* Rotation Matrix Initial values*/
-       {{{0.0},{0.0}},  {{0.0},{0.0}}},      /* Local Oscillator {newval , oldval}*/
-       {{0.0},{0.0}},                        /* Integral {{Avalue}, {Bvalue}}*/
-       0.0,                                  /* phase*/
-       0.0,                                  /* phaseOld */
-       0.0,                                  /* deltaPhase */
-       0.0,                                  /* command */
-       0,                                    /* counter */
+   {{{1.0},{0.0}},  {{1.0},{0.0}}},     /* Oscillator {newval , oldval}*/
+   198.9,                               /* Vtk Sample Rate (Hz) matches P2 for now*/ 
+   0.0050277,                           /* Vtk Sample period (seconds) matches P2 for now*/ 
+   {0.0050, 0.00},                       /* {Gain.phase, Gain.frequency}*/
+   {12.0, 0.2,0.0,0.0},                 /* {Frequency.initialValue, Frequency.tolerance, Frequency.error, Frequency.current} */
+   1.0,                                 /* Maxamplitude (arc-seconds in skyangle) Vtk will attempt to correct for. */
+   1.557,                              /* Scale */
+   -9.7,                                /* Angle of Rotation (degrees)*/
+   {{0.0, 0.0}, {0.0, 0.0}},            /* Rotation Matrix Initial values*/
+   {{{0.0},{0.0}},  {{0.0},{0.0}}},      /* Local Oscillator {newval , oldval}*/
+   {{0.0},{0.0}},                        /* Integral {{Avalue}, {Bvalue}}*/
+   0.0,                                  /* phase*/
+   0.0,                                  /* phaseOld */
+   0.0,                                  /* deltaPhase */
+   0.0,                                  /* command */
+   0,                                    /* counter */
 };
 
 int applyGuide = FALSE;
@@ -326,6 +326,7 @@ int simLevel = 0;
 memMap *scsPtr = NULL;
 memMap *scsBase = NULL;
 memMap *m2Ptr = NULL;
+epicsMutexId refMemFree = NULL;
 epicsMutexId m2MemFree = NULL;
 epicsEventId slowUpdate = NULL;
 epicsMutexId wfsFree[MAX_SOURCES];
@@ -348,8 +349,8 @@ epicsMutexId setPointFree = NULL;
 int currentBeam = BEAMA;
 int flip2 = 0;
 int flip = 0;      /* indicates whether or not beams s/b flipped
-                           eg. 1 for sig gen; 0 for OSCIR. set to 1 at
-                           crate console */
+                      eg. 1 for sig gen; 0 for OSCIR. set to 1 at
+                      crate console */
 
 double sampleData[5][3];
 double coeffData[5][3];
@@ -453,20 +454,21 @@ static double cbVTKYPhaseNew[CB_RECORD_NB];
 static double cbVTKXFrequency[CB_RECORD_NB];
 static double cbVTKYFrequency[CB_RECORD_NB];
 
-static double     cbVTKXFreqError[CB_RECORD_NB];
-static double    cbVTKYFreqError[CB_RECORD_NB];
+static double cbVTKXFreqError[CB_RECORD_NB];
+static double cbVTKYFreqError[CB_RECORD_NB];
 
-static double     cbVTKXdeltaPhase[CB_RECORD_NB];
-static double     cbVTKYdeltaPhase[CB_RECORD_NB];
+static double cbVTKXdeltaPhase[CB_RECORD_NB];
+static double cbVTKYdeltaPhase[CB_RECORD_NB];
 
-static double     cbXGuidePhasor[CB_RECORD_NB];
-static double     cbYGuidePhasor[CB_RECORD_NB];
-
+static double cbXGuidePhasor[CB_RECORD_NB];
+static double cbYGuidePhasor[CB_RECORD_NB];
 
 void setNS(int value)
 {
    local.NS = value;
 }
+
+#if 0
 /* ===================================================================== */
 /*
  * Function name:
@@ -581,7 +583,7 @@ void projectSource (void)
              */
 
             errorLog ("projectSource - can't retrieve archive position",
-                     1, ON);
+                  1, ON);
 
             filtered[source].z1 = scsPtr->page1.xTilt + filtered[source].z1 + deltaX;
             filtered[source].z2 = scsPtr->page1.yTilt + filtered[source].z2 + deltaY;
@@ -591,7 +593,9 @@ void projectSource (void)
       }
    }
 }
+#endif
 
+#if 0
 /* ===================================================================== */
 /*
  * Function name:
@@ -739,6 +743,8 @@ void blendSources (void)
 #endif
 }
 
+#endif  /* end of blendSources()*/
+
 int profileCem = 0;
 int time_debug = 0;
 /* ===================
@@ -753,13 +759,13 @@ void cemTimerEnd () {
       /* This wait will always time out. Maybe it should be replaced with a taskDelay()    */
       /* or EPICS OSI equivalent [epicsThreadSleep()]  20171030 (mdw)                        */
       if (epicsEventWaitWithTimeout(cemTimerEndSem, SEM_TIMEOUT) == epicsEventWaitOK)  {
-         
-        clock_gettime( CLOCK_REALTIME, &timeEnd);
 
-        if (profileCem) { 
+         clock_gettime( CLOCK_REALTIME, &timeEnd);
+
+         if (profileCem) { 
             profileCem = 0;
             reportTimes();
-        }
+         }
       }
       else {
          if (time_debug) {
@@ -793,7 +799,7 @@ void cemTimerStart ()
 static void reportTimes() {
 
    struct timespec result;
-   
+
    if ((timeEnd.tv_nsec - timeStart.tv_nsec) < 0) {
       result.tv_sec = timeEnd.tv_sec - timeStart.tv_sec -1;
       result.tv_nsec = 1E+9 + timeEnd.tv_nsec - timeStart.tv_nsec;
@@ -866,8 +872,8 @@ void rmISR2 (int node)
    /* why is this commented out? This is the only place the 
     * event is signalled. 20171030 (mdw) */ 
    /*
-   semGive (cemTimerEndSem);
-   */
+      semGive (cemTimerEndSem);
+      */
 }
 
 /* Later: add header */
@@ -925,7 +931,7 @@ void rmISR3 (int node)
 int rxwaitticks = 0;
 int useDynamicVtk =0;
 
-int    waittime = 0.08;   
+int waittime = 0.08;   
 
 void processGuides (void) 
 {
@@ -948,7 +954,7 @@ void processGuides (void)
       double gpi;
 
    } updateTime = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };  
-   
+
    /* Used to time stamp a set of data written to the ring buffers */
    double cbTimeStamp;
 
@@ -1096,12 +1102,12 @@ void processGuides (void)
                 * */
                if (  xvtkGuideRecycle ) {
 
-                    scsBase->pwfs2.z1 =  xRecycleGuideU * (-0.7 / DEFAULT_TILT_SCALE) ;
+                  scsBase->pwfs2.z1 =  xRecycleGuideU * (-0.7 / DEFAULT_TILT_SCALE) ;
                }
 
                if (  yvtkGuideRecycle ) {
 
-                    scsBase->pwfs2.z2 = yRecycleGuideU * (-0.7/ DEFAULT_TILT_SCALE) ;
+                  scsBase->pwfs2.z2 = yRecycleGuideU * (-0.7/ DEFAULT_TILT_SCALE) ;
                }
 
                /* copy the data from reflective memory page */
@@ -1266,13 +1272,13 @@ void processGuides (void)
             } 
          }
 
-        else if ( (nodeISR3 == GPI_NODE) && (weight[OIWFS][currentBeam] > -2) )
+         else if ( (nodeISR3 == GPI_NODE) && (weight[OIWFS][currentBeam] > -2) )
          {
-             if (scsBase->gpi.interval > updateInterval.gpi) 
+            if (scsBase->gpi.interval > updateInterval.gpi) 
             { 
                if (debugLevel == DEBUG_RESERVED2) 
-                   errlogMessage("processGuides - GPI NODE interrupting me\n"); 
-  
+                  errlogMessage("processGuides - GPI NODE interrupting me\n"); 
+
                updateTime.gpi = scsBase->gpi.time;
                updateInterval.gpi = scsBase->gpi.interval; 
 
@@ -1321,7 +1327,7 @@ void processGuides (void)
                zNetGuide = (double) filtered[GPI].z3;
 
                guideUpdate = TRUE;
-             } 
+            } 
          }
 
          else if (scsBase->gyro.time > updateTime.gyro)
@@ -1403,7 +1409,7 @@ void processGuides (void)
                currentBeam, guideOnA); 
 
          errlogPrintf("guideOn = %1ld; applyGuide = %1d, guideUpdate = %1d\n",
-             guideOn, applyGuide, guideUpdate); 
+               guideOn, applyGuide, guideUpdate); 
       } 
 
       /* Notes about all these conditions...
@@ -1477,26 +1483,26 @@ void processGuides (void)
 
                if (vibrationXTrackOn == ON) {
 
-                   /* Calculate new vtk X Command and 
-                    * Disable VTK if ERROR is returned. */
-                   if (vtkControl(&vtkX, xNetGuide) != OK) {
-                       vibrationXTrackOn = OFF;
-                   }
+                  /* Calculate new vtk X Command and 
+                   * Disable VTK if ERROR is returned. */
+                  if (vtkControl(&vtkX, xNetGuide) != OK) {
+                     vibrationXTrackOn = OFF;
+                  }
 
-                   xNetGuideT += vtkX.command;
+                  xNetGuideT += vtkX.command;
 
                } 
                if (vibrationYTrackOn == ON) 
                {
 
-                   /* Calculate new vtk Y Command and 
-                    * Disable VTK if ERROR is returned. */
-                   if (vtkControl(&vtkY, yNetGuide) != OK) {
-                       vibrationYTrackOn = OFF;
-                   }
-    
-                   /* Add the latest */
-                   yNetGuideT += vtkY.command;
+                  /* Calculate new vtk Y Command and 
+                   * Disable VTK if ERROR is returned. */
+                  if (vtkControl(&vtkY, yNetGuide) != OK) {
+                     vibrationYTrackOn = OFF;
+                  }
+
+                  /* Add the latest */
+                  yNetGuideT += vtkY.command;
                }
 
                if (focusPidOn == ON)
@@ -1512,20 +1518,20 @@ void processGuides (void)
                /* Synthesized Signal in X TILT axis*/
                if(phasorXApply) {
 
-                   MatMult(phasorX.Rotator, phasorX.Sold, phasorX.Snew);   /* Advance the phasorX */
-                   phasorX.command = phasorX.amp * phasorX.Snew[0][0];      /* New Value = A*cos(wt); */
-                   memcpy(phasorX.Sold, phasorX.Snew, 2*1*sizeof(double)); /* Store new Svector Snew into Sold*/
-                   xNetGuideT +=  xTiltGuideSimScale * phasorX.command * DEFAULT_TILT_SCALE;
+                  MatMult(phasorX.Rotator, phasorX.Sold, phasorX.Snew);   /* Advance the phasorX */
+                  phasorX.command = phasorX.amp * phasorX.Snew[0][0];      /* New Value = A*cos(wt); */
+                  memcpy(phasorX.Sold, phasorX.Snew, 2*1*sizeof(double)); /* Store new Svector Snew into Sold*/
+                  xNetGuideT +=  xTiltGuideSimScale * phasorX.command * DEFAULT_TILT_SCALE;
                }
 
                /* Synthesized Signal in Y TILT axis*/
                if(phasorYApply) {
 
-                   MatMult(phasorY.Rotator, phasorY.Sold, phasorY.Snew);   /* Advance the phasorY */
-                   phasorY.command = phasorY.amp * phasorY.Snew[0][0];      /* New Value = A*cos(wt); */
-                   memcpy(phasorY.Sold, phasorY.Snew, 2*1*sizeof(double)); /* Store new Svector Snew into Sold*/
-                   yNetGuideT +=  yTiltGuideSimScale * phasorY.command * DEFAULT_TILT_SCALE;
- 
+                  MatMult(phasorY.Rotator, phasorY.Sold, phasorY.Snew);   /* Advance the phasorY */
+                  phasorY.command = phasorY.amp * phasorY.Snew[0][0];      /* New Value = A*cos(wt); */
+                  memcpy(phasorY.Sold, phasorY.Snew, 2*1*sizeof(double)); /* Store new Svector Snew into Sold*/
+                  yNetGuideT +=  yTiltGuideSimScale * phasorY.command * DEFAULT_TILT_SCALE;
+
                }
 
                /* Clamp the values of the guide.
@@ -1557,8 +1563,16 @@ void processGuides (void)
             {
                errlogMessage("guideType is PROJECT\n"); 
 
-               projectSource ();
-               blendSources ();
+               /**
+                * TODO: mrippa 2018 Implementation is outstanding.
+                *       This implies it is missing, not that it's good.
+                *
+                * NB. These routines must implemented for this mode to work. 
+                *
+                *
+                *   projectSource ();
+                *   blendSources ();
+               */
 
                xNetGuideU = xNetGuide;
                yNetGuideU = yNetGuide;
@@ -1620,18 +1634,18 @@ void processGuides (void)
 
       if (simLevel == 0) /* No simulation, write to real reflective memory */
       {
-          xRecycleGuideU = xNetGuideU;
-          yRecycleGuideU = yNetGuideU;
+         xRecycleGuideU = xNetGuideU;
+         yRecycleGuideU = yNetGuideU;
 
-          if (xvtkGuideRecycle)
+         if (xvtkGuideRecycle)
             xNetGuideU = 0.0;
 
-          if (yvtkGuideRecycle)
+         if (yvtkGuideRecycle)
             yNetGuideU = 0.0;
 
-          scsBase->page0.xTiltGuide = (float) xNetGuideU;
-          scsBase->page0.yTiltGuide = (float) yNetGuideU;
-          scsBase->page0.zFocusGuide = 
+         scsBase->page0.xTiltGuide = (float) xNetGuideU;
+         scsBase->page0.yTiltGuide = (float) yNetGuideU;
+         scsBase->page0.zFocusGuide = 
             (float) confine ((setPoint.zFocus + zNetGuideU), 
                   Z_FOCUS_LIMIT, -Z_FOCUS_LIMIT);
 
@@ -1675,22 +1689,22 @@ void processGuides (void)
 
          /* DO NOT Send Every Pulse */
          if (!sep) {
-             indx++; 
-             if (command > FAST_ONLY || indx > 1 )
-             {  
-                 rmIntSend (INT2, M2_NODE);
-                 indx = 0; 
-             }
+            indx++; 
+            if (command > FAST_ONLY || indx > 1 )
+            {  
+               rmIntSend (INT2, M2_NODE);
+               indx = 0; 
+            }
          }
 
          /* Send Every Pulse */
          else {
-           rmIntSend (INT2, M2_NODE);
+            rmIntSend (INT2, M2_NODE);
          }
          /*Start timer to profile interrupt cycle times between SCS and CEM*/
          /*
-         semGive(cemTimerStartSem);
-         */
+            semGive(cemTimerStartSem);
+            */
       }
       else /* simulation active, write to m2 buffer */
       {
@@ -1698,8 +1712,8 @@ void processGuides (void)
          m2Ptr->page0.xTiltGuide = (float) xNetGuideU;
          m2Ptr->page0.yTiltGuide = (float) yNetGuideU;
          m2Ptr->page0.zFocusGuide = 
-              (float) confine ((setPoint.zFocus + zNetGuideU), 
-                     Z_FOCUS_LIMIT, -Z_FOCUS_LIMIT);
+            (float) confine ((setPoint.zFocus + zNetGuideU), 
+                  Z_FOCUS_LIMIT, -Z_FOCUS_LIMIT);
 
          /* package data */
 
@@ -1729,7 +1743,7 @@ void processGuides (void)
          /* flag availability of new data */
          epicsEventSignal(scsDataAvailable);
       }
-   
+
 
       /* flag that fast transmission is complete and slow updates may occur */
 
@@ -1797,23 +1811,23 @@ void processGuides (void)
       cbVTKXPhaseNew[cbCounter] = vtkX.phase;
       cbVTKYPhaseNew[cbCounter] = vtkY.phase;
 
-     cbVTKXFrequency[cbCounter] = vtkX.frequency.currentValue;
-     cbVTKYFrequency[cbCounter] = vtkY.frequency.currentValue;
+      cbVTKXFrequency[cbCounter] = vtkX.frequency.currentValue;
+      cbVTKYFrequency[cbCounter] = vtkY.frequency.currentValue;
 
-     cbVTKXFreqError[cbCounter] = vtkX.frequency.error;
-     cbVTKYFreqError[cbCounter] = vtkY.frequency.error;
+      cbVTKXFreqError[cbCounter] = vtkX.frequency.error;
+      cbVTKYFreqError[cbCounter] = vtkY.frequency.error;
 
-     cbVTKXdeltaPhase[cbCounter] = vtkX.deltaPhase;
-     cbVTKYdeltaPhase[cbCounter] = vtkY.deltaPhase;
+      cbVTKXdeltaPhase[cbCounter] = vtkX.deltaPhase;
+      cbVTKYdeltaPhase[cbCounter] = vtkY.deltaPhase;
 
-     cbVTKXIntegrator0[cbCounter] = vtkX.integral[0][0];
-     cbVTKXIntegrator1[cbCounter] = vtkX.integral[1][0];
+      cbVTKXIntegrator0[cbCounter] = vtkX.integral[0][0];
+      cbVTKXIntegrator1[cbCounter] = vtkX.integral[1][0];
 
-     cbVTKYIntegrator0[cbCounter] = vtkY.integral[0][0];
-     cbVTKYIntegrator1[cbCounter] = vtkY.integral[1][0];
+      cbVTKYIntegrator0[cbCounter] = vtkY.integral[0][0];
+      cbVTKYIntegrator1[cbCounter] = vtkY.integral[1][0];
 
-     cbXGuidePhasor[cbCounter] = phasorX.command;
-     cbYGuidePhasor[cbCounter] = phasorY.command;
+      cbXGuidePhasor[cbCounter] = phasorX.command;
+      cbYGuidePhasor[cbCounter] = phasorY.command;
 
       /* increment the counter and wrap around if necessary,
        * it is a circular buffer after all. */
@@ -2065,33 +2079,33 @@ void slowTransmit (void)
          epicsMutexLock(m2MemFree);
          if (interlockFlag != ON)
          {
-               switch(jogBeam)
-               {
-                  case BEAMB:
-                     m2Ptr->page0.AxTilt = 
-                        (float) confine (setPoint.xTiltB, 
-                              X_TILT_LIMIT, -X_TILT_LIMIT);
-                     m2Ptr->page0.AyTilt = 
-                        (float) confine (setPoint.yTiltB, 
-                              Y_TILT_LIMIT, -Y_TILT_LIMIT);
-                     break;
+            switch(jogBeam)
+            {
+               case BEAMB:
+                  m2Ptr->page0.AxTilt = 
+                     (float) confine (setPoint.xTiltB, 
+                           X_TILT_LIMIT, -X_TILT_LIMIT);
+                  m2Ptr->page0.AyTilt = 
+                     (float) confine (setPoint.yTiltB, 
+                           Y_TILT_LIMIT, -Y_TILT_LIMIT);
+                  break;
 
-                  case BEAMC:
-                     m2Ptr->page0.AxTilt = 
-                        (float) confine (setPoint.xTiltC, 
-                              X_TILT_LIMIT, -X_TILT_LIMIT);
-                     m2Ptr->page0.AyTilt = 
-                        (float) confine (setPoint.yTiltC, 
-                              Y_TILT_LIMIT, -Y_TILT_LIMIT);
-                     break;
+               case BEAMC:
+                  m2Ptr->page0.AxTilt = 
+                     (float) confine (setPoint.xTiltC, 
+                           X_TILT_LIMIT, -X_TILT_LIMIT);
+                  m2Ptr->page0.AyTilt = 
+                     (float) confine (setPoint.yTiltC, 
+                           Y_TILT_LIMIT, -Y_TILT_LIMIT);
+                  break;
 
-                  default:
-                     m2Ptr->page0.AxTilt = 
-                        (float) confine (setPoint.xTiltA, 
-                              X_TILT_LIMIT, -X_TILT_LIMIT);
-                     m2Ptr->page0.AyTilt = 
-                        (float) confine (setPoint.yTiltA, 
-                              Y_TILT_LIMIT, -Y_TILT_LIMIT);
+               default:
+                  m2Ptr->page0.AxTilt = 
+                     (float) confine (setPoint.xTiltA, 
+                           X_TILT_LIMIT, -X_TILT_LIMIT);
+                  m2Ptr->page0.AyTilt = 
+                     (float) confine (setPoint.yTiltA, 
+                           Y_TILT_LIMIT, -Y_TILT_LIMIT);
 
             }
 
@@ -2135,9 +2149,9 @@ void slowTransmit (void)
          m2Ptr->page0.xPositionTolerance = 
             localPtr->xPositionTolerance;
          m2Ptr->page0.yPositionTolerance = 
-               localPtr->yPositionTolerance;
+            localPtr->yPositionTolerance;
          m2Ptr->page0.xyPositionDeadband = 
-               localPtr->xyPositionDeadband;
+            localPtr->xyPositionDeadband;
          m2Ptr->page0.bandwidth = localPtr->bandwidth;
          m2Ptr->page0.xTiltGain = localPtr->xTiltGain;
          m2Ptr->page0.yTiltGain = localPtr->yTiltGain;
@@ -2232,47 +2246,47 @@ void tiltReceive (void)
              * place command into FIFO buffer for slower reading from
              * state code
              */
-             if (localCommandCode != FAST_ONLY) {
-                if (epicsMessageQueueSendWithTimeout(
+            if (localCommandCode != FAST_ONLY) {
+               if (epicsMessageQueueSendWithTimeout(
                         receiveQId, (char *) &localCommandCode,
                         sizeof(long), SEM_TIMEOUT) == ERROR)
-                {
-                   errorLog ("timeout appending command to receiveQId", 1, ON);
-                   if (myTiltRxErrcount++ < 100) 
-                      epicsPrintf("timeout appending command to receiveQId\n");
-                }
-             }
-
-             /*
-              * block received without error so update sequence
-              * counter
-              */
-              m2Ptr->page1.NR = m2Ptr->page0.NS;
-           }
-           else {
-              errorLog ("tiltReceive - checksums fail", 1, ON);
-              if (myTiltRxErrcount++ < 100) 
-                 epicsPrintf ("tiltReceive - checksums fail\n");
-           }
-
-           /* package status data to return to SCS */
-           m2Ptr->page1.heartbeat = m2Heartbeat++;
-           m2Ptr->page1.checksum = checkSum ((void *) &m2Ptr->page1.NR, 
-                 STATUS_BLOCK_SIZE);
-
-           epicsMutexUnlock(m2MemFree);
-
-           /* flag status data available */
-           epicsEventSignal(scsReceiveNow);
-
-            /* print command to screen for testing */
-            if ((localCommandCode > POSITION) & 
-                  (debugLevel > DEBUG_MIN) &
-                  (debugLevel <= DEBUG_MED)) {
-               errlogPrintf ("sim receive command =  %s (%d)\n", 
-                     m2CmdName[localCommandCode], (int)localCommandCode); 
+               {
+                  errorLog ("timeout appending command to receiveQId", 1, ON);
+                  if (myTiltRxErrcount++ < 100) 
+                     epicsPrintf("timeout appending command to receiveQId\n");
+               }
             }
+
+            /*
+             * block received without error so update sequence
+             * counter
+             */
+            m2Ptr->page1.NR = m2Ptr->page0.NS;
          }
+         else {
+            errorLog ("tiltReceive - checksums fail", 1, ON);
+            if (myTiltRxErrcount++ < 100) 
+               epicsPrintf ("tiltReceive - checksums fail\n");
+         }
+
+         /* package status data to return to SCS */
+         m2Ptr->page1.heartbeat = m2Heartbeat++;
+         m2Ptr->page1.checksum = checkSum ((void *) &m2Ptr->page1.NR, 
+               STATUS_BLOCK_SIZE);
+
+         epicsMutexUnlock(m2MemFree);
+
+         /* flag status data available */
+         epicsEventSignal(scsReceiveNow);
+
+         /* print command to screen for testing */
+         if ((localCommandCode > POSITION) & 
+               (debugLevel > DEBUG_MIN) &
+               (debugLevel <= DEBUG_MED)) {
+            errlogPrintf ("sim receive command =  %s (%d)\n", 
+                  m2CmdName[localCommandCode], (int)localCommandCode); 
+         }
+      }
       else {
          if(simLevel != 0) {
             errorLog ("tiltReceive - scsDataAvailable timeout", 1, ON);
@@ -2352,7 +2366,7 @@ void scsReceive (void)
             //       Implement OSI conversion for m2CircBufferTask in m2Log.c
             //       Mike, Matt, Ignacio
             // m2CircBufferTask (scsBase);
-            
+
          }
          else
          {
@@ -2416,13 +2430,13 @@ void scsReceive (void)
 #ifdef MK
             if ((debugLevel > DEBUG_NONE) & (debugLevel <= DEBUG_MED))
 #else
-            if (debugLevel > DEBUG_RESERVED1)
+               if (debugLevel > DEBUG_RESERVED1)
 #endif
-            {
-               sprintf(errBuff, "checksum calc = %lx, received = %lx\n", 
-                     simCheck, localStatusBlock.checksum);
-               errlogPrintf("%s", errBuff);
-            }
+               {
+                  sprintf(errBuff, "checksum calc = %lx, received = %lx\n", 
+                        simCheck, localStatusBlock.checksum);
+                  errlogPrintf("%s", errBuff);
+               }
             errorLog ("scsReceive - checksum fail", 1, ON);
          }
       }
@@ -2673,7 +2687,7 @@ int updateEventPage (int scsInPosition, int scsPresentBeam)
          myScsInPosition = scsInPosition;
    }
    else {
-         myScsInPosition = 0; /* Anything other than Beam A|B is invalid*/
+      myScsInPosition = 0; /* Anything other than Beam A|B is invalid*/
    }
 
    eventData.inPosition = myScsInPosition;
@@ -2741,7 +2755,7 @@ long writeCommand (const long command)
    if (interlockFlag != ON)
    {
       // taskDelay(sysClkRateGet()/3);  
-                epicsThreadSleep(1.0/3.0);
+      epicsThreadSleep(1.0/3.0);
 
       if (epicsMessageQueueSendWithTimeout(commandQId, (char *)&localCommand, sizeof (long), SEM_TIMEOUT) == ERROR)
       {
@@ -2798,24 +2812,24 @@ long writeCommand (const long command)
 
 /* ===================================================================== */
 static int frameConvert (converted *result, 
-                frameChange *f, 
-                const double x, 
-                const double y, 
-                const double z)
+      frameChange *f, 
+      const double x, 
+      const double y, 
+      const double z)
 {
-    /* check that frame structure has been initialised */
-    if (f == NULL || result == NULL) {
-        errlogMessage("frame conversion pointers not initialised\n");
-        return(ERROR);
-    }
+   /* check that frame structure has been initialised */
+   if (f == NULL || result == NULL) {
+      errlogMessage("frame conversion pointers not initialised\n");
+      return(ERROR);
+   }
 
-    /* access frame */
-    epicsMutexLock(f->access); 
-    /* perform the conversion */
-    result->x = f->scaleX*(f->cosTheta*x - f->sinTheta*y) + f->offsetX;
-    result->y = f->scaleY*(f->sinTheta*x + f->cosTheta*y) + f->offsetY;
-    result->z = f->scaleZ * z;
-    epicsMutexUnlock(f->access);
+   /* access frame */
+   epicsMutexLock(f->access); 
+   /* perform the conversion */
+   result->x = f->scaleX*(f->cosTheta*x - f->sinTheta*y) + f->offsetX;
+   result->y = f->scaleY*(f->sinTheta*x + f->cosTheta*y) + f->offsetY;
+   result->z = f->scaleZ * z;
+   epicsMutexUnlock(f->access);
 
    return OK;
 }
@@ -2862,43 +2876,43 @@ static int frameConvert (converted *result,
 
 double iir_filter (const double input, MATLAB * iir)
 {
-  double *inPtr = NULL, *outPtr = NULL, *aPtr = NULL, *bPtr = NULL;
+   double *inPtr = NULL, *outPtr = NULL, *aPtr = NULL, *bPtr = NULL;
 
-  iir->inHistory[0] = input;
-  iir->outHistory[0] = 0;
+   iir->inHistory[0] = input;
+   iir->outHistory[0] = 0;
 
-  inPtr = iir->inHistory + iir->nb - 1;
-  bPtr = iir->numerator + iir->nb - 1;
-  outPtr = iir->outHistory + iir->na - 1;
-  aPtr = iir->denominator + iir->na - 1;
+   inPtr = iir->inHistory + iir->nb - 1;
+   bPtr = iir->numerator + iir->nb - 1;
+   outPtr = iir->outHistory + iir->na - 1;
+   aPtr = iir->denominator + iir->na - 1;
 
-  while (inPtr >= iir->inHistory) {
-    *iir->outHistory += (*bPtr--) * (*inPtr--);
-  }
+   while (inPtr >= iir->inHistory) {
+      *iir->outHistory += (*bPtr--) * (*inPtr--);
+   }
 
-  while (outPtr > iir->outHistory) {
-    *iir->outHistory -= (*aPtr--) * (*outPtr--);
-  }
+   while (outPtr > iir->outHistory) {
+      *iir->outHistory -= (*aPtr--) * (*outPtr--);
+   }
 
-  /* ripple histories ready for next sample */
-  inPtr = iir->inHistory + iir->nb - 1;
-  bPtr = iir->numerator + iir->nb - 1;
-  outPtr = iir->outHistory + iir->na - 1;
-  aPtr = iir->denominator + iir->na - 1;
+   /* ripple histories ready for next sample */
+   inPtr = iir->inHistory + iir->nb - 1;
+   bPtr = iir->numerator + iir->nb - 1;
+   outPtr = iir->outHistory + iir->na - 1;
+   aPtr = iir->denominator + iir->na - 1;
 
-     while (inPtr > iir->inHistory)
-     {
-          *inPtr = *(inPtr - 1);
-          inPtr--;
-     }
+   while (inPtr > iir->inHistory)
+   {
+      *inPtr = *(inPtr - 1);
+      inPtr--;
+   }
 
-     while (outPtr > iir->outHistory)
-     {
-          *outPtr = *(outPtr - 1);
-          outPtr--;
-     }
+   while (outPtr > iir->outHistory)
+   {
+      *outPtr = *(outPtr - 1);
+      outPtr--;
+   }
 
-     return (iir->outHistory[0]);
+   return (iir->outHistory[0]);
 }
 
 
@@ -2906,83 +2920,83 @@ double iir_filter (const double input, MATLAB * iir)
    16-Aug-2000: added Ax,Ay,Bx,By position demands */
 int saveCb ()
 {
-    char fileName[80];
-    double fileTime;
-    int i;
-    FILE *pFile;
+   char fileName[80];
+   double fileTime;
+   int i;
+   FILE *pFile;
 
-    
-    if (timeNow(&fileTime) != OK)
-    {
-   errorLog ("saveCb - error reading timeStamp\n", 1, ON);
-   return (ERROR);
-    }
 
-    sprintf(fileName, "./chop-guide-%d.log", (int)fileTime);
-    pFile = fopen ( fileName, "w" );
+   if (timeNow(&fileTime) != OK)
+   {
+      errorLog ("saveCb - error reading timeStamp\n", 1, ON);
+      return (ERROR);
+   }
 
-    if ( pFile == (FILE *) NULL )
-    {
-        epicsPrintf ( "error opening file %s\n", fileName );
-        return (ERROR);
-    }
+   sprintf(fileName, "./chop-guide-%d.log", (int)fileTime);
+   pFile = fopen ( fileName, "w" );
 
-    for ( i = cbCounter ; i < CB_RECORD_NB ; i ++ ) 
-    {
-        //fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
+   if ( pFile == (FILE *) NULL )
+   {
+      epicsPrintf ( "error opening file %s\n", fileName );
+      return (ERROR);
+   }
+
+   for ( i = cbCounter ; i < CB_RECORD_NB ; i ++ ) 
+   {
+      //fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
       //cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
-        fprintf ( pFile, "  3 %f %f %f %d\n", 
-      cbTime[i], cbP2Time[i], cbP2Interval[i], i);
-        fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
-      cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
-        fprintf ( pFile, "  7 %+4.2f %+4.2f %+4.2f\n", 
-      cbXGuideBeforePID[i], cbYGuideBeforePID[i], 
-                cbZGuideBeforePID[i]);
-        fprintf ( pFile, "  8 %+4.2f %+4.2f %+4.2f\n", 
-      cbXGuideAfterPID[i], cbYGuideAfterPID[i], cbZGuideAfterPID[i]);
-        fprintf ( pFile, "  9 %+4.2f %+4.2f %+4.2f\n", 
-      cbXGuideDemand[i], cbYGuideDemand[i], cbZGuideDemand[i]);
-   fprintf ( pFile, " 10 %1d %1d %1d %1d\n",
-                 cbCurBeam[i], cbApplyGuide[i], cbGuideOnA[i], cbInPos[i] );
-        fprintf ( pFile, " 11 %+4.2f %+4.2f %4.2f %4.2f\n", 
-      cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
+      fprintf ( pFile, "  3 %f %f %f %d\n", 
+            cbTime[i], cbP2Time[i], cbP2Interval[i], i);
+      fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
+            cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
+      fprintf ( pFile, "  7 %+4.2f %+4.2f %+4.2f\n", 
+            cbXGuideBeforePID[i], cbYGuideBeforePID[i], 
+            cbZGuideBeforePID[i]);
+      fprintf ( pFile, "  8 %+4.2f %+4.2f %+4.2f\n", 
+            cbXGuideAfterPID[i], cbYGuideAfterPID[i], cbZGuideAfterPID[i]);
+      fprintf ( pFile, "  9 %+4.2f %+4.2f %+4.2f\n", 
+            cbXGuideDemand[i], cbYGuideDemand[i], cbZGuideDemand[i]);
+      fprintf ( pFile, " 10 %1d %1d %1d %1d\n",
+            cbCurBeam[i], cbApplyGuide[i], cbGuideOnA[i], cbInPos[i] );
+      fprintf ( pFile, " 11 %+4.2f %+4.2f %4.2f %4.2f\n", 
+            cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
 
-        fprintf ( pFile, " 13 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
-      cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
-        fprintf ( pFile, " 15 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
-      cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
-    }
+      fprintf ( pFile, " 13 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
+            cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
+      fprintf ( pFile, " 15 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
+            cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
+   }
 
-    /* write from beginning of array to newest data */
-    for ( i = 0 ; i < cbCounter ; i ++ )
-    {
-        //fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
-   //   cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
-        fprintf ( pFile, "  3 %f %f %f %d\n", 
-      cbTime[i], cbP2Time[i], cbP2Interval[i], i);
-        fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
-      cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
-        fprintf ( pFile, "  7 %+4.2f %+4.2f %+4.2f\n", 
-      cbXGuideBeforePID[i], cbYGuideBeforePID[i], 
-                cbZGuideBeforePID[i]);
-        fprintf ( pFile, "  8 %+4.2f %+4.2f %+4.2f\n", 
-      cbXGuideAfterPID[i], cbYGuideAfterPID[i], cbZGuideAfterPID[i]);
-        fprintf ( pFile, "  9 %+4.2f %+4.2f %+4.2f\n", 
-      cbXGuideDemand[i], cbYGuideDemand[i], cbZGuideDemand[i]);
-   fprintf ( pFile, " 10 %1d %1d %1d %1d\n",
-                 cbCurBeam[i], cbApplyGuide[i], cbGuideOnA[i], cbInPos[i] );
-        fprintf ( pFile, " 11 %+4.2f %+4.2f %4.2f %4.2f\n", 
-      cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
+   /* write from beginning of array to newest data */
+   for ( i = 0 ; i < cbCounter ; i ++ )
+   {
+      //fprintf ( pFile, "  3 %f %f %f %ld %d\n", 
+      //   cbTime[i], cbP2Time[i], cbP2Interval[i], cbTick[i], i);
+      fprintf ( pFile, "  3 %f %f %f %d\n", 
+            cbTime[i], cbP2Time[i], cbP2Interval[i], i);
+      fprintf ( pFile, "  4 %+4.2f %+4.2f %+4.2f\n", 
+            cbXRawGuide[i], cbYRawGuide[i], cbZRawGuide[i]);
+      fprintf ( pFile, "  7 %+4.2f %+4.2f %+4.2f\n", 
+            cbXGuideBeforePID[i], cbYGuideBeforePID[i], 
+            cbZGuideBeforePID[i]);
+      fprintf ( pFile, "  8 %+4.2f %+4.2f %+4.2f\n", 
+            cbXGuideAfterPID[i], cbYGuideAfterPID[i], cbZGuideAfterPID[i]);
+      fprintf ( pFile, "  9 %+4.2f %+4.2f %+4.2f\n", 
+            cbXGuideDemand[i], cbYGuideDemand[i], cbZGuideDemand[i]);
+      fprintf ( pFile, " 10 %1d %1d %1d %1d\n",
+            cbCurBeam[i], cbApplyGuide[i], cbGuideOnA[i], cbInPos[i] );
+      fprintf ( pFile, " 11 %+4.2f %+4.2f %4.2f %4.2f\n", 
+            cbAXDemand[i], cbAYDemand[i], cbBXDemand[i], cbBYDemand[i]);
 
-        fprintf ( pFile, " 13 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
-      cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
-        fprintf ( pFile, " 15 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
-      cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
+      fprintf ( pFile, " 13 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
+            cbVTKXCommand[i], cbVTKXPhaseOld[i], cbVTKXPhaseNew[i], cbVTKXFrequency[i], cbVTKXIntegrator0[i], cbVTKXIntegrator1[i], cbXGuideBeforePID[i], cbXGuidePhasor[i], cbXGuideAfterPID[i], cbXGuideDemand[i]);
+      fprintf ( pFile, " 15 %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f %+7.5f \n", 
+            cbVTKYCommand[i], cbVTKYPhaseOld[i], cbVTKYPhaseNew[i], cbVTKYFrequency[i], cbVTKYIntegrator0[i], cbVTKYIntegrator1[i], cbYGuideBeforePID[i], cbYGuidePhasor[i], cbYGuideAfterPID[i], cbYGuideDemand[i]);
 
-    }
+   }
 
-    fclose (pFile);
-    return (OK);
+   fclose (pFile);
+   return (OK);
 }
 
 
@@ -3033,11 +3047,11 @@ int saveCb ()
  *-
  */
 
-double newDfilter
-   (
-   double newSample,
-   int Id
-   )
+   double newDfilter
+(
+ double newSample,
+ int Id
+ )
 {
    int i = 0;
    double sum = 0;
@@ -3069,92 +3083,92 @@ double newDfilter
  */
 void phasorShowX() {
 
-    _phasorShow(&phasorX);
+   _phasorShow(&phasorX);
 }
 
 void phasorShowY() {
 
-    _phasorShow(&phasorY);
+   _phasorShow(&phasorY);
 }
 
 void vtkShowX() {
-    _vtkShow(&vtkX);
+   _vtkShow(&vtkX);
 }
 
 void vtkShowY() {
-    _vtkShow(&vtkY);
+   _vtkShow(&vtkY);
 }
 
 void vtkResetX() {
-    /**
-     * epicsPrintf("VTK Reseting X...\n");
-     */
-    _vtkReset(&vtkX);
+   /**
+    * epicsPrintf("VTK Reseting X...\n");
+    */
+   _vtkReset(&vtkX);
 }
 
 void vtkResetY() {
-    /*
-     * epicsPrintf("VTK Reseting Y...\n");
-     */
-    _vtkReset(&vtkY);
+   /*
+    * epicsPrintf("VTK Reseting Y...\n");
+    */
+   _vtkReset(&vtkY);
 }
 
 void vtkxon() {
 
-    epicsPrintf("VTK Turning on X...\n");
-    vibrationXTrackOn = 1;
-    _vtkReset(&vtkX);
+   epicsPrintf("VTK Turning on X...\n");
+   vibrationXTrackOn = 1;
+   _vtkReset(&vtkX);
 }
 
 void vtkxoff() {
-    epicsPrintf("VTK Turning off X...\n");
-    vibrationXTrackOn = 0;
+   epicsPrintf("VTK Turning off X...\n");
+   vibrationXTrackOn = 0;
 
 }
 
 void vtkyon() {
 
-    epicsPrintf("VTK Turning on Y...\n");
-    vibrationYTrackOn = 1;
-    _vtkReset(&vtkY);
+   epicsPrintf("VTK Turning on Y...\n");
+   vibrationYTrackOn = 1;
+   _vtkReset(&vtkY);
 }
 
 void vtkyoff() {
-    epicsPrintf("VTK Turning off Y...\n");
-    vibrationYTrackOn = 0;
+   epicsPrintf("VTK Turning off Y...\n");
+   vibrationYTrackOn = 0;
 }
 
 void swxon() {
-    epicsPrintf("SW Turning on X...\n");
-    phasorXApply = 1;
-    xTiltGuideSimScale = 1.0;
+   epicsPrintf("SW Turning on X...\n");
+   phasorXApply = 1;
+   xTiltGuideSimScale = 1.0;
 }
 
 void swxoff() {
-    epicsPrintf("SW Turning off X...\n");
-    phasorXApply = 0;
-    xTiltGuideSimScale = 1.0;
+   epicsPrintf("SW Turning off X...\n");
+   phasorXApply = 0;
+   xTiltGuideSimScale = 1.0;
 }
 
 void swyon() {
-    epicsPrintf("SW Turning on Y...\n");
-    phasorYApply = 1;
-    yTiltGuideSimScale = 1.0;
+   epicsPrintf("SW Turning on Y...\n");
+   phasorYApply = 1;
+   yTiltGuideSimScale = 1.0;
 }
 
 void swyoff() {
-    epicsPrintf("SW Turning off Y...\n");
-    phasorYApply = 0;
-    yTiltGuideSimScale = 1.0;
+   epicsPrintf("SW Turning off Y...\n");
+   phasorYApply = 0;
+   yTiltGuideSimScale = 1.0;
 }
 
 void setVtkX(Vtk *vtkx) {
 
-    
+
 }
 
 Vtk* getVtkX(void) {
-    return &vtkX;
+   return &vtkX;
 }
 
 void setVtkY(Vtk *vtky) {
@@ -3163,103 +3177,103 @@ void setVtkY(Vtk *vtky) {
 
 
 Vtk* getVtkY(void) {
-    return &vtkY;
+   return &vtkY;
 
 }
 
 Phasor* getPhasorX(void) {
-    return &phasorX;
+   return &phasorX;
 }
 
 Phasor* getPhasorY(void) {
-    return &phasorY;
+   return &phasorY;
 }
 
 long srmisscount;
 int checkGuideModeChange( long mode) {
-    
-    static int currentmode = GUIDE_200_HZ; /*default mode is 200 Hz*/
-    
-    /*Only change if new mode is different*/
-    if(mode == currentmode) {
-        return(ERROR);
-    }
 
-    switch (mode) {
-        case GUIDE_200_HZ:
-            vtkX.Fs = 198.9; 
-            vtkX.scale = 1.758;
-            vtkX.angle = -15.9;
+   static int currentmode = GUIDE_200_HZ; /*default mode is 200 Hz*/
 
-            vtkY.Fs = 198.9; 
-            vtkY.scale = 1.758;
-            vtkY.angle = -15.9;
+   /*Only change if new mode is different*/
+   if(mode == currentmode) {
+      return(ERROR);
+   }
 
-            break;
+   switch (mode) {
+      case GUIDE_200_HZ:
+         vtkX.Fs = 198.9; 
+         vtkX.scale = 1.758;
+         vtkX.angle = -15.9;
 
-        case GUIDE_100_HZ:    
-            vtkX.Fs = 99.5; 
-            vtkX.scale = 1.591;
-            vtkX.angle = 15.3;
+         vtkY.Fs = 198.9; 
+         vtkY.scale = 1.758;
+         vtkY.angle = -15.9;
 
-            vtkY.Fs = 99.5; 
-            vtkY.scale = 1.591;
-            vtkY.angle = 15.3;
+         break;
 
-            break;
+      case GUIDE_100_HZ:    
+         vtkX.Fs = 99.5; 
+         vtkX.scale = 1.591;
+         vtkX.angle = 15.3;
 
-        case GUIDE_50_HZ:    
+         vtkY.Fs = 99.5; 
+         vtkY.scale = 1.591;
+         vtkY.angle = 15.3;
 
-            vtkX.Fs = 49.8; 
-            vtkX.scale = 1.637;
-            vtkX.angle = 47.1;
+         break;
 
-            vtkY.Fs = 49.8; 
-            vtkY.scale = 1.637;
-            vtkY.angle = 47.1;
-            break;
+      case GUIDE_50_HZ:    
 
-        case GUIDE_20_HZ:    
+         vtkX.Fs = 49.8; 
+         vtkX.scale = 1.637;
+         vtkX.angle = 47.1;
 
-            vtkX.Fs = 19.9; 
-            vtkX.scale = 1.758;
-            vtkX.angle = -15.9;
+         vtkY.Fs = 49.8; 
+         vtkY.scale = 1.637;
+         vtkY.angle = 47.1;
+         break;
 
-            vtkY.Fs = 19.9; 
-            vtkY.scale = 1.758;
-            vtkY.angle = -15.9;
+      case GUIDE_20_HZ:    
 
-            break;
+         vtkX.Fs = 19.9; 
+         vtkX.scale = 1.758;
+         vtkX.angle = -15.9;
 
-        default:
-            /*
-             * 
-             * sprintf(errBuff, "checkGuideModeChange: unknown mode: %d, input srate=%f\n", mode, srate);
-             *
-             * logMsg("%s", (int)errBuff, 0, 0, 0, 0, 0);
-             */
+         vtkY.Fs = 19.9; 
+         vtkY.scale = 1.758;
+         vtkY.angle = -15.9;
 
-            srmisscount++;
+         break;
 
-            /*Unsuported modes return early and don't change VTK.*/
-            return(ERROR);
-    }
-    
-    guideInfo.vtkXdata[0] = vtkX.scale;
-    guideInfo.vtkXdata[1] = vtkX.angle;
-    guideInfo.vtkXdata[2] = vtkX.Fs;
+      default:
+         /*
+          * 
+          * sprintf(errBuff, "checkGuideModeChange: unknown mode: %d, input srate=%f\n", mode, srate);
+          *
+          * logMsg("%s", (int)errBuff, 0, 0, 0, 0, 0);
+          */
 
-    guideInfo.vtkYdata[0] = vtkY.scale;
-    guideInfo.vtkYdata[1] = vtkY.angle;
-    guideInfo.vtkYdata[2] = vtkY.Fs;
+         srmisscount++;
 
-    /*Reinitialize VTK with new settings*/
-    vtkResetX();
-    vtkResetY();
-    vtkInit(&vtkX);
-    vtkInit(&vtkY);
+         /*Unsuported modes return early and don't change VTK.*/
+         return(ERROR);
+   }
 
-    currentmode = mode;
-    return(OK);
+   guideInfo.vtkXdata[0] = vtkX.scale;
+   guideInfo.vtkXdata[1] = vtkX.angle;
+   guideInfo.vtkXdata[2] = vtkX.Fs;
+
+   guideInfo.vtkYdata[0] = vtkY.scale;
+   guideInfo.vtkYdata[1] = vtkY.angle;
+   guideInfo.vtkYdata[2] = vtkY.Fs;
+
+   /*Reinitialize VTK with new settings*/
+   vtkResetX();
+   vtkResetY();
+   vtkInit(&vtkX);
+   vtkInit(&vtkY);
+
+   currentmode = mode;
+   return(OK);
 }
 

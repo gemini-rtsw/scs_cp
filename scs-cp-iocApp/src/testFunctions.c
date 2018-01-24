@@ -56,7 +56,8 @@
 /* INDENT ON */
 /* ===================================================================== */
 
-#include "archive.h"        /* For refMemFree */
+#include "m2Log.h"          /* For cadDirLog */
+//#include "archive.h"        /* For refMemFree */
 #include "control.h"        /* For scsPtr, scsBase, m2Ptr, 
                                diagnosticsAvailable, controller,
                                currentBeam, raw, filtered */
@@ -1514,3 +1515,6 @@ epicsRegisterFunction(initSelector);
 epicsRegisterFunction(selector);
 epicsRegisterFunction(guideSimProc);
 
+epicsRegisterFunction(pulseSteerCAD);
+epicsRegisterFunction(CADfreeRun);
+epicsRegisterFunction(CADguideSimCont);

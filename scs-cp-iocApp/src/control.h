@@ -531,6 +531,7 @@ extern epicsMutexId m2MemFree;
 extern epicsMutexId wfsFree[MAX_SOURCES];
 extern epicsMutexId eventDataSem;
 extern epicsMutexId setPointFree;
+extern epicsMutexId refMemFree;
 
 extern epicsEventId xySem;
 extern epicsEventId slowUpdate;

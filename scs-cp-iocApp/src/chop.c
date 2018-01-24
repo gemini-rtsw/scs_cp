@@ -50,11 +50,9 @@
 
 #include "utilities.h"      /* for all the EPICS base includes, plus other stuff */
 #include "chop.h"               
-#include "archive.h"        /* for cadDirLog, refMemFree */
+//#include "archive.h"        /* for cadDirLog, refMemFree */
+#include "m2Log.h"          /* cadDirLog*/
 #include "control.h"        /* For scsPtr, interlockFlag */
-
-
-
 
 /* Define frequency limits for the various chop profiles (Hertz)  */
 
@@ -787,5 +785,8 @@ double  percentCalc (struct subRecord * psub)
    return(OK);
 }
 
+epicsRegisterFunction(CADchopConfig);
+epicsRegisterFunction(CADchopControl);
+epicsRegisterFunction(CADbeamJog);
 epicsRegisterFunction(calcEnvelope);
 

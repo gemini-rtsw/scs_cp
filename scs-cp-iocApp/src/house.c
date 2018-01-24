@@ -60,7 +60,8 @@
 #include <tcslib.h>
 
 #include "house.h"
-#include "archive.h"        /* For cadDirLog */
+#include "m2Log.h"          /* For cadDirLog */
+//#include "archive.h"        /* For cadDirLog */
 #include "control.h"            /* For simLevel, interlockFlag */
 #include "utilities.h"      /* For errorLog */
 
@@ -1045,3 +1046,9 @@ epicsRegisterFunction(carDrive1);
 epicsRegisterFunction(carDrive2);
 epicsRegisterFunction(carDrive3);
 
+epicsRegisterFunction(CADtest);
+epicsRegisterFunction(CADinit);
+epicsRegisterFunction(CADinitXY);
+epicsRegisterFunction(CADreboot);
+epicsRegisterFunction(CADdatum);
+epicsRegisterFunction(CADsimulate);

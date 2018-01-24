@@ -689,5 +689,4 @@ long    issueM2Primitive (struct cadRecord * pcad)
 epicsRegisterFunction(readM2DiagnosticsInit);
 epicsRegisterFunction(readM2Diagnostics);
 epicsRegisterFunction(gensubFanDoubles);
-
-
+epicsRegisterFunction(issueM2Primitive);

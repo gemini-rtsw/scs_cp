@@ -52,6 +52,7 @@ long m2CircBufferTask(memMap *ptr);
 
 extern int m2LogActive;
 
+int cadDirLog (char *cadName, int directive, int argc, struct cadRecord * pcad);
 #endif
 
 

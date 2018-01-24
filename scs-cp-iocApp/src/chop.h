@@ -51,6 +51,7 @@
 #include <subRecord.h>
 #endif
 
+#include "setup.h"
 #include "chopControl.h"
 
 #define MAX_CHOP_CONTROLLERS    6    /* five instruments plus the SCS itself */

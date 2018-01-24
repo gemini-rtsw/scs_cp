@@ -59,13 +59,15 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-
+#include <epicsExport.h>
+#include <registryFunction.h>
 #include <cad.h>
 #include <tcslib.h>
 
 #include "config.h"
 #include "utilities.h"      /* For setPid, errorLog, debugLevel */
-#include "archive.h"        /* For cadDirLog, refMemFree */
+//#include "archive.h"        /* For cadDirLog, refMemFree */
+#include "m2Log.h"          /* For cadDirLog */
 #include "control.h"        /* For writeCommand, scsPtr, interlockFlag, 
                                        guideType */
 
@@ -2955,3 +2957,22 @@ long    CADmovePeriscope (struct cadRecord * pcad)
 }
 
 
+epicsRegisterFunction(CADmoveBaffle);
+epicsRegisterFunction(CADservoBandwidth);
+epicsRegisterFunction(dummyInit);
+epicsRegisterFunction(CADcontroller);
+epicsRegisterFunction(CADsetPhasorControl);
+epicsRegisterFunction(CADsetVTKControl);
+epicsRegisterFunction(CADdecsAdjust);
+epicsRegisterFunction(CADtolerance);
+epicsRegisterFunction(CADdebug);
+epicsRegisterFunction(CADdriveFollower);
+epicsRegisterFunction(CADdriveOffloader);
+epicsRegisterFunction(CADdriveDB);
+epicsRegisterFunction(CADdriveCB);
+epicsRegisterFunction(CADdriveXY);
+epicsRegisterFunction(CADtiltPidControl);
+epicsRegisterFunction(CADfocusPidControl);
+epicsRegisterFunction(CADphasorControl);
+epicsRegisterFunction(CADvtkControl);
+epicsRegisterFunction(CADmovePeriscope);

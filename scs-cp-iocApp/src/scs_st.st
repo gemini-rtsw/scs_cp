@@ -108,7 +108,7 @@
    option +w;  /* SNC warnings     */
    option +e;  /* new event flag mode  */
 
-   %%#include "archive.h"      /* For scsLogDestruct, loggingNow, refMemFree */
+   %%#include "m2Log.h"        /* For cadDirLog*/
    %%#include "chop.h"         /* For chopIsOn, jogBeam, instruments */
    %%#include "chopControl.h"  /* For eventSem */
    %%#include "config.h"       /* For depBaffle, cenBaffle */

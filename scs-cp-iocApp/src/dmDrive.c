@@ -46,7 +46,7 @@
 #include <epicsExport.h>
 #include <registryFunction.h>
 
-#include "archive.h"        /* For refMemFree */
+//#include "archive.h"        /* For refMemFree */
 #include "chop.h"           /* For chopIsOn, getSyncMask */
 #include "control.h"        /* For simLevel, scsPtr, scsBase, m2Ptr, 
                                        m2MemFree */

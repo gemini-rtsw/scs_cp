@@ -79,7 +79,8 @@
 #include <car.h>
 
 #include "guide.h"
-#include "archive.h"        /* For cadDirLog */
+#include "m2Log.h"          /* For cadDirLog */
+//#include "archive.h"        /* For cadDirLog */
 #include "control.h"        /* For simLevel, scsBase, m2Ptr, m2MemFree, 
                                interlockFlag, controller, *GuideTcs,
                                currentBeam */
@@ -2622,3 +2623,8 @@ epicsRegisterFunction(lookupGuide);
 epicsRegisterFunction(highSpeed);
 epicsRegisterFunction(initHighSpeed);
 
+epicsRegisterFunction(CADclearGuideFocus);
+epicsRegisterFunction(CADclearTiltGuide);
+epicsRegisterFunction(CADguideControl);
+epicsRegisterFunction(CADguideConfig);
+epicsRegisterFunction(CADguideReset);

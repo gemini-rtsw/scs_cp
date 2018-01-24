@@ -40,7 +40,7 @@
 
 #include <drvXy240.h>
 
-#include "archive.h"        /* For refMemFree */
+//#include "archive.h"        /* For refMemFree */
 #include "control.h"        /* For scsPtr, interlockFlag, commandQId */
 #include "interlock.h"
 #include "utilities.h"      /* For reportHealth */
