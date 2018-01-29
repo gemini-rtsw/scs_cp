@@ -7,14 +7,10 @@ dbLoadDatabase("dbd/scs-cp-ioc.dbd")
 scs_cp_ioc_registerRecordDeviceDriver(pdbbase)
 
 ## Load record instances
-#dbLoadTemplate("db/scs-cp-ioc.substitutions")
-dbLoadRecords("db/scs-cp-ioc.db", "m2:")
-
-## Load record instances
-dbLoadRecords("db/iocAdminRTEMS.db"," IOC=m2:iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
-dbLoadRecords("db/timeProbe.db","top=m2:")
 dbLoadRecords("db/m2.db")
 dbLoadRecords("db/m2sad.db")
+dbLoadRecords("db/iocAdminRTEMS.db"," IOC=m2:iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
+dbLoadRecords("db/timeProbe.db","top=m2:")
 
 # Configure BANCOMM card
 # - set the bc635 Time Provider priority to something other than the default
@@ -23,9 +19,6 @@ dbLoadRecords("db/m2sad.db")
 bc635TimeSetTpPrio (60)
 # - Master ? Simulate ? intPerSecond, intPerTick, timeOffset (microsec)
 BCconfigure (0, 0, 200, 1, 0)
-
-var drvPmacDebug 0
-#var devPmacMbxDebug 2
 
 # initialise reflective memory
 #vmi5588_init
@@ -38,15 +31,15 @@ drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled
 # with the USR C FLAG for TIME_LATENCY, so chopInit goes first.
-chopInit
-scsInit
+#chopInit
+#scsInit
 
 # connect rm interrupts to handler routines
-rmIntConnect(2, rmISR2)
-rmIntConnect(3, rmISR3)
+#rmIntConnect(2, rmISR2)
+#rmIntConnect(3, rmISR3)
 
 #Start EPICS
-iocInit
+#iocInit
 
 # set debug level for test debugging
 #
