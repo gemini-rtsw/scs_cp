@@ -12,6 +12,8 @@ vpath %.db $(SYS_DB_PATHS)
 DB = m2.db 
 DB += m2sad.db
 DB += iocAdminRTEMS.db
+DB += timeProbe.db
+
 
 #----------------------------------------------------
 # Create and install (or just install) into <top>/db

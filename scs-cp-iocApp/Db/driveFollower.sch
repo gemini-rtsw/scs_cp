@@ -44,7 +44,7 @@ xform 0 2560 2608
 p 2560 2599 100 0 -1 val(outp):$(top)allCar.VAL
 use ecad20 800 1223 100 0 driveFollower
 xform 0 960 2112
-p 896 2848 100 0 0 DESC:drive follower CAD record (used for maintenance)
+p 896 2848 100 0 0 DESC:drive follower CAD record 
 p 896 2688 100 0 0 FTVA:LONG
 p 896 2656 100 0 0 FTVB:LONG
 p 896 2624 100 0 0 FTVC:LONG

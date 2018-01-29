@@ -108,7 +108,7 @@ p 768 720 100 0 1 SCAN:Passive
 p 768 784 100 0 1 SNAM:gensubFanDoubles
 use egenSub -352 1127 100 0 readRmDiags
 xform 0 -208 1552
-p -288 1072 100 0 1 DESC:Read M2 diagnostics from reflective memory
+p -288 1072 100 0 1 DESC:Read M2 diagnostics 
 p -272 1392 100 0 0 FTJ:DOUBLE
 p -256 1648 100 0 1 FTVE:LONG
 p -575 741 100 0 0 FTVF:LONG
