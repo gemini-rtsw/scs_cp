@@ -789,4 +789,5 @@ epicsRegisterFunction(CADchopConfig);
 epicsRegisterFunction(CADchopControl);
 epicsRegisterFunction(CADbeamJog);
 epicsRegisterFunction(calcEnvelope);
+epicsRegisterFunction(percentCalc);
 

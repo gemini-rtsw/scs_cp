@@ -45,7 +45,8 @@
 #include "interlock.h"
 #include "utilities.h"      /* For reportHealth */
 #include "eventBus.h"       /* for XYCARDNUM */
-
+#include <epicsExport.h>
+#include <registryFunction.h>
 
 /* Define interlock port masks */
 
@@ -193,7 +194,8 @@ long    lockMonitor (struct subRecord * psub)
 }
 
 
-
+epicsRegisterFunction(lockMonitor);
+epicsRegisterFunction(initInterlock);
 
 
 

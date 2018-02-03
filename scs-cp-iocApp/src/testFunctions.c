@@ -156,6 +156,7 @@ void vtkInit(Vtk *vtk) {
     vtk->frequency.currentValue = vtk->frequency.initialValue;
     vtkAngle = vtk->angle * PI/180.0;
     
+    printf("VTK angle is: %f\n", vtkAngle);
     vtk->Rotator[0][0] = cos(vtkAngle);
     vtk->Rotator[0][1] = -sin(vtkAngle);
     vtk->Rotator[1][0] = sin(vtkAngle);
@@ -169,6 +170,7 @@ void phasorInit (Phasor *p) {
     p->dt = 1.0/p->Fs;
 
     p->Theta = 2*PI* p->freq * p->dt;
+    printf("Phasor Theta is: %f\n", p->Theta);
     p->Rotator[0][0] = cos(p->Theta);
     p->Rotator[0][1] = -sin(p->Theta);
     p->Rotator[1][0] = sin(p->Theta);

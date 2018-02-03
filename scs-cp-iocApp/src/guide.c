@@ -1925,9 +1925,9 @@ long initHighSpeed (struct genSubRecord *pgsub) {
 
    printf("initHighSpeed\n");
    /*HighSpeed Initialize*/
-   if ((highSpeedData = (HighSpeed *) calloc (0, sizeof (*highSpeedData) ) ) == NULL)    
+   if ((highSpeedData = (HighSpeed *) calloc (1, sizeof (*highSpeedData) ) ) == NULL)    
    {
-       printf ("calloc fail on creation of highSpeedData buffer\n");
+       errMessage (0, "calloc fail on creation of highSpeedData buffer\n");
        return (ERROR);
    }
 

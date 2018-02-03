@@ -39,6 +39,8 @@
 #include <stdio.h>
 
 #include <epicsThread.h>
+#include <iocsh.h>
+#include <epicsExport.h>
 
 #include "chopControl.h"
 #include "interlock.h"  /* For eventConnect */
@@ -130,4 +132,18 @@ int chopInit (void)
 
    return (OK);
 }
+
+static const iocshFuncDef chopInitFuncDef ={"chopInit", 0, NULL};
+static void chopInitCallFunc(const iocshArgBuf *args)
+{
+    chopInit();
+}
+
+static void chopRegisterCommands(void)
+{
+    iocshRegister(&chopInitFuncDef, chopInitCallFunc);
+
+}
+
+epicsExportRegistrar(chopRegisterCommands);
 

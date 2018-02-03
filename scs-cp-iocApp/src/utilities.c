@@ -2085,9 +2085,14 @@ long    snlStateStringConvert (struct genSubRecord * pgsub)
 /* ===================================================================== */
 epicsRegisterFunction(readHealthInit);
 epicsRegisterFunction(readHealth);
+epicsRegisterFunction(stateInit);
+epicsRegisterFunction(stateMonitor);
+epicsRegisterFunction(snlStateInit);
+epicsRegisterFunction(snlStateMonitor);
 epicsRegisterFunction(scsStateStringInit);
 epicsRegisterFunction(scsStateStringConvert);
 epicsRegisterFunction(snlStateStringInit);
 epicsRegisterFunction(snlStateStringConvert);
+epicsRegisterFunction(driveEvent);
 
 

@@ -80,6 +80,7 @@
 #include <timeLib.h>    /* For timeNow */
 #include <vmi5588.h>    /* For rmIntSend */
 #include <drvXy240.h>   /* for xy240_writePortBit() */
+#include <epicsExport.h>
 
 #include "utilities.h"  /* For debugLevel, ag2m2 */
 //#include "archive.h"    /* For refMemFree */
@@ -932,7 +933,7 @@ int rxwaitticks = 0;
 int useDynamicVtk =0;
 
 int waittime = 0.08;   
-
+static int procGuideCount = 0;
 void processGuides (void) 
 {
    long command = FAST_ONLY;
@@ -962,6 +963,7 @@ void processGuides (void)
    static double tsold=0.0;
 
    /* Initialize Vibration Tracking*/
+#if 0
    phasorInit(&phasorX);
    showPhasorRotation(&phasorX);
 
@@ -973,11 +975,26 @@ void processGuides (void)
 
    vtkInit(&vtkY);
    showVtkRotation(&vtkY);
+#endif
+
+   errlogSevPrintf(errlogMajor, "guideUpdateNow... wait 1 sec!\n");
+   epicsThreadSleep(1.0);
 
    /* Initialize eventData structure */ 
    eventData.currentBeam = 0;
    eventData.inPosition = 0;
 
+   errlogSevPrintf(errlogMajor, " Wait 1 secs...!\n");
+   epicsThreadSleep(1.0);
+   if (guideUpdateNow == NULL) {
+      errlogSevPrintf(errlogMajor, "guideUpdateNow Null!\n");
+      return;
+   }
+   else {
+      errlogSevPrintf(errlogInfo, "guideUpdateNow= starting control!\n");
+   }
+
+   procGuideCount++;
    for (;;)
    {
 
@@ -1006,7 +1023,9 @@ void processGuides (void)
       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
       {
-         epicsThreadSleep(0.001);
+         errlogSevPrintf(errlogInfo, "guideUpdateNow go!\n");
+         epicsThreadSleep(1.0);
+         //epicsThreadSleep(0.001;);
          /* Find which sources have been updated since last ISR call 
           * first, check PWFS1 */
 
@@ -1156,11 +1175,7 @@ void processGuides (void)
                guideUpdate = TRUE;
             }
          }
-#ifdef MK
-         else if ( (nodeISR3 == AGOI_NODE) && (weight[OIWFS][currentBeam] > -2) )
-#else
          else if ( (nodeISR3 == AGOI_NODE || nodeISR3 == F2OI_NODE) && (weight[OIWFS][currentBeam] > -2) )
-#endif
          {
             if (scsBase->oiwfs.interval > updateInterval.oiwfs) 
             {
@@ -1400,8 +1415,13 @@ void processGuides (void)
          /* New, assume timeout must mean no guide update has
           * occurred and bypass timestamp checking 
           */
+
+         errlogSevPrintf(errlogInfo, "guideUpdateNow timeout\n");
          guideUpdate = FALSE;         
+         procGuideCount++; /*2*/
       }
+
+      debugLevel = DEBUG_RESERVED2;
 
       if (debugLevel == DEBUG_RESERVED2)
       {
@@ -1426,6 +1446,9 @@ void processGuides (void)
        *
        */
 
+      errlogPrintf("After...\n");
+      procGuideCount++; /*3*/
+
       /* Always set applyGuide to TRUE when we're not chopping. If we are
        * chopping we need to assert the Guide Gate is valid by checking
        * inPosition.*/
@@ -1437,13 +1460,16 @@ void processGuides (void)
       }
 
 
+      procGuideCount++; /*4*/
       if (guideOn == TRUE && applyGuide == TRUE)
       {
 
+         procGuideCount++; /*5*/
          /* Set pin JK2/41 high to show guiding is appplied 
          */
          xy240_writePortBit (XYCARDNUM, PORT7, BIT4, epicsTrue); /* card 0, port 7, bit 4 */
 
+         procGuideCount++; /*6*/
          if (guideUpdate == TRUE) /* a new guide update has arrived */
          {
 
@@ -1595,6 +1621,7 @@ void processGuides (void)
        */
       else {   
 
+         procGuideCount++; /*7*/
          /* Set pin JK2/41 high to show guiding is *NOT*
           * appplied 
           *
@@ -3276,4 +3303,6 @@ int checkGuideModeChange( long mode) {
    currentmode = mode;
    return(OK);
 }
+
+epicsExportAddress(int, procGuideCount );
 

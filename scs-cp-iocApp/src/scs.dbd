@@ -74,9 +74,20 @@ function(issueM2Primitive)
 function(pulseSteerCAD)
 function(CADfreeRun)
 function(CADguideSimCont)
+function(lockMonitor)
+function(initInterlock)
+function(percentCalc)
+function(stateInit)
+function(stateMonitor)
+function(snlStateInit)
+function(snlStateMonitor)
+function(driveEvent)
+
 
 registrar(scsRegisterCommands)
+registrar(chopRegisterCommands)
 registrar(CADlogTogRegisterCommands)
 variable(CADlogging, int)
+variable( procGuideCount, int)
 
 

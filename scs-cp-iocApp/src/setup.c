@@ -154,6 +154,16 @@ int scsInit (void)
 
    /* the vxWorks code had stacksize for all threads set to 20000, but epicsThreadStackBig is only 11000.
     * are such large stack sizes really needed? */
+   
+   refMemFree = epicsMutexMustCreate();
+   eventDataSem = epicsMutexMustCreate();
+   m2MemFree = epicsMutexMustCreate();
+
+   scsDataAvailable = epicsEventMustCreate(epicsEventEmpty);
+   slowUpdate = epicsEventMustCreate(epicsEventEmpty);
+   scsReceiveNow = epicsEventMustCreate(epicsEventEmpty);
+   guideUpdateNow = epicsEventMustCreate(epicsEventEmpty);
+   diagnosticsAvailable = epicsEventMustCreate(epicsEventEmpty);
 
    /* spawn task to pvload initialisation data */
    epicsThreadMustCreate("tloadInit", epicsThreadPriorityMedium, 
@@ -184,18 +194,6 @@ int scsInit (void)
    epicsThreadMustCreate("tfireLoops", epicsThreadPriorityHigh,
                    epicsThreadGetStackSize(epicsThreadStackSmall),
                    (EPICSTHREADFUNC)fireLoops, (void *)NULL);
-
-
-   refMemFree = epicsMutexMustCreate();
-   eventDataSem = epicsMutexMustCreate();
-   m2MemFree = epicsMutexMustCreate();
-
-   scsDataAvailable = epicsEventMustCreate(epicsEventEmpty);
-   slowUpdate = epicsEventMustCreate(epicsEventEmpty);
-   scsReceiveNow = epicsEventMustCreate(epicsEventEmpty);
-   guideUpdateNow = epicsEventMustCreate(epicsEventEmpty);
-   diagnosticsAvailable = epicsEventMustCreate(epicsEventEmpty);
-
 
 
 /* These semaphores don't seem to be used anywhere  -- get rid of them. 20171019 MDW */

@@ -22,8 +22,9 @@ scs-cp-ioc_DBD += bancomm.dbd
 scs-cp-ioc_DBD += pvload.dbd
 scs-cp-ioc_DBD += iocAdmin.dbd
 scs-cp-ioc_DBD += menuScan.dbd
+scs-cp-ioc_DBD += timeProbe.dbd
+scs-cp-ioc_DBD += initTrace.dbd
 scs-cp-ioc_DBD += scs.dbd
-
 
 # Include dbd files from all support modules:
 #scs-cp-ioc_DBD += xxx.dbd
@@ -39,6 +40,7 @@ scs-cp-ioc_LIBS += timelib
 scs-cp-ioc_LIBS += slalib
 scs-cp-ioc_LIBS += seq pv #seqDev
 scs-cp-ioc_LIBS += devIocStats 
+scs-cp-ioc_LIBS += timeProbe 
 
 # scs-cp-ioc_registerRecordDeviceDriver.cpp derives from scs-cp-ioc.dbd
 scs-cp-ioc_SRCS += scs-cp-ioc_registerRecordDeviceDriver.cpp
@@ -62,6 +64,7 @@ scs-cp-ioc_SRCS += eventBus.c
 scs-cp-ioc_SRCS += m2ParseMsg.c
 scs-cp-ioc_SRCS += showEngineering.c
 scs-cp-ioc_SRCS += guide.c
+scs-cp-ioc_SRCS += initTrace.c
 
 scs-cp-ioc_SRCS += scs_st.st
 scs-cp-ioc_SRCS += tilt_st.st

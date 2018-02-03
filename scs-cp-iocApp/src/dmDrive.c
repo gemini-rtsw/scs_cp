@@ -120,6 +120,7 @@ long    realDrive (struct genSubRecord * pgsub)
 {
 
     /* note sense reversal for in position, on ref mem 0 = in position */
+    errlogSevPrintf(errlogInfo, "realDrive start.\n");
 
     epicsMutexLock(refMemFree);
 
@@ -202,6 +203,7 @@ long    realDrive (struct genSubRecord * pgsub)
 long    real2Drive (struct genSubRecord * pgsub)
 {
 
+    errlogSevPrintf(errlogInfo, "real2Drive start.\n");
     epicsMutexLock(refMemFree);
     *(double *) pgsub->vala = scsPtr->page1.upperBearingAngle;
     *(double *) pgsub->valb = scsPtr->page1.lowerBearingAngle;
