@@ -1,10 +1,10 @@
 [schematic2]
-uniq 463
+uniq 4
 [tools]
 [detail]
-w 202 235 100 0 n#457 ebis.enable.VAL 80 224 384 224 egenSub.mechanism.INPA
-w -1532 171 100 0 n#438 elongins.jog.FLNK -1600 384 -1536 384 -1536 -32 -1408 -32 esubs.eventSim.SLNK
-w -1534 363 100 0 n#437 elongins.jog.VAL -1600 352 -1408 352 esubs.eventSim.INPA
+w 202 235 100 0 n#1 ebis.enable.VAL 80 224 384 224 egenSub.mechanism.INPA
+w -1532 171 100 0 n#2 elongins.jog.FLNK -1600 384 -1536 384 -1536 -32 -1408 -32 esubs.eventSim.SLNK
+w -1534 363 100 0 n#3 elongins.jog.VAL -1600 352 -1408 352 esubs.eventSim.INPA
 s -240 400 100 0 read into X and Y tilt
 s -224 448 100 0 by record driveChop and
 s -240 496 100 0 the demands are calculated
@@ -23,6 +23,8 @@ s -1792 544 100 0 a chop transition request from the event system
 s -416 -48 100 0 chop configuration parameters are written to
 s -416 -96 100 0 the inputs of the driveChop gensub from SNL in file tilt_st.st
 [cell use]
+use bc200tr -2096 -1720 -100 0 frame
+xform 0 -416 -416
 use egenSub 384 -537 100 0 mechanism
 xform 0 528 -112
 p 227 203 100 0 0 DESC:tilt system axes
@@ -39,7 +41,7 @@ p 161 -827 100 0 0 FTVD:DOUBLE
 p 448 -624 100 0 1 INAM:
 p 96 14 100 0 0 PREC:2
 p 464 -576 100 0 1 PV:$(top)
-p 448 -704 100 0 1 SCAN:.05 second
+p 448 -704 100 0 1 SCAN:Passive
 p 448 -656 100 0 1 SNAM:mechSim
 use ebis -176 167 100 0 enable
 xform 0 -48 240
@@ -53,8 +55,6 @@ p -973 475 100 0 0 DESC:coincidence string
 p -800 240 100 0 1 ONAM:FALSE
 p -800 304 100 0 1 PV:$(top)
 p -800 272 100 0 1 ZNAM:TRUE
-use bc200tr -2096 -1720 -100 0 frame
-xform 0 -416 -416
 use elongins -800 519 100 0 elongins#458
 xform 0 -672 592
 p -1011 793 100 0 0 DESC:tilt beam select index

@@ -229,7 +229,7 @@ p 129 1605 100 0 0 FTVU:LONG
 p 352 2000 100 0 1 INAM:dummyInitGenSub
 p 64 2638 100 0 0 PREC:2
 p 432 2064 100 0 1 PV:$(top)
-p 352 1952 100 0 1 SCAN:.2 second
+p 352 1952 100 0 1 SCAN:Passive
 p 352 1984 100 0 1 SNAM:realDrive
 use egenSubC 1920 2087 100 0 status
 xform 0 2064 2512
@@ -273,7 +273,7 @@ p -95 709 100 0 0 FTVD:DOUBLE
 p 448 928 100 0 1 INAM:dummyInitGenSub
 p 64 2638 100 0 0 PREC:2
 p 448 960 100 0 1 PV:$(top)
-p 160 928 100 0 1 SCAN:.2 second
+p 160 928 100 0 1 SCAN:Passive
 p 192 976 100 0 1 SNAM:real2Drive
 use egenSubC 1440 711 100 0 displayScs2
 xform 0 1584 1136

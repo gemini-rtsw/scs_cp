@@ -125,7 +125,7 @@ p -256 1792 100 0 1 NOVD:21
 p -272 1296 100 0 0 NOVJ:1
 p -640 1678 100 0 0 PREC:4
 p -288 976 100 0 1 PV:$(top)
-p -288 944 100 0 1 SCAN:.2 second
+p -288 944 100 0 1 SCAN:Passive
 p -288 1008 100 0 1 SNAM:readM2Diagnostics
 p -64 1322 75 0 -1 pproc(OUTJ):NPP
 use bd200tr -1024 -920 -100 0 frame

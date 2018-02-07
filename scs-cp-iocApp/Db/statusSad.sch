@@ -1,9 +1,9 @@
 [schematic2]
-uniq 68
+uniq 3
 [tools]
 [detail]
-w 1224 3243 100 0 n#65 hwin.hwin#64.in 1248 3232 1248 3232 esirs.health.INP
-w 2408 2859 100 0 n#59 hwin.hwin#58.in 2432 2848 2432 2848 esirs.topend.INP
+w 1224 3243 100 0 n#1 hwin.hwin#64.in 1248 3232 1248 3232 esirs.health.INP
+w 2408 2859 100 0 n#2 hwin.hwin#58.in 2432 2848 2432 2848 esirs.topend.INP
 s 3408 3824 100 0 statusSad.sch
 s 3600 1664 100 0 Secondary Control System
 s 3600 1600 100 0 SCS status SIRs
@@ -13,6 +13,8 @@ s 3856 1536 100 0 1
 s 3984 1536 100 0 1
 s 3616 1552 100 0 27-Apr-98
 [cell use]
+use bc200tr 784 1384 -100 0 frame
+xform 0 2464 2688
 use hwin 2240 2807 100 0 hwin#58
 xform 0 2336 2848
 p 2096 2800 100 0 1 val(in):$(top)top.VAL
@@ -52,7 +54,7 @@ use esirs 2432 2599 100 0 topend
 xform 0 2640 2752
 p 2383 2176 100 0 0 EGU:none
 p 2383 2272 100 0 0 FTVL:STRING
-p 2624 2464 100 0 0 SCAN:1 second
+p 2619 2777 100 0 1 SCAN:Passive
 p 2544 2912 100 0 -1 name:$(top)topEnd
 use esirs 1248 2215 100 0 esirs#53
 xform 0 1456 2368
@@ -65,6 +67,4 @@ p 2640 2528 100 256 -1 name:$(top)temperature
 use esirs 3264 3335 100 0 chopping
 xform 0 3472 3488
 p 3328 3648 100 0 1 PV:$(top)
-use bc200tr 784 1384 -100 0 frame
-xform 0 2464 2688
 [comments]
