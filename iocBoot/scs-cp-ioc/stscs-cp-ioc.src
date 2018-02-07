@@ -2,6 +2,9 @@ $(LINUX_ONLY)#!${INSTALL}/bin/${ARCH}/scs-cp-ioc
 
 cd ${INSTALL}
 
+epicsEnvSet "IOCSH_PS1" "scs-cp-ioc>"
+zoneset("CLST3")
+
 ## Register all support components
 dbLoadDatabase("dbd/scs-cp-ioc.dbd")
 scs_cp_ioc_registerRecordDeviceDriver(pdbbase)
@@ -20,26 +23,27 @@ bc635TimeSetTpPrio (60)
 # - Master ? Simulate ? intPerSecond, intPerTick, timeOffset (microsec)
 BCconfigure (0, 0, 200, 1, 0)
 
+# initialise the xycom 240
+drvXy240Config(1, 32, 0xd000)
+
 # initialise reflective memory
-#vmi5588_init
 drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 
-# initialise data and error logging
-# Obsolete now
-#elgInit
+# connect rm interrupts to handler routines
+rmIntConnect(2, rmISR2)
+rmIntConnect(3, rmISR3)
 
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled
 # with the USR C FLAG for TIME_LATENCY, so chopInit goes first.
-#chopInit
-#scsInit
+chopInit
+scsInit
 
-# connect rm interrupts to handler routines
-#rmIntConnect(2, rmISR2)
-#rmIntConnect(3, rmISR3)
+## Run this to trace the stages of iocInit
+traceIocInit
 
 #Start EPICS
-#iocInit
+iocInit
 
 # set debug level for test debugging
 #
@@ -47,7 +51,6 @@ drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 #debugLevel = 0
 #loggingEnable = 1
 #CADlogging = 1
-
 
 ####dbpf "m2:guideConfigReset.DIR","0"
 ###### Start any sequence programs
