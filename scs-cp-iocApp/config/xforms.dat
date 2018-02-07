@@ -1,0 +1,44 @@
+# $Id: xformsCP.dat,v 1.1 2002/02/05 13:47:15 gemvx Exp $
+
+# SCS coordinate transforms - default set
+
+# srp@roe.ac.uk  05-Feb-1998
+# kdk 31-Dec-1998: changed placeholder "0.0"s to actual numbers
+# for posSkew, posOffsetX and posOffsetY.
+# kdk 30-May-1999: Added RCS id
+
+# load angles (degrees) and offsets (microns) to convert form TCS frame of reference to M2
+
+group
+{
+double	$(top)tiltSkew.VAL	= 0.0;
+double	$(top)tiltOffsetX.VAL	= 0.0;
+double	$(top)tiltOffsetY.VAL	= 0.0;
+
+double	$(top)posSkew.VAL	= -30.0;
+double	$(top)posOffsetX.VAL	= 4737.0;
+double	$(top)posOffsetY.VAL	= 12250.0;
+
+double	$(top)gaosSkew.VAL	= 0.0;
+double	$(top)gaosOffsetX.VAL	= 0;
+double	$(top)gaosOffsetY.VAL	= 0;
+
+double	$(top)gyroSkew.VAL	= 0.0;
+double	$(top)gyroOffsetX.VAL	= 0;
+double	$(top)gyroOffsetY.VAL	= 0;
+
+double	$(top)focusScaling	= 1;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+

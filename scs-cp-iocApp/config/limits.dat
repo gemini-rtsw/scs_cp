@@ -1,0 +1,231 @@
+# $Id: limitsCP.dat,v 1.2 2011/12/30 19:32:21 pedro Exp $
+ 
+# SCS SIR limits file
+
+# srp@roe.ac.uk  14-Jan-1998
+
+# set alarm limits and severities for all SAD SIRs
+# increased {x,y}NetTiltDmd from +/- 360 arcsec to +/- 3600
+
+group
+{
+double  $(top)fol0.HIHI         = 15000;
+double  $(top)fol1.HIHI         = 15000;
+double  $(top)fol2.HIHI         = 15000;
+string  $(top)fol0.HHSV         = "MAJOR";
+string  $(top)fol1.HHSV         = "MAJOR";
+string  $(top)fol2.HHSV         = "MAJOR";
+
+double  $(top)fol0.HIGH         = 7200;
+double  $(top)fol1.HIGH         = 7200;
+double  $(top)fol2.HIGH         = 7200;
+string  $(top)fol0.HSV          = "MINOR";
+string  $(top)fol1.HSV          = "MINOR";
+string  $(top)fol2.HSV          = "MINOR";
+
+double  $(top)fol0.LOW          = -7200;
+double  $(top)fol1.LOW          = -7200;
+double  $(top)fol2.LOW          = -7200;
+string  $(top)fol0.LSV          = "MINOR";
+string  $(top)fol1.LSV          = "MINOR";
+string  $(top)fol2.LSV          = "MINOR";
+
+double  $(top)fol0.LOLO         = -15000;
+double  $(top)fol1.LOLO         = -15000;
+double  $(top)fol2.LOLO         = -15000;
+string  $(top)fol0.LLSV         = "MAJOR";
+string  $(top)fol1.LLSV         = "MAJOR";
+string  $(top)fol2.LLSV         = "MAJOR";
+double  $(top)fol0.HYST         = 10.0;
+double  $(top)fol1.HYST         = 10.0;
+double  $(top)fol2.HYST         = 10.0;
+
+double	$(top)xNetTiltDmd.LOLO	= -20000;
+double	$(top)xNetTiltDmd.LOW	= -3600;
+double	$(top)xNetTiltDmd.HIGH	= 3600;
+double	$(top)xNetTiltDmd.HIHI	= 20000;
+
+string	$(top)xNetTiltDmd.HHSV	= "MAJOR";
+string	$(top)xNetTiltDmd.HSV	= "MINOR";
+string	$(top)xNetTiltDmd.LSV	= "MINOR";
+string	$(top)xNetTiltDmd.LLSV	= "MAJOR";
+
+double	$(top)yNetTiltDmd.LOLO	= -20000;
+double	$(top)yNetTiltDmd.LOW	= -3600;
+double	$(top)yNetTiltDmd.HIGH	= 3600;
+double	$(top)yNetTiltDmd.HIHI	= 20000;
+
+string	$(top)yNetTiltDmd.HHSV	= "MAJOR";
+string	$(top)yNetTiltDmd.HSV	= "MINOR";
+string	$(top)yNetTiltDmd.LSV	= "MINOR";
+string	$(top)yNetTiltDmd.LLSV	= "MAJOR";
+
+double	$(top)zNetDmd.LOLO	= -20000;
+double	$(top)zNetDmd.LOW	= -10000;
+double	$(top)zNetDmd.HIGH	= 10000;
+double	$(top)zNetDmd.HIHI	= 20000;
+
+string	$(top)zNetDmd.HHSV	= "MAJOR";
+string	$(top)zNetDmd.HSV	= "MINOR";
+string	$(top)zNetDmd.LSV	= "MINOR";
+string	$(top)zNetDmd.LLSV	= "MAJOR";
+
+double	$(top)xTiltGuide.LOLO	= -20000;
+double	$(top)xTiltGuide.LOW	= -360;
+double	$(top)xTiltGuide.HIGH	= 360;
+double	$(top)xTiltGuide.HIHI	= 20000;
+
+string	$(top)xTiltGuide.HHSV	= "MAJOR";
+string	$(top)xTiltGuide.HSV	= "MINOR";
+string	$(top)xTiltGuide.LSV	= "MINOR";
+string	$(top)xTiltGuide.LLSV	= "MAJOR";
+
+double	$(top)yTiltGuide.LOLO	= -20000;
+double	$(top)yTiltGuide.LOW	= -360;
+double	$(top)yTiltGuide.HIGH	= 360;
+double	$(top)yTiltGuide.HIHI	= 20000;
+
+string	$(top)yTiltGuide.HHSV	= "MAJOR";
+string	$(top)yTiltGuide.HSV	= "MINOR";
+string	$(top)yTiltGuide.LSV	= "MINOR";
+string	$(top)yTiltGuide.LLSV	= "MAJOR";
+
+double	$(top)zGuide.LOLO	= -20000;
+double	$(top)zGuide.LOW	= -10000;
+double	$(top)zGuide.HIGH	= 10000;
+double	$(top)zGuide.HIHI	= 20000;
+
+string	$(top)zGuide.HHSV	= "MAJOR";
+string	$(top)zGuide.HSV	= "MINOR";
+string	$(top)zGuide.LSV	= "MINOR";
+string	$(top)zGuide.LLSV	= "MAJOR";
+
+double	$(top)xTiltPos.LOLO	= -20000;
+double	$(top)xTiltPos.LOW	= -2500;
+double	$(top)xTiltPos.HIGH	= 2500;
+double	$(top)xTiltPos.HIHI	= 20000;
+
+string	$(top)xTiltPos.HHSV	= "MAJOR";
+string	$(top)xTiltPos.HSV	= "MINOR";
+string	$(top)xTiltPos.LSV	= "MINOR";
+string	$(top)xTiltPos.LLSV	= "MAJOR";
+
+double	$(top)yTiltPos.LOLO	= -20000;
+double	$(top)yTiltPos.LOW	= -5000;
+double	$(top)yTiltPos.HIGH	= 5000;
+double	$(top)yTiltPos.HIHI	= 20000;
+
+string	$(top)yTiltPos.HHSV	= "MAJOR";
+string	$(top)yTiltPos.HSV	= "MINOR";
+string	$(top)yTiltPos.LSV	= "MINOR";
+string	$(top)yTiltPos.LLSV	= "MAJOR";
+
+double	$(top)zPos.LOLO	= -20000;
+double	$(top)zPos.LOW	= -10000;
+double	$(top)zPos.HIGH	= 10000;
+double	$(top)zPos.HIHI	= 20000;
+
+string	$(top)zPos.HHSV	= "MAJOR";
+string	$(top)zPos.HSV	= "MINOR";
+string	$(top)zPos.LSV	= "MINOR";
+string	$(top)zPos.LLSV	= "MAJOR";
+
+double	$(top)xTiltErr.LOLO	= -20000;
+double	$(top)xTiltErr.LOW	= -10000;
+double	$(top)xTiltErr.HIGH	= 10000;
+double	$(top)xTiltErr.HIHI	= 20000;
+
+string	$(top)xTiltErr.HHSV	= "MAJOR";
+string	$(top)xTiltErr.HSV	= "MINOR";
+string	$(top)xTiltErr.LSV	= "MINOR";
+string	$(top)xTiltErr.LLSV	= "MAJOR";
+
+double	$(top)yTiltErr.LOLO	= -20000;
+double	$(top)yTiltErr.LOW	= -10000;
+double	$(top)yTiltErr.HIGH	= 10000;
+double	$(top)yTiltErr.HIHI	= 20000;
+
+string	$(top)yTiltErr.HHSV	= "MAJOR";
+string	$(top)yTiltErr.HSV	= "MINOR";
+string	$(top)yTiltErr.LSV	= "MINOR";
+string	$(top)yTiltErr.LLSV	= "MAJOR";
+
+double	$(top)zErr.LOLO	= -20000;
+double	$(top)zErr.LOW	= -10000;
+double	$(top)zErr.HIGH	= 10000;
+double	$(top)zErr.HIHI	= 20000;
+
+string	$(top)zErr.HHSV	= "MAJOR";
+string	$(top)zErr.HSV	= "MINOR";
+string	$(top)zErr.LSV	= "MINOR";
+string	$(top)zErr.LLSV	= "MAJOR";
+
+double	$(top)xPosDmd.LOLO	= -20000;
+double	$(top)xPosDmd.LOW	= -10000;
+double	$(top)xPosDmd.HIGH	= 10000;
+double	$(top)xPosDmd.HIHI	= 20000;
+
+string	$(top)xPosDmd.HHSV	= "MAJOR";
+string	$(top)xPosDmd.HSV	= "MINOR";
+string	$(top)xPosDmd.LSV	= "MINOR";
+string	$(top)xPosDmd.LLSV	= "MAJOR";
+
+double	$(top)yPosDmd.LOLO	= -20000;
+double	$(top)yPosDmd.LOW	= -10000;
+double	$(top)yPosDmd.HIGH	= 10000;
+double	$(top)yPosDmd.HIHI	= 20000;
+
+string	$(top)yPosDmd.HHSV	= "MAJOR";
+string	$(top)yPosDmd.HSV	= "MINOR";
+string	$(top)yPosDmd.LSV	= "MINOR";
+string	$(top)yPosDmd.LLSV	= "MAJOR";
+
+double	$(top)xPos.LOLO	= -20000;
+double	$(top)xPos.LOW	= -10000;
+double	$(top)xPos.HIGH	= 10000;
+double	$(top)xPos.HIHI	= 20000;
+
+string	$(top)xPos.HHSV	= "MAJOR";
+string	$(top)xPos.HSV	= "MINOR";
+string	$(top)xPos.LSV	= "MINOR";
+string	$(top)xPos.LLSV	= "MAJOR";
+
+double	$(top)yPos.LOLO	= -20000;
+double	$(top)yPos.LOW	= -10000;
+double	$(top)yPos.HIGH	= 10000;
+double	$(top)yPos.HIHI	= 20000;
+
+string	$(top)yPos.HHSV	= "MAJOR";
+string	$(top)yPos.HSV	= "MINOR";
+string	$(top)yPos.LSV	= "MINOR";
+string	$(top)yPos.LLSV	= "MAJOR";
+
+double	$(top)xPosErr.LOLO	= -20000;
+double	$(top)xPosErr.LOW	= -10000;
+double	$(top)xPosErr.HIGH	= 10000;
+double	$(top)xPosErr.HIHI	= 20000;
+
+string	$(top)xPosErr.HHSV	= "MAJOR";
+string	$(top)xPosErr.HSV	= "MINOR";
+string	$(top)xPosErr.LSV	= "MINOR";
+string	$(top)xPosErr.LLSV	= "MAJOR";
+
+double	$(top)yPosErr.LOLO	= -20000;
+double	$(top)yPosErr.LOW	= -10000;
+double	$(top)yPosErr.HIGH	= 10000;
+double	$(top)yPosErr.HIHI	= 20000;
+
+string	$(top)yPosErr.HHSV	= "MAJOR";
+string	$(top)yPosErr.HSV	= "MINOR";
+string	$(top)yPosErr.LSV	= "MINOR";
+string	$(top)yPosErr.LLSV	= "MAJOR";
+};
+
+
+
+
+
+
+
+
+

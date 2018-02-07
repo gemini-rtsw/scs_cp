@@ -1,0 +1,318 @@
+# $Id: SCSinitCP.dat,v 1.7 2015/03/17 18:21:00 mrippa Exp $
+#=====================================================================
+#
+# FILENAME
+# -------- 
+# SCSinit.dat
+# 
+# PURPOSE
+# -------
+# Initialise database records
+# 
+# DEPENDENCIES
+# ------------
+#
+# LIMITATIONS
+# -----------
+# 
+# AUTHOR
+# ------
+# Sean Prior  (srp@roe.ac.uk)
+# 
+# HISTORY
+# -------
+# 05-Apr-1998:	Original(srp)
+# 30-Jun-1998:	Touch all widget selector records
+# 01-Feb-1999:  Modify default move positions
+#		Modify controller settings
+# 21-May-1999:  Changed max tilt for two point chop to 3600
+# 30-May-1999:  Added RCS Id
+#               Added zStepLimit and tiltStepLimit for follow
+#
+# =====================================================================
+
+double $(top)cpuScanPeriod     = 5.0;     # Estimate CPU load every 5 secs
+
+group {
+double  $(top)zStepLimit       = 400.0 ;  # Maximum offset step during follow (arcseconds)
+double  $(top)tiltStepLimit    = 400.0 ;  # Maximum tilt step during follow (microns)
+}
+
+group
+{
+
+# guide configuration defaults
+
+double	$(top)guideReset.VAL	= 0;
+long	$(top)guideConfig.A	= "PWFS2";
+double	$(top)guideConfig.B	= 100;
+double	$(top)filterType.VAL	= 1;
+double	$(top)guideConfig.D	= 0;
+double	$(top)guideConfig.E	= 0;
+double	$(top)guideConfig.G	= -1;
+double	$(top)guideConfig.H	= -2;
+double	$(top)guideConfig.I	= -2;
+double	$(top)guideSimxscale.VAL	= 0.0;
+double	$(top)guideSimyscale.VAL	= 0.0;
+
+# controller setting defaults - nominal for 100Hz update rate
+
+double	$(top)setController.A	= 0.4;
+double	$(top)setController.B	= 0.2;
+double	$(top)setController.C	= 0.0;
+double	$(top)setController.D	= 1500;
+double	$(top)setController.E	= 50;
+double	$(top)setController.F	= 0.0596;
+double	$(top)setController.G	= 0.2086;
+double	$(top)setController.H	= 0.0;
+double	$(top)setController.I	= 10000;
+double	$(top)setController.J	= 1000;
+double	$(top)setController.K	= 0;
+double	$(top)setController.L	= 0;
+double  $(top)setController.M   = 0.39;
+double  $(top)setController.N   = 0.2;
+double  $(top)setController.O   = 0.0;
+double  $(top)setController.P   = 1500;
+double  $(top)setController.Q   = 50;
+
+# VTK Controller
+double	$(top)X:setVTKControl.A	= 198.9;
+double	$(top)X:setVTKControl.B	= 0.0050;
+double	$(top)X:setVTKControl.C	= 0.0010;
+double	$(top)X:setVTKControl.D	= 12.0;
+double	$(top)X:setVTKControl.E	= 0.2;
+double	$(top)X:setVTKControl.F	= 1.557;
+double	$(top)X:setVTKControl.G	= -9.7;
+
+double	$(top)Y:setVTKControl.A	= 198.9;
+double	$(top)Y:setVTKControl.B	= 0.0050;
+double	$(top)Y:setVTKControl.C	= 0.0010;
+double	$(top)Y:setVTKControl.D	= 12.0;
+double	$(top)Y:setVTKControl.E	= 0.2;
+double	$(top)Y:setVTKControl.F	= 1.557;
+double	$(top)Y:setVTKControl.G	= -9.7;
+
+# Phasor Controller
+double $(top)X:setPhasorControl.A = 12.30;
+double $(top)X:setPhasorControl.B = 0.100;
+double $(top)X:setPhasorControl.C = 198.9;
+
+double $(top)Y:setPhasorControl.A = 12.50;
+double $(top)Y:setPhasorControl.B = 0.100;
+double $(top)Y:setPhasorControl.C = 198.9;
+
+
+
+
+# pid control defaults to ON -OFF is only used for testing - never operationally
+
+long $(top)tiltpidon.VAL	= 1; 
+long $(top)focuspidon.VAL 	= 1;
+
+
+# tolerance defaults
+
+double  $(top)tolerance.A	= 1.0;
+double  $(top)tolerance.B	= 1.0;
+double  $(top)tolerance.C	= 4.0;
+double  $(top)tolerance.D	= 1.0;
+double  $(top)tolerance.E	= 1.0;
+double  $(top)tolerance.F	= 50.0; # xy positioner deadband in microns
+
+# baffle position defaults
+
+long	$(top)central.VAL	= 0;	# position 1 (closed)
+long	$(top)deployable.VAL	= 0;	# retracted
+
+# servo bandwidth
+
+double	$(top)servoBandwidth.A	= 25;	# default to 25 Hz
+
+# init values for move command
+
+double	$(top)move.A		=  -30.0;  # x-tilt in arcsec (BEAM A)
+double	$(top)move.B		=  160.0;  # y-tilt in arcsec (BEAM A)
+double	$(top)move.C		=    0.0;  # x-tilt in arcsec (BEAM B)
+double	$(top)move.D		=    0.0;  # y-tilt in arcsec (BEAM B)
+double	$(top)move.E		=    0.0;  # x-tilt in arcsec (BEAM C)
+double	$(top)move.F		=    0.0;  # y-tilt in arcsec (BEAM C)
+double	$(top)move.G		= 4400.0; # x positioner in microns TCS-space
+double	$(top)move.H		=  800.0; # y positioner in microns TCS-space
+double	$(top)move.I		=    0.0; # focus in microns
+
+# zero actuator demands
+
+double	$(top)moveActuator.A	= 0.0;
+double	$(top)moveActuator.B	= 0.0;
+double	$(top)moveActuator.C	= 0.0;
+
+# default values for chopping
+
+string  $(top)chopConfig.A      = "2posn"; # chop profile
+double	$(top)chopConfig.C	= 3;	   # chop frequency
+double	$(top)chopConfig.D	= 80.0;	   # chop duty cycle
+long	$(top)profile.VAL	= 0;	   # set profile to 2 point
+long	$(top)chopon.VAL	= 0;
+long	$(top)decson.VAL	= 0;
+long	$(top)decspause.VAL	= 0;
+long	$(top)decsfreeze.VAL	= 0;
+long	$(top)decsreset.VAL	= 0;
+
+# names of sources of guide information
+
+string $(top)source.ZRST	= "PWFS1";
+string $(top)source.ONST	= "PWFS2";
+string $(top)source.TWST	= "OIWFS";
+string $(top)source.THST	= "GAOS";
+string $(top)source.FRST	= "GYRO";
+
+# filter names for guide configuration
+
+string $(top)filterType.ZRST = "OFF";
+string $(top)filterType.ONST = "RAW";
+string $(top)filterType.TWST = "LOWPASS";
+string $(top)filterType.THST = "HIGHPASS";
+string $(top)filterType.FRST = "BANDPASS";
+string $(top)filterType.FVST = "BANDSTOP";
+
+# chop envelope default to two point
+
+double $(top)breakChopFreq	= 5;
+double $(top)breakChopFreqThrow	= 132;
+double $(top)maxChopFreq	= 10;
+double $(top)maxChopFreqThrow	= 60;
+double $(top)maxTilt		= 3600;
+double $(top)maxTiltZ		= 5;
+double $(top)minChopFreq	= 0.1;
+double $(top)minChopFreqThrow	= 132;
+double $(top)minTilt		= 0;
+double $(top)minTiltZ		= 10;
+
+# logging defaults
+
+double	$(top)log.A		= 1;
+string	$(top)log.B		= "-1";
+double	$(top)log.C		= -1;
+string	$(top)log.D		= "";
+string	$(top)logChoice.ZRST	= "TILTS    ";
+string	$(top)logChoice.ONST	= "GUIDES   ";
+string	$(top)logChoice.TWST	= "POSITIONS";
+long	$(top)logChoice.ZRVL	= 0;
+long	$(top)logChoice.ONVL	= 1;
+long	$(top)logChoice.TWVL	= 2;
+
+# set system health to good
+
+string	$(top)health		= "GOOD";
+
+# set default DECS adjust parameters
+
+double	$(top)decsConfig.A	= 1.0e6;
+double	$(top)decsConfig.B	= 1.0e6;
+double	$(top)decsConfig.C	= 0.0;
+
+double	$(top)decsConfig.D	= 45.0;
+double	$(top)decsConfig.E	= 45.0;
+double	$(top)decsConfig.F	= 60.0;
+
+double	$(top)decsConfig.G	= 0.8;
+double	$(top)decsConfig.H	= 0.8;
+double	$(top)decsConfig.I	= 0.5;
+
+# initialise m2 status word indicators
+
+string	$(top)byte3:b7.ZNAM	= "OFF";
+string	$(top)byte3:b7.ONAM	= "ON";
+string	$(top)byte3:b6.ZNAM	= "OFF";
+string	$(top)byte3:b6.ONAM	= "ON";
+string	$(top)byte3:b5.ZNAM	= "NO";
+string	$(top)byte3:b5.ONAM	= "YES";
+string	$(top)byte3:b4.ZNAM	= "NO";
+string	$(top)byte3:b4.ONAM	= "YES";
+string	$(top)byte3:b3.ZNAM	= "NO";
+string	$(top)byte3:b3.ONAM	= "YES";
+string	$(top)byte3:b2.ZNAM	= "OK";
+string	$(top)byte3:b2.ONAM	= "FAIL";
+string	$(top)byte3:b1.ZNAM	= "OK";
+string	$(top)byte3:b1.ONAM	= "FAIL";
+string	$(top)byte3:b0.ZNAM	= "OK";
+string	$(top)byte3:b0.ONAM	= "FAIL";
+
+string	$(top)byte2:b7.ZNAM	= "OK";
+string	$(top)byte2:b7.ONAM	= "INVALID";
+string	$(top)byte2:b6.ZNAM	= "OK";
+string	$(top)byte2:b6.ONAM	= "INVALID";
+string	$(top)byte2:b5.ZNAM	= " ";
+string	$(top)byte2:b5.ONAM	= " ";
+string	$(top)byte2:b4.ZNAM	= " ";
+string	$(top)byte2:b4.ONAM	= " ";
+string	$(top)byte2:b3.ZNAM	= " ";
+string	$(top)byte2:b3.ONAM	= " ";
+string	$(top)byte2:b2.ZNAM	= " ";
+string	$(top)byte2:b2.ONAM	= " ";
+string	$(top)byte2:b1.ZNAM	= " ";
+string	$(top)byte2:b1.ONAM	= " ";
+string	$(top)byte2:b0.ZNAM	= " ";
+string	$(top)byte2:b0.ONAM	= " ";
+
+string	$(top)byte1:b7.ZNAM	= " ";
+string	$(top)byte1:b7.ONAM	= " ";
+string	$(top)byte1:b6.ZNAM	= " ";
+string	$(top)byte1:b6.ONAM	= " ";
+string	$(top)byte1:b5.ZNAM	= " ";
+string	$(top)byte1:b5.ONAM	= " ";
+string	$(top)byte1:b4.ZNAM	= "NO";
+string	$(top)byte1:b4.ONAM	= "YES";
+string	$(top)byte1:b3.ZNAM	= "TILT";
+string	$(top)byte1:b3.ONAM	= "ACTUATOR";
+string	$(top)byte1:b2.ZNAM	= "OFF";
+string	$(top)byte1:b2.ONAM	= "ON";
+string	$(top)byte1:b1.ZNAM	= "OFF";
+string	$(top)byte1:b1.ONAM	= "ON";
+string	$(top)byte1:b0.ZNAM	= "OFF";
+string	$(top)byte1:b0.ONAM	= "ON";
+
+string	$(top)byte0:b7.ZNAM	= "OFF";
+string	$(top)byte0:b7.ONAM	= "ON";
+string	$(top)byte0:b6.ZNAM	= "DISABLED";
+string	$(top)byte0:b6.ONAM	= "ENABLED";
+string	$(top)byte0:b5.ZNAM	= "NULL";
+string	$(top)byte0:b5.ONAM	= "IN PROGRESS";
+string	$(top)byte0:b4.ZNAM	= "NULL";
+string	$(top)byte0:b4.ONAM	= "IN PROGRESS";
+string	$(top)byte0:b3.ZNAM	= "NULL";
+string	$(top)byte0:b3.ONAM	= "IN PROGRESS";
+string	$(top)byte0:b2.ZNAM	= "DISABLED";
+string	$(top)byte0:b2.ONAM	= "ENABLED";
+string	$(top)byte0:b1.ZNAM	= "INVALID";
+string	$(top)byte0:b1.ONAM	= "VALID";
+string	$(top)byte0:b0.ZNAM	= "OK";
+string	$(top)byte0:b0.ONAM	= "FAIL";
+
+# touch all remaining widgets
+
+string	$(top)beamJog.A		= "A";
+string	$(top)fault0.VAL	= " ";
+};
+
+# Set tiptiltGuideLimitFactor and focusGuideLimitFactor
+
+#static double tiptiltGuideLimitFactor = 1.0;
+#static double focusGuideLimitFactor = 1.0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

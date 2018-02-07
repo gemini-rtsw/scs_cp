@@ -1,0 +1,52 @@
+#
+# SCS instrument configuration file
+
+# srp@roe.ac.uk  20-Mar-1998
+
+# set instrument configuration data
+
+group
+{
+string	$(I)scs0.ZRST		= "SCS";
+string	$(I)scs0.ONST		= "0";
+string	$(I)scs0.TWST		= "STROBE";
+
+string	$(I)ics0.ZRST		= "ICS0";
+string	$(I)ics0.ONST		= "1";
+string	$(I)ics0.TWST		= "ONELINE";
+
+string	$(I)ics1.ZRST		= "ICS1";
+string	$(I)ics1.ONST		= "2";
+string	$(I)ics1.TWST		= "ONELINE";
+
+string	$(I)ics2.ZRST		= "ICS2";
+string	$(I)ics2.ONST		= "3";
+string	$(I)ics2.TWST		= "STROBE";
+
+string	$(I)ics3.ZRST		= "ICS3";
+string	$(I)ics3.ONST		= "4";
+string	$(I)ics3.TWST		= "STROBE";
+
+string	$(I)ics4.ZRST		= "ICS4";
+string	$(I)ics4.ONST		= "5";
+string	$(I)ics4.TWST		= "STROBE";
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
