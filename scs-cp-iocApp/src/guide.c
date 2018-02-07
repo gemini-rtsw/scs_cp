@@ -72,6 +72,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <epicsExport.h>
+#include <iocsh.h>
 #include <registryFunction.h>
 
 #include <tcslib.h>
@@ -2615,6 +2616,24 @@ static double dfilter(double newSample, int Id)
      return(sum);
 }
 
+/*Display filters*/
+static const iocshArg displayFilterArg0 = {"source", iocshArgInt };
+static const iocshArg displayFilterArg1 = {"axis", iocshArgInt };
+static const iocshArg *displayFilterArgs[] = {&displayFilterArg0, &displayFilterArg1};
+static const iocshFuncDef displayFilterFuncDef ={"displayFilters", 2, displayFilterArgs};
+
+static void displayFilterCallFunc(const iocshArgBuf *args)
+{
+    displayFilter( args[0].ival, args[1].ival);
+}
+
+static void displayFilterRegisterCommands(void)
+{
+    iocshRegister(&displayFilterFuncDef, displayFilterCallFunc);
+}
+
+epicsExportRegistrar(displayFilterRegisterCommands);
+
 epicsRegisterFunction(guideConfig);
 epicsRegisterFunction(resetGuideConfig);
 epicsRegisterFunction(initDecimate);
@@ -2628,3 +2647,4 @@ epicsRegisterFunction(CADclearTiltGuide);
 epicsRegisterFunction(CADguideControl);
 epicsRegisterFunction(CADguideConfig);
 epicsRegisterFunction(CADguideReset);
+

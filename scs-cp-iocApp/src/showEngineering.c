@@ -690,3 +690,4 @@ epicsRegisterFunction(readM2DiagnosticsInit);
 epicsRegisterFunction(readM2Diagnostics);
 epicsRegisterFunction(gensubFanDoubles);
 epicsRegisterFunction(issueM2Primitive);
+

@@ -152,8 +152,14 @@ int scsInit (void)
    /* create mutex semaphore to protect the set point values */
    setPointFree = epicsMutexCreate();
 
-   /* the vxWorks code had stacksize for all threads set to 20000, but epicsThreadStackBig is only 11000.
-    * are such large stack sizes really needed? */
+   /* 
+    * The vxWorks code had stacksize for all threads set to 20000,
+    * but epicsThreadStackBig is only 11000.
+    * 
+    * Are such large stack sizes really needed?
+    *
+    * TODO: Matt, Mike, Ignacio check...
+    */
    
    refMemFree = epicsMutexMustCreate();
    eventDataSem = epicsMutexMustCreate();
@@ -166,40 +172,14 @@ int scsInit (void)
    diagnosticsAvailable = epicsEventMustCreate(epicsEventEmpty);
 
    /* spawn task to pvload initialisation data */
-   epicsThreadMustCreate("tloadInit", epicsThreadPriorityMedium, 
+   epicsThreadMustCreate("tloadInit", epicsThreadPriorityLow, 
                      epicsThreadGetStackSize(epicsThreadStackBig),
                      (EPICSTHREADFUNC)loadInitFiles, (void *)NULL);
 
    /* spawn control loop task */
-   epicsThreadMustCreate("tslowTx",epicsThreadPriorityMedium,
+   epicsThreadMustCreate("tslowTx",epicsThreadPriorityLow,
                     epicsThreadGetStackSize(epicsThreadStackBig),
                     (EPICSTHREADFUNC)slowTransmit, (void *)NULL);
-
-   /* Do in startup in order that xycom has already been initted.
-    * Then, if TIME_LATENCY needed, everything w.r.t. port addresses will
-    * have been defined */
-
-   epicsThreadMustCreate("tprocGuides", epicsThreadPriorityHigh,
-                    epicsThreadGetStackSize(epicsThreadStackBig),
-                    (EPICSTHREADFUNC)processGuides, (void *)NULL);
-
-#if 0
-/* convert this to a thread that runs periodically */
-   /* set up aux clock to and connect ISR */
-   sysAuxClkRateSet (SYSTEM_CLOCK_RATE);
-   sysAuxClkConnect ((FUNCPTR) fireLoops, 0);
-   sysAuxClkEnable ();
-#endif
-   
-   epicsThreadMustCreate("tfireLoops", epicsThreadPriorityHigh,
-                   epicsThreadGetStackSize(epicsThreadStackSmall),
-                   (EPICSTHREADFUNC)fireLoops, (void *)NULL);
-
-
-/* These semaphores don't seem to be used anywhere  -- get rid of them. 20171019 MDW */
-   // compileStatus = epicsEventMustCreate(epicsEventEmpty);
-   // statusCompiled = epicsEventMustCreate(epicsEventEmpty);
-
 
    /* M2 simulation pointer always points to the buffer area */
    if ((m2Ptr = (memMap *) malloc (sizeof (memMap))) == NULL)
@@ -213,7 +193,6 @@ int scsInit (void)
       printf ("malloc fail on creation of scsPtr buffer\n");
       return (ERROR);
    }
-
 
    /* if no reflective memory card is present, create an equivalent buffer */
    if(rmStatus(0) != S_dev_NoInit) {
@@ -231,11 +210,9 @@ int scsInit (void)
       }
    }
 
-
    printf ("initRefMem, scsPtr = 0x%p, scsBase = 0x%p\n",  scsPtr, scsBase); 
 
    /* create command message queue */
-
    if ((commandQId = epicsMessageQueueCreate(100, sizeof (long))) == NULL)
    {
       errorLog ("initRefMem(): error in creation of commandQId message queue", 1, ON);
@@ -246,7 +223,6 @@ int scsInit (void)
    }
 
    /* create command receiving queue for the simulation */
-
    if ((receiveQId = epicsMessageQueueCreate(100, sizeof (long))) == NULL)
    {
       errorLog ("initRefMem():  error in creation of receiveQId message queue", 1, ON);
@@ -257,7 +233,6 @@ int scsInit (void)
    }
 
    /* create health message queue */
-
    if ((healthQId = epicsMessageQueueCreate(100, sizeof (healthReport))) == NULL)
    {
       errorLog ("initRefMem(): error in creation of healthiQId  message queue", 1, ON);
@@ -268,7 +243,6 @@ int scsInit (void)
    }
 
    /* clear buffers */
-
    epicsMutexLock(refMemFree);
    memset ((void *) scsPtr, 0, sizeof (memMap));
    epicsMutexUnlock(refMemFree);
@@ -279,15 +253,27 @@ int scsInit (void)
 
    memset ((void *) scsBase, 0, sizeof (memMap));
 
+   /* Do in startup in order that xycom has already been initted.
+    * Then, if TIME_LATENCY needed, everything w.r.t. port addresses will
+    * have been defined */
+
+   epicsThreadMustCreate("tprocGuides", epicsThreadPriorityHigh,
+                    epicsThreadGetStackSize(epicsThreadStackBig),
+                    (EPICSTHREADFUNC)processGuides, (void *)NULL);
+
    /* spawn communication tasks */  
    /* these had been medium priority for GS */
-   epicsThreadMustCreate("tscsRx", epicsThreadPriorityHigh,
+   epicsThreadMustCreate("tscsRx", epicsThreadPriorityMedium,
                   epicsThreadGetStackSize(epicsThreadStackBig),
                   (EPICSTHREADFUNC)scsReceive, (void *)NULL);
 
-   epicsThreadMustCreate("ttiltRx", epicsThreadPriorityHigh,
+   epicsThreadMustCreate("ttiltRx", epicsThreadPriorityMedium,
                   epicsThreadGetStackSize(epicsThreadStackBig),
                   (EPICSTHREADFUNC)tiltReceive, (void *)NULL);
+
+   epicsThreadMustCreate("tfireLoops", epicsThreadPriorityLow,
+                   epicsThreadGetStackSize(epicsThreadStackSmall),
+                   (EPICSTHREADFUNC)fireLoops, (void *)NULL);
 
 /*
    if ((taskSpawn ("cemTimerS", 101, VX_FP_TASK, 20000, (FUNCPTR) cemTimerStart, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) == ERROR)

@@ -70,6 +70,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <iocsh.h>
 #include <epicsExport.h>
 #include <registryFunction.h>
 #include <math.h>           /* for trig functions */
@@ -510,6 +511,23 @@ void    testMem (const memMap * buffPtr)
     printPage13a (buffPtr);
     printPage13b (buffPtr);
     printPage15  (buffPtr);
+}
+
+/*
+ * Export to iocsh wiht no args
+ * */
+void showMemory() {
+
+    memMap *ptr;
+
+    if  (simLevel == 0)
+        ptr = scsBase;
+    else
+        ptr = m2Ptr;
+
+    errlogPrintf("Showing RM memory at %p", ptr);
+    testMem(ptr);
+
 }
 
 /*i ===================================================================== */
@@ -1281,14 +1299,14 @@ long CADfreeRun(struct cadRecord *pcad) {
  */
 long guideSimProc (struct genSubRecord * pgsub) {
 
-   static int myguideSim;
+   static long myguideSim;
    static long mytest;
    static double myXscale, myYscale;
 
    myguideSim = *(long *) pgsub->a;
    mytest = *(long *) pgsub->a;
 
-   printf("Turn guide sim %d\n", myguideSim);
+   printf("Turn guide sim %ld\n", myguideSim);
    printf("Turn guide sim test %ld\n", mytest);
 
    if (myguideSim) {  /* Request to turn guide sim on*/
@@ -1513,6 +1531,51 @@ void testtcs2m2(double xp, double yp)
            m2Position.xPosNew, m2Position.yPosNew); 
 }
 
+/****StartGuideSim******/
+static const iocshFuncDef startGuideSimFuncDef ={"startGuideSim", 0, NULL};
+static void startGuideSimCallFunc(const iocshArgBuf *args)
+{
+    startGuideSim();
+}
+
+/****EndGuideSim******/
+static const iocshFuncDef endGuideSimFuncDef ={"endGuideSim", 0, NULL};
+static void endGuideSimCallFunc(const iocshArgBuf *args)
+{
+    endGuideSim();
+}
+
+/****StartFreeRun******/
+static const iocshFuncDef startfreeRunFuncDef ={"startfreeRun", 0, NULL};
+static void startfreeRunCallFunc(const iocshArgBuf *args)
+{
+    startfreeRun();
+}
+
+/****EndFreeRun******/
+static const iocshFuncDef endfreeRunFuncDef ={"endfreeRun", 0, NULL};
+static void endfreeRunCallFunc(const iocshArgBuf *args)
+{
+    endfreeRun();
+}
+
+/****ShowMemory******/
+static const iocshFuncDef showMemoryFuncDef ={"showMemory", 0, NULL};
+static void showMemoryCallFunc(const iocshArgBuf *args)
+{
+    showMemory();
+}
+
+static void testFunctionsRegisterCommands(void)
+{
+    iocshRegister(&showMemoryFuncDef, showMemoryCallFunc);
+    iocshRegister(&startGuideSimFuncDef, startGuideSimCallFunc);
+    iocshRegister(&endGuideSimFuncDef, endGuideSimCallFunc);
+    iocshRegister(&startfreeRunFuncDef, startfreeRunCallFunc);
+    iocshRegister(&endfreeRunFuncDef, endfreeRunCallFunc);
+}
+
+epicsExportRegistrar(testFunctionsRegisterCommands);
 epicsRegisterFunction(initSelector);
 epicsRegisterFunction(selector);
 epicsRegisterFunction(guideSimProc);

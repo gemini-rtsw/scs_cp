@@ -107,7 +107,7 @@
 #define COVAR_MAX        100
 
 //#define RECEIVE_TIMEOUT         100     /* 1 second * system clock rate */
-#define RECEIVE_TIMEOUT         1.0       /* 1 second */
+#define RECEIVE_TIMEOUT         0.5       /* 1 second */
 
 #define MAGIC_NUMBER            1958    /* magic number so sequences don't
                                            all start at zero    */
@@ -323,7 +323,7 @@ static int  frameConvert (converted *result, frameChange *f, const double x,
 void phasorShow(void);
 
 int flipGuide = 0;
-int simLevel = 0;
+int simLevel = 1;
 memMap *scsPtr = NULL;
 memMap *scsBase = NULL;
 memMap *m2Ptr = NULL;
@@ -864,10 +864,12 @@ void fireLoops (void *param)
 }
 
 
+static int isr2 = 0;
 /* Later: add header */
 void rmISR2 (int node)
 {
    nodeISR2 = node;
+   isr2++;
    epicsEventSignal(scsReceiveNow);
 
    /* why is this commented out? This is the only place the 
@@ -877,10 +879,12 @@ void rmISR2 (int node)
       */
 }
 
+static int isr3 = 0;
 /* Later: add header */
 void rmISR3 (int node)
 {
    nodeISR3 = node;
+   isr3++;
    epicsEventSignal(guideUpdateNow);
 }
 
@@ -932,8 +936,17 @@ void rmISR3 (int node)
 int rxwaitticks = 0;
 int useDynamicVtk =0;
 
-int waittime = 0.08;   
-static int procGuideCount = 0;
+static double waittime = 0.5;   
+static int procGuideCount1 = 0;
+static int procGuideCount2 = 0;
+static int procGuideCount3 = 0;
+static int procGuideCount4 = 0;
+static int procGuideCount5 = 0;
+static int procGuideCount6 = 0;
+static int procGuideCount7 = 0;
+static int procGuideCount8 = 0;
+static int procGuideCount9 = 0;
+static int procGuideCount10 = 0;
 void processGuides (void) 
 {
    long command = FAST_ONLY;
@@ -977,15 +990,10 @@ void processGuides (void)
    showVtkRotation(&vtkY);
 #endif
 
-   errlogSevPrintf(errlogMajor, "guideUpdateNow... wait 1 sec!\n");
-   epicsThreadSleep(1.0);
-
    /* Initialize eventData structure */ 
    eventData.currentBeam = 0;
    eventData.inPosition = 0;
 
-   errlogSevPrintf(errlogMajor, " Wait 1 secs...!\n");
-   epicsThreadSleep(1.0);
    if (guideUpdateNow == NULL) {
       errlogSevPrintf(errlogMajor, "guideUpdateNow Null!\n");
       return;
@@ -994,7 +1002,7 @@ void processGuides (void)
       errlogSevPrintf(errlogInfo, "guideUpdateNow= starting control!\n");
    }
 
-   procGuideCount++;
+   procGuideCount1++;
    for (;;)
    {
 
@@ -1023,9 +1031,13 @@ void processGuides (void)
       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
       {
-         errlogSevPrintf(errlogInfo, "guideUpdateNow go!\n");
-         epicsThreadSleep(1.0);
+         //
+         //
+         //  ******REMOVED DELAY HERE AFTER PORT TO RTEMS*********
          //epicsThreadSleep(0.001;);
+         //
+         //
+         //
          /* Find which sources have been updated since last ISR call 
           * first, check PWFS1 */
 
@@ -1418,10 +1430,8 @@ void processGuides (void)
 
          errlogSevPrintf(errlogInfo, "guideUpdateNow timeout\n");
          guideUpdate = FALSE;         
-         procGuideCount++; /*2*/
+         procGuideCount2++; /*2*/
       }
-
-      debugLevel = DEBUG_RESERVED2;
 
       if (debugLevel == DEBUG_RESERVED2)
       {
@@ -1434,7 +1444,7 @@ void processGuides (void)
 
       /* Notes about all these conditions...
        *
-       *   - "guideOn" refers to request from TCS/SCS CAD
+       * - "guideOn" refers to request from TCS/SCS CAD
        *     executed to turn on guiding   
        *
        * - "applyGuide" refers to the beam setting being
@@ -1446,33 +1456,31 @@ void processGuides (void)
        *
        */
 
-      errlogPrintf("After...\n");
-      procGuideCount++; /*3*/
 
       /* Always set applyGuide to TRUE when we're not chopping. If we are
        * chopping we need to assert the Guide Gate is valid by checking
        * inPosition.*/
       if ((!chopIsOn) || (chopIsOn && (eventData.inPosition == TRUE))) {
          applyGuide = TRUE;
+         procGuideCount3++; /*3*/
       }
       else {
          applyGuide = FALSE;
       }
 
 
-      procGuideCount++; /*4*/
       if (guideOn == TRUE && applyGuide == TRUE)
       {
 
-         procGuideCount++; /*5*/
+         procGuideCount4++; /*4*/
          /* Set pin JK2/41 high to show guiding is appplied 
          */
          xy240_writePortBit (XYCARDNUM, PORT7, BIT4, epicsTrue); /* card 0, port 7, bit 4 */
 
-         procGuideCount++; /*6*/
          if (guideUpdate == TRUE) /* a new guide update has arrived */
          {
 
+            procGuideCount5++; /*5*/
             if (guideType == AUTOGUIDE)
             {
                /* Not used by M2, so not part of the checksum
@@ -1494,6 +1502,7 @@ void processGuides (void)
                   if (debugLevel == DEBUG_RESERVED2) 
                      epicsPrintf("tiltPidOn is ON\n");
 #endif
+                  procGuideCount6++; /*6*/
                   xNetGuideT = control (XTILT, xNetGuide, 0.0);
                   yNetGuideT = control (YTILT, yNetGuide, 0.0);
                }
@@ -1533,6 +1542,7 @@ void processGuides (void)
 
                if (focusPidOn == ON)
                {
+                  procGuideCount7++; /*7*/
                   zNetGuideT = control (FOCUS, zNetGuide, 0.0);
                }
                else
@@ -1621,7 +1631,7 @@ void processGuides (void)
        */
       else {   
 
-         procGuideCount++; /*7*/
+         procGuideCount8++; /*8*/
          /* Set pin JK2/41 high to show guiding is *NOT*
           * appplied 
           *
@@ -1661,6 +1671,7 @@ void processGuides (void)
 
       if (simLevel == 0) /* No simulation, write to real reflective memory */
       {
+         procGuideCount9++; /*9*/
          xRecycleGuideU = xNetGuideU;
          yRecycleGuideU = yNetGuideU;
 
@@ -1887,6 +1898,7 @@ void processGuides (void)
       if (useDynamicVtk && checkGuideModeChange(sensedGuideRate) != ERROR) 
          guideInfo.rate = sensedGuideRate;
 
+      procGuideCount10++; /*10*/
    } /* end for(;;) FOREVER*/
 }
 
@@ -2363,6 +2375,8 @@ void tiltReceive (void)
 
 /* ===================================================================== */
 
+static int scsrx1= 0; 
+static int scsrx2= 0;
 void scsReceive (void)
 {
    long simCheck = 0xabcd;
@@ -2372,6 +2386,7 @@ void scsReceive (void)
    {
       if (epicsEventWaitWithTimeout(scsReceiveNow, RECEIVE_TIMEOUT) == epicsEventWaitOK)
       {
+         scsrx1++; 
          if (simLevel == 0)
          {
             /* no simulation active, grab data from reflective memory */
@@ -2469,6 +2484,7 @@ void scsReceive (void)
       }
       else
       {
+         scsrx2++; 
          errorLog ("scsReceive - scsReceiveNow timeout", 1, ON);
          errlogMessage("rscsReceive - scsReceiveNow timeout\n");
       }
@@ -3304,5 +3320,21 @@ int checkGuideModeChange( long mode) {
    return(OK);
 }
 
-epicsExportAddress(int, procGuideCount );
+epicsExportAddress(int, procGuideCount1 );
+epicsExportAddress(int, procGuideCount2 );
+epicsExportAddress(int, procGuideCount3 );
+epicsExportAddress(int, procGuideCount4 );
+epicsExportAddress(int, procGuideCount5 );
+epicsExportAddress(int, procGuideCount6 );
+epicsExportAddress(int, procGuideCount7 );
+epicsExportAddress(int, procGuideCount8 );
+epicsExportAddress(int, procGuideCount9 );
+epicsExportAddress(int, procGuideCount10 );
+epicsExportAddress(int, scsrx1 );
+epicsExportAddress(int, scsrx2 );
+epicsExportAddress(int, isr2 );
+epicsExportAddress(int, isr3 );
+epicsExportAddress(double, waittime );
+
+
 
