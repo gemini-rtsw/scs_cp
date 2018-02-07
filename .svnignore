@@ -14,3 +14,4 @@ lib
 edl
 html
 templates
+*.swo
