@@ -569,7 +569,7 @@ long    issueM2Primitive (struct cadRecord * pcad)
                 /*
                  * TODO Test readport is functional. Matt, Mike, Ignacio.
                  */
-                if (xy240_readPortByte(XYCARDNUM, PORT7) == ERROR);
+                if (xy240_readPortByte(XYCARDNUM, PORT7) == ERROR)
                 {
                     errlogSevPrintf(errlogMajor, "No xycom detected.");
                     strncpy(pcad->mess, "no xycom detected", (MAX_STRING_SIZE - 1));
