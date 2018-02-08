@@ -516,7 +516,7 @@ void    testMem (const memMap * buffPtr)
 /*
  * Export to iocsh wiht no args
  * */
-void showMemory() {
+void showMemory(int page) {
 
     memMap *ptr;
 
@@ -526,7 +526,63 @@ void showMemory() {
         ptr = m2Ptr;
 
     errlogPrintf("Showing RM memory at %p", ptr);
-    testMem(ptr);
+
+    switch (page) {
+        case 0:
+            printPage0(ptr);
+            break;
+
+        case 1:
+            printPage1(ptr);
+            break;
+
+        case 2:
+            printPage2(ptr);
+            break;
+
+        case 7:
+            printPage7(ptr);
+            break;
+
+        case 8:
+            printPage8(ptr);
+            break;
+
+        case 9:
+            printPage9(ptr);
+            break;
+
+        case 10:
+            printPage10(ptr);
+            break;
+
+        case 11:
+            printPage11(ptr);
+            break;
+
+        case 12:
+            printPage12(ptr);
+            break;
+
+        case 13:
+            printPage13a(ptr);
+            break;
+
+        case 14:
+            printPage13b(ptr);
+            break;
+
+        case 15:
+            printPage15(ptr);
+            break;
+
+        case -1:
+            testMem(ptr);
+            break;
+
+        default:
+            errlogPrintf("RM Page not configured.\n  Try <0-3, or 7-15>\n");
+    }
 
 }
 
@@ -1560,10 +1616,13 @@ static void endfreeRunCallFunc(const iocshArgBuf *args)
 }
 
 /****ShowMemory******/
-static const iocshFuncDef showMemoryFuncDef ={"showMemory", 0, NULL};
+static const iocshArg smArg0 = {"page in rm <1-13>", iocshArgInt };
+static const iocshArg *smArgs[] = {&smArg0};
+
+static const iocshFuncDef showMemoryFuncDef ={"showMemory", 1, smArgs};
 static void showMemoryCallFunc(const iocshArgBuf *args)
 {
-    showMemory();
+    showMemory(args[0].ival);
 }
 
 static void testFunctionsRegisterCommands(void)
