@@ -30,14 +30,14 @@ xform 0 3248 3488
 p 2991 2912 100 0 0 EGU:arcsecs
 p 2991 3008 100 0 0 FTVL:DOUBLE
 p 2991 2976 100 0 0 PREC:2
-p 3171 3505 100 0 1 SCAN:Passive
+p 3171 3505 100 0 1 SCAN:.05 second
 p 3168 3648 100 0 -1 name:$(top)xTiltGuide
 use esirs 3040 2983 100 0 yTiltGuide
 xform 0 3248 3136
 p 2991 2560 100 0 0 EGU:arcsecs
 p 2991 2656 100 0 0 FTVL:DOUBLE
 p 2991 2624 100 0 0 PREC:2
-p 3177 3150 100 0 1 SCAN:Passive
+p 3177 3150 100 0 1 SCAN:.05 second
 p 3168 3280 100 0 -1 name:$(top)yTiltGuide
 use esirs 3040 2599 100 0 zFocusGuide
 xform 0 3248 2752
@@ -46,6 +46,6 @@ p 2991 2304 100 0 0 DISV:1
 p 2991 2176 100 0 0 EGU:units
 p 2991 2272 100 0 0 FTVL:DOUBLE
 p 2991 2240 100 0 0 PREC:2
-p 3152 2743 100 0 1 SCAN:Passive
+p 3152 2743 100 0 1 SCAN:.05 second
 p 3168 2896 100 0 -1 name:$(top)zGuide
 [comments]

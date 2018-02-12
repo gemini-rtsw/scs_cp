@@ -29,7 +29,7 @@ xform 0 2464 2688
 use ecalcouts 2864 1655 100 0 xyerrMag
 xform 0 3024 1776
 p 2928 1584 100 0 1 CALC:SQR(A^2+B^2)
-p 2952 1888 100 0 0 SCAN:Passive
+p 2952 1888 100 0 0 SCAN:.05 second
 p 2976 1904 100 0 -1 name:$(top)xyerrMag
 use hwin 3056 2151 100 0 hwin#76
 xform 0 3152 2192
@@ -88,7 +88,7 @@ p 1135 2944 100 0 0 EGU:arcsecs
 p 1135 3248 100 0 0 FDSC:x tilt position
 p 1135 3040 100 0 0 FTVL:DOUBLE
 p 1135 3008 100 0 0 PREC:2
-p 1370 3540 100 0 1 SCAN:Passive
+p 1370 3540 100 0 1 SCAN:.05 second
 p 1312 3664 100 0 -1 name:$(top)xTiltPos
 use esirs 3248 3367 100 0 xTiltError
 xform 0 3456 3520
@@ -97,7 +97,7 @@ p 3199 2944 100 0 0 EGU:arcsecs
 p 3199 3248 100 0 0 FDSC:x tilt error
 p 3199 3040 100 0 0 FTVL:DOUBLE
 p 3199 3008 100 0 0 PREC:2
-p 3377 3522 100 0 1 SCAN:Passive
+p 3377 3522 100 0 1 SCAN:.05 second
 p 3376 3680 100 0 -1 name:$(top)xTiltErr
 use esirs 1184 3015 100 0 yTiltPos
 xform 0 1392 3168
@@ -106,7 +106,7 @@ p 1135 2592 100 0 0 EGU:arcsecs
 p 1135 2896 100 0 0 FDSC:y tilt position
 p 1135 2688 100 0 0 FTVL:DOUBLE
 p 1135 2656 100 0 0 PREC:2
-p 1335 3160 100 0 1 SCAN:Passive
+p 1335 3160 100 0 1 SCAN:.05 second
 p 1296 3312 100 0 -1 name:$(top)yTiltPos
 use esirs 3248 3015 100 0 yTiltError
 xform 0 3456 3168
@@ -115,7 +115,7 @@ p 3199 2592 100 0 0 EGU:arcsecs
 p 3199 2896 100 0 0 FDSC:y tilt error
 p 3199 2688 100 0 0 FTVL:DOUBLE
 p 3199 2656 100 0 0 PREC:2
-p 3414 3179 100 0 1 SCAN:Passive
+p 3414 3179 100 0 1 SCAN:.05 second
 p 3360 3328 100 0 -1 name:$(top)yTiltErr
 use esirs 3248 2631 100 0 zFocusError
 xform 0 3456 2784
@@ -124,7 +124,7 @@ p 3199 2208 100 0 0 EGU:microns
 p 3199 2512 100 0 0 FDSC:z focus error
 p 3199 2304 100 0 0 FTVL:DOUBLE
 p 3199 2272 100 0 0 PREC:2
-p 3395 2790 100 0 1 SCAN:Passive
+p 3395 2790 100 0 1 SCAN:.05 second
 p 3392 2944 100 0 -1 name:$(top)zErr
 use esirs 1184 2631 100 0 zFocusPos
 xform 0 1392 2784
@@ -133,34 +133,34 @@ p 1135 2208 100 0 0 EGU:microns
 p 1135 2512 100 0 0 FDSC:z focus position
 p 1135 2304 100 0 0 FTVL:DOUBLE
 p 1135 2272 100 0 0 PREC:2
-p 1361 2768 100 0 1 SCAN:Passive
+p 1361 2768 100 0 1 SCAN:.05 second
 p 1328 2944 100 0 -1 name:$(top)zPos
 use esirs 1184 2295 100 0 xPosition
 xform 0 1392 2448
 p 1135 1872 100 0 0 EGU:microns
 p 1135 1968 100 0 0 FTVL:DOUBLE
 p 1135 1936 100 0 0 PREC:2
-p 1378 2449 100 0 1 SCAN:Passive
+p 1378 2449 100 0 1 SCAN:1 second
 p 1312 2608 100 0 -1 name:$(top)xPos
 use esirs 3248 2295 100 0 xError
 xform 0 3456 2448
 p 3199 1872 100 0 0 EGU:microns
 p 3199 1968 100 0 0 FTVL:DOUBLE
 p 3199 1936 100 0 0 PREC:2
-p 3407 2467 100 0 1 SCAN:Passive
+p 3407 2467 100 0 1 SCAN:1 second
 p 3376 2592 100 0 -1 name:$(top)xPosErr
 use esirs 1184 1943 100 0 yPosition
 xform 0 1392 2096
 p 1135 1520 100 0 0 EGU:microns
 p 1135 1616 100 0 0 FTVL:DOUBLE
 p 1135 1584 100 0 0 PREC:2
-p 1346 2061 100 0 1 SCAN:Passive
+p 1346 2061 100 0 1 SCAN:1 second
 p 1328 2240 100 0 -1 name:$(top)yPos
 use esirs 3248 1943 100 0 yError
 xform 0 3456 2096
 p 3199 1520 100 0 0 EGU:microns
 p 3199 1616 100 0 0 FTVL:DOUBLE
 p 3199 1584 100 0 0 PREC:2
-p 3409 2085 100 0 1 SCAN:Passive
+p 3409 2085 100 0 1 SCAN:1 second
 p 3376 2256 100 0 -1 name:$(top)yPosErr
 [comments]

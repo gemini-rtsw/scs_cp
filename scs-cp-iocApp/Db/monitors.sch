@@ -63,7 +63,7 @@ p 1249 1765 100 0 0 FTVA:STRING
 p 1249 1765 100 0 0 FTVB:STRING
 p 1472 1840 100 0 1 INAM:readHealthInit
 p 1269 1105 100 0 1 PV:$(top)
-p 1472 1952 100 0 1 SCAN:Passive
+p 1472 1952 100 0 1 SCAN:1 second
 p 1472 1920 100 0 1 SNAM:readHealth
 use egenSub 2176 1991 100 0 clock
 xform 0 2320 2416
@@ -72,7 +72,7 @@ p 1953 1733 100 0 0 FTVC:LONG
 p 1953 1701 100 0 0 FTVD:LONG
 p 2240 1952 100 0 1 INAM:
 p 2272 2848 100 0 1 PV:$(top)
-p 2240 1888 100 0 1 SCAN:Passive
+p 2240 1888 100 0 1 SCAN:1 second
 p 2240 1920 100 0 1 SNAM:ticker
 use ebis 976 1264 100 0 interlockOverride
 xform 0 1056 1392
@@ -124,7 +124,7 @@ xform 0 1456 1392
 p 1155 1579 100 0 0 DESC:interlock mechanism check
 p 1312 1008 100 0 1 INAM:initInterlock
 p 1312 1088 100 0 1 PV:$(top)
-p 1312 960 100 0 1 SCAN:Passive
+p 1312 960 100 0 1 SCAN:1 second
 p 1312 1056 100 0 1 SNAM:lockMonitor
 p 1280 1600 75 1280 -1 pproc(INPA):PP
 p 1280 1568 75 1280 -1 pproc(INPB):PP
