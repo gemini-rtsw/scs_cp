@@ -52,16 +52,19 @@ iocInit
 #loggingEnable = 1
 #CADlogging = 1
 
-####dbpf "m2:guideConfigReset.DIR","0"
+startGuideSim
+dbpf "m2:interlockOverride","1"
+
+
+#dbpf "m2:guideConfigReset.DIR","0"
 ###### Start any sequence programs
-####seq &timeSeq, "sys=m2:, top=tcs:"
-####seq &tilt_st, "S=m2:tilt:"
-####seq &tilt_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
-#####dbpr "m2:interlock"
+seq &timeSeq, "sys=m2:, top=tc1:"
+#seq &tilt_st, "S=m2:tilt:"
+#seq &scs_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
+###dbpr "m2:interlock"
 ##### Comment out during testing signal from GIS:
-####dbpf "m2:interlockOverride","1"
 ####
-####dbpf "m2:guideConfigReset.DIR","3"
+#dbpf "m2:guideConfigReset.DIR","3"
 #####taskDelay(200)
 ####dbpf "m2:guideConfigReset.DIR","3"
 ####
