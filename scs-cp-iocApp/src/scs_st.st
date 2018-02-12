@@ -100,13 +100,13 @@
 
    program scs_st
 
-   option -a;  /* synchronous      */
-   option +c;  /* wait for connections */
-   option +d;  /* debug messages on    */
-   option +l;  /* C compiler messages  */
-   option -r;  /* not reentrant    */
-   option +w;  /* SNC warnings     */
-   option +e;  /* new event flag mode  */
+   option -a;  /* synchronous          Default  */
+   option +c;  /* wait for connections Default  */
+   option +d;  /* debug messages on    Default  */
+   option +e;  /* new event flag mode  Default  */
+   option +l;  /* C compiler messages  Default  */
+   option -r;  /* not reentrant        Default (Only one instance of this seq program allowed)   */
+   option +w;  /* SNC warnings         Default */
 
    %%#include "m2Log.h"        /* For cadDirLog*/
    %%#include "chop.h"         /* For chopIsOn, jogBeam, instruments */
@@ -303,27 +303,27 @@ double currFocus;
 
 /* monitor command progress from m2 */
 
-long testResponse;
+int32_t testResponse;
 assign testResponse to "{T}byte0:b5.VAL";
 monitor testResponse;
 
-long rebootResponse;
+int32_t rebootResponse;
 assign rebootResponse to "{T}byte0:b4.VAL";
 monitor rebootResponse;
 
-long initResponse;
+int32_t initResponse;
 assign initResponse to "{T}byte0:b3.VAL";
 monitor initResponse;
 
-long chopResponse;
+int32_t chopResponse;
 assign chopResponse to "{T}byte0:b7.VAL";
 monitor chopResponse;
 
-long servoOnStat;
+int32_t servoOnStat;
 assign servoOnStat to "{T}byte3:b6.VAL";
 monitor servoOnStat;
 
-long XYmovingStatus;
+int32_t XYmovingStatus;
 assign XYmovingStatus to "{T}byte1:b4.VAL";
 monitor XYmovingStatus;
 
@@ -337,17 +337,17 @@ monitor XYmovingStatus;
  * no other parameters to be considered
  */
 
-long testCadStart;
+int32_t testCadStart;
 assign testCadStart to "{T}testP:start.VAL";
 monitor testCadStart;
 
 evflag testCadChange;           /* flag to detect start or stop */
 sync testCadStart to testCadChange; /* forward link activation  */
 
-long testCarIn;             /* input to testC CAR       */
+int32_t testCarIn;             /* input to testC CAR       */
 assign testCarIn to "{T}testC.IVAL";
 
-long testCarErrIn;          /* error input to testC CAR     */
+int32_t testCarErrIn;          /* error input to testC CAR     */
 assign testCarErrIn to "{T}testC.IERR";
 
 string testCarMessIn;           /* message input to testC CAR   */
@@ -362,17 +362,17 @@ assign testResultString to "{T}fault0.VAL";
  * no additional arguments to consider
  */
 
-long initCadStart;
+int32_t initCadStart;
 assign initCadStart to "{T}initP:start.VAL";
 monitor initCadStart;
 
 evflag initCadChange;
 sync initCadStart to initCadChange;
 
-long initCarIn;                 /* input to initC CAR */
+int32_t initCarIn;                 /* input to initC CAR */
 assign initCarIn to "{T}initC.IVAL";
 
-long initCarErrIn;              /* error input to initC CAR */
+int32_t initCarErrIn;              /* error input to initC CAR */
 assign initCarErrIn to "{T}initC.IERR";
 
 string initCarMessIn;               /* message input to initC CAR */
@@ -384,17 +384,17 @@ assign initCarMessIn to "{T}initC.IMSS";
  * no additional arguments to consider
  */
 
-long initXYCadStart;
+int32_t initXYCadStart;
 assign initXYCadStart to "{T}initPXY:start.VAL";
 monitor initXYCadStart;
 
 evflag initXYCadChange;
 sync initXYCadStart to initXYCadChange;
 
-long initXYCarIn;                 /* input to initC CAR */
+int32_t initXYCarIn;                 /* input to initC CAR */
 assign initXYCarIn to "{T}initCXY.IVAL";
 
-long initXYCarErrIn;              /* error input to initC CAR */
+int32_t initXYCarErrIn;              /* error input to initC CAR */
 assign initXYCarErrIn to "{T}initCXY.IERR";
 
 string initXYCarMessIn;               /* message input to initC CAR */
@@ -457,17 +457,17 @@ assign inst6 to "{T}syncsource.SXST";
  * parameters to consider
  */
 
-long rebootCadStart;
+int32_t rebootCadStart;
 assign rebootCadStart to "{T}rebootP:start.VAL";
 monitor rebootCadStart;
 
 evflag rebootCadChange;
 sync rebootCadStart to rebootCadChange;
 
-long rebootCarIn;               /* input to rebootC CAR */
+int32_t rebootCarIn;               /* input to rebootC CAR */
 assign rebootCarIn to "{T}rebootC.IVAL";
 
-long rebootCarErrIn;                /* error input to rebootC CAR */
+int32_t rebootCarErrIn;                /* error input to rebootC CAR */
 assign rebootCarErrIn to "{T}rebootC.IERR";
 
 string rebootCarMessIn;             /* message input to     */
@@ -476,17 +476,17 @@ assign rebootCarMessIn to "{T}rebootC.IMSS";    /* rebootC CAR      */
 
 /* ===================================================================== */
 
-long clearGuideFocusCadStart;
+int32_t clearGuideFocusCadStart;
 assign clearGuideFocusCadStart to "{T}clearGuideFocusP:start.VAL";
 monitor clearGuideFocusCadStart;
 
 evflag clearGuideFocusCadChange;
 sync clearGuideFocusCadStart to clearGuideFocusCadChange;
 
-long clearGuideFocusCarIn;               /* input to clearGuideFocusC CAR */
+int32_t clearGuideFocusCarIn;               /* input to clearGuideFocusC CAR */
 assign clearGuideFocusCarIn to "{T}clearGuideFocusC.IVAL";
 
-long clearGuideFocusCarErrIn;          /* error input to clearGuideFocusC CAR */
+int32_t clearGuideFocusCarErrIn;          /* error input to clearGuideFocusC CAR */
 assign clearGuideFocusCarErrIn to "{T}clearGuideFocusC.IERR";
 
 string clearGuideFocusCarMessIn;      /* mess. input to clearGuideFocusC CAR */
@@ -501,17 +501,17 @@ assign clearGuideFocusCarMessIn to "{T}clearGuideFocusC.IMSS";
  * considered as part of the move data set
  */
 
-long moveCadStart;
+int32_t moveCadStart;
 assign moveCadStart to "{T}moveP:start.VAL";
 monitor moveCadStart;
 
 evflag moveCadChange;
 sync moveCadStart to moveCadChange;
 
-long moveCarIn;                 /* input to moveC CAR */
+int32_t moveCarIn;                 /* input to moveC CAR */
 assign moveCarIn to "{T}moveC.IVAL";
 
-long moveCarErrIn;              /* error input to moveC CAR */
+int32_t moveCarErrIn;              /* error input to moveC CAR */
 assign moveCarErrIn to "{T}moveC.IERR";
 
 string moveCarMessIn;               /* message input to moveC CAR */
@@ -544,13 +544,13 @@ assign moveXPosition to "{T}move.VALH";
 double moveYPosition;
 assign moveYPosition to "{T}move.VALI";
 
-long moveDir;
+int32_t moveDir;
 assign moveDir to "{T}move.DIR";
 
-long moveBaffleDir;
+int32_t moveBaffleDir;
 assign moveBaffleDir to "{T}moveBaffle.DIR";
 
-long chopConfigDir;
+int32_t chopConfigDir;
 assign chopConfigDir to "{T}chopConfig.DIR";
 
 
@@ -563,25 +563,25 @@ assign moveYInputPos to "{T}move.H";
 
 /* PID controller record connections */
 
-long pidDir;
+int32_t pidDir;
 assign pidDir to "{T}setController.DIR";
 
 /* VTK control record connections*/
 
-long vtkXCtrl;
+int32_t vtkXCtrl;
 assign vtkXCtrl to "{T}X:vtkOn.VAL";
-long vtkXCtrlDir;
+int32_t vtkXCtrlDir;
 assign vtkXCtrlDir to "{T}X:vtkControl.DIR";
 
-long vtkYCtrl;
+int32_t vtkYCtrl;
 assign vtkYCtrl to "{T}Y:vtkOn.VAL";
-long vtkYCtrlDir;
+int32_t vtkYCtrlDir;
 assign vtkYCtrlDir to "{T}Y:vtkControl.DIR";
 
-long vtkXDir;
+int32_t vtkXDir;
 assign vtkXDir to "{T}X:setVTKControl.DIR";
 
-long vtkYDir;
+int32_t vtkYDir;
 assign vtkYDir to "{T}Y:setVTKControl.DIR";
 
 double vtkXSampleRate;
@@ -598,7 +598,7 @@ assign vtkYScale to "{T}Y:setVTKControl.VALF";
 double vtkYAngle;
 assign vtkYAngle to "{T}Y:setVTKControl.VALG";
 
-long measuredSampleRate;
+int32_t measuredSampleRate;
 assign measuredSampleRate to "{T}decimator.VALS";
 monitor measuredSampleRate; 
 
@@ -607,27 +607,27 @@ sync measuredSampleRate to vtkChange;
 
 /* Synthetic wave, phasor, control record connections*/
 
-long phasorXDir;
+int32_t phasorXDir;
 assign phasorXDir to "{T}X:setPhasorControl.DIR";
 
-long phasorYDir;
+int32_t phasorYDir;
 assign phasorYDir to "{T}Y:setPhasorControl.DIR";
 
 /* ===================================================================== */
 
 /* Actuator record connections */
 
-long actuatorCadStart;
+int32_t actuatorCadStart;
 assign actuatorCadStart to "{T}moveActuatorP:start.VAL";
 monitor actuatorCadStart;
 
 evflag actuatorCadChange;
 sync actuatorCadStart to actuatorCadChange;
 
-long actuatorCarIn;             /* input to actuatorC CAR */
+int32_t actuatorCarIn;             /* input to actuatorC CAR */
 assign actuatorCarIn to "{T}moveActuatorC.IVAL";
 
-long actuatorCarErrIn;                  /* error input to */
+int32_t actuatorCarErrIn;                  /* error input to */
 assign actuatorCarErrIn to "{T}moveActuatorC.IERR"; /* actuatorC CAR  */
 
 string actuatorCarMessIn;               /* message input to */
@@ -664,31 +664,31 @@ sync atsent to newBeamA;
  * but uses the move records beam position records
  */
 
-long followCadStart;
+int32_t followCadStart;
 assign followCadStart to "{T}followP:start.VAL";
 monitor followCadStart;
 
 evflag followCadChange;
 sync followCadStart to followCadChange;
 
-long followCarIn;               /* input to followC CAR */
+int32_t followCarIn;               /* input to followC CAR */
 assign followCarIn to "{T}followC.IVAL";
 
-long followCarErrIn;                /* error input to followC CAR */
+int32_t followCarErrIn;                /* error input to followC CAR */
 assign followCarErrIn to "{T}followC.IERR";
 
 string followCarMessIn;             /* message input to followC CAR */
 assign followCarMessIn to "{T}followC.IMSS";
 
-long arrayS;                    /* sanity check results */
+int32_t arrayS;                    /* sanity check results */
 assign arrayS to "{T}followA.VALB";     /* of follow demands    */
 
-long activeC;
+int32_t activeC;
 assign activeC to "{T}activeC.IVAL";
 
-long currentId;
+int32_t currentId;
 
-long followS;
+int32_t followS;
 assign followS to "{T}followS.VAL";
 
 /* ===================================================================== */
@@ -698,17 +698,17 @@ assign followS to "{T}followS.VAL";
  * parameters
  */
 
-long stopCadStart;
+int32_t stopCadStart;
 assign stopCadStart to "{T}stopP:start.VAL";
 monitor stopCadStart;
 
 evflag stopCadChange;
 sync stopCadStart to stopCadChange;
 
-long stopCarIn;                 /* input to stopC CAR */
+int32_t stopCarIn;                 /* input to stopC CAR */
 assign stopCarIn to "{T}stopC.IVAL";
 
-long stopCarErrIn;              /* error input to stopC CAR */
+int32_t stopCarErrIn;              /* error input to stopC CAR */
 assign stopCarErrIn to "{T}stopC.IERR";
 
 string stopCarMessIn;               /* message input to stopC CAR */
@@ -720,17 +720,17 @@ assign stopCarMessIn to "{T}stopC.IMSS";
  * The park CAD uses only the template connections
  */
 
-long parkCadStart;
+int32_t parkCadStart;
 assign parkCadStart to "{T}parkP:start.VAL";
 monitor parkCadStart;
 
 evflag parkCadChange;
 sync parkCadStart to parkCadChange;
 
-long parkCarIn;                 /* input to parkC CAR */
+int32_t parkCarIn;                 /* input to parkC CAR */
 assign parkCarIn to "{T}parkC.IVAL";
 
-long parkCarErrIn;              /* error input to parkC CAR */
+int32_t parkCarErrIn;              /* error input to parkC CAR */
 assign parkCarErrIn to "{T}parkC.IERR";
 
 string parkCarMessIn;               /* message input to parkC CAR */
@@ -742,25 +742,25 @@ assign parkCarMessIn to "{T}parkC.IMSS";
  *
  */
 
-long guideSimStart;
+int32_t guideSimStart;
 assign guideSimStart to "{T}guideSimPROC.VALA";
 monitor guideSimStart;
 
 evflag guideSimChange;
 sync guideSimStart to guideSimChange;
 
-long tiltPidOnSim;
+int32_t tiltPidOnSim;
 assign tiltPidOnSim to "{T}tiltpidon.VAL";
 monitor tiltPidOnSim;
 
-long tiltpidDir;
+int32_t tiltpidDir;
 assign tiltpidDir to "{T}tiltpidControl.DIR";
 
-long focusPidOnSim;
+int32_t focusPidOnSim;
 assign focusPidOnSim to "{T}focuspidon.VAL";
 monitor focusPidOnSim;
 
-long focuspidDir;
+int32_t focuspidDir;
 assign focuspidDir to "{T}focuspidControl.DIR";
 
 /* ===================================================================== */
@@ -770,44 +770,44 @@ assign focuspidDir to "{T}focuspidControl.DIR";
  * of the DECS control switches
  */
 
-long chopControlCadStart;
+int32_t chopControlCadStart;
 assign chopControlCadStart to "{T}chopControlP:start.VAL";
 monitor chopControlCadStart;
 
 evflag chopControlCadChange;
 sync chopControlCadStart to chopControlCadChange;
 
-long chopControlCarIn;       /* input to chopControlC CAR */
+int32_t chopControlCarIn;       /* input to chopControlC CAR */
 assign chopControlCarIn to "{T}chopControlC.IVAL";
 
-long chopControlCarErrIn;    /* error input to chopControlC CAR */
+int32_t chopControlCarErrIn;    /* error input to chopControlC CAR */
 assign chopControlCarErrIn to "{T}chopControlC.IERR";
 
 string chopControlCarMessIn; /* message input to chopControlC CAR */
 assign chopControlCarMessIn to "{T}chopControlC.IMSS";
 
-long chopOn;                 /* request to start/stop chopping { OFF | ON } */
+int32_t chopOn;                 /* request to start/stop chopping { OFF | ON } */
 assign chopOn to "{T}chopControl.VALA";
 
-long chopSwitch;             /* screen widget for chop on/off */
+int32_t chopSwitch;             /* screen widget for chop on/off */
 assign chopSwitch to "{T}chopon.VAL";
 
-long decsOn;                 /* request to start/stop DECS (0=off, 1=on) */
+int32_t decsOn;                 /* request to start/stop DECS (0=off, 1=on) */
 assign decsOn to "{T}chopControl.VALB";
 
-long decsPause;              /* request to pause DECS (0=off, 1=on) */
+int32_t decsPause;              /* request to pause DECS (0=off, 1=on) */
 assign decsPause to "{T}chopControl.VALC";
 
-long decsFreeze;             /* request to freeze DECS (0=off, 1=on) */
+int32_t decsFreeze;             /* request to freeze DECS (0=off, 1=on) */
 assign decsFreeze to "{T}chopControl.VALD";
 
-long decsReset;              /* request to reset DECS (0=off, 1=on) */
+int32_t decsReset;              /* request to reset DECS (0=off, 1=on) */
 assign decsReset to "{T}chopControl.VALE";
 
-long profile;                /* demanded chop profile (0=2point, 1=3point, 2=triangle) */
+int32_t profile;                /* demanded chop profile (0=2point, 1=3point, 2=triangle) */
 assign profile to "{T}chopConfig.VALA";
 
-long syncSource;             /* chop synchronisation source (0=SCS else instrument ID number */
+int32_t syncSource;             /* chop synchronisation source (0=SCS else instrument ID number */
 assign syncSource to "{T}chopConfig.VALB";
 
 double dutyCycle;
@@ -815,10 +815,10 @@ assign dutyCycle to "{T}chopConfig.VALD";
 
 /* ===================================================================== */
 
-long guideSwitch;                       /* screen widget for guide on/off */
+int32_t guideSwitch;                       /* screen widget for guide on/off */
 assign guideSwitch to "{T}guideOn.VAL";
 
-long guideWidget;
+int32_t guideWidget;
 assign guideWidget to "{T}guideReset.VAL";          /* guide null widget on guide config screen */
 /* ===================================================================== */
 
@@ -828,17 +828,17 @@ assign guideWidget to "{T}guideReset.VAL";          /* guide null widget on guid
  * The window is applied to the magnitude of the position error
  */
 
-long toleranceCadStart;
+int32_t toleranceCadStart;
 assign toleranceCadStart to "{T}toleranceP:start.VAL";
 monitor toleranceCadStart;
 
 evflag toleranceCadChange;
 sync toleranceCadStart to toleranceCadChange;
 
-long toleranceCarIn;                        /* input to toleranceC CAR */
+int32_t toleranceCarIn;                        /* input to toleranceC CAR */
 assign toleranceCarIn to "{T}toleranceC.IVAL";
 
-long toleranceCarErrIn;                     /* error input to toleranceC CAR */
+int32_t toleranceCarErrIn;                     /* error input to toleranceC CAR */
 assign toleranceCarErrIn to "{T}toleranceC.IERR";
 
 string toleranceCarMessIn;                  /* message input to toleranceC CAR */
@@ -877,7 +877,7 @@ assign tolDir to "{T}tolerance.DIR";
  * is not retrieved from the CAD VALA field
  */
 
-long bandwidthCadStart;
+int32_t bandwidthCadStart;
 assign bandwidthCadStart to "{T}servoP:start.VAL";
 monitor bandwidthCadStart;
 
@@ -887,10 +887,10 @@ sync bandwidthCadStart to bandwidthCadChange;
 double bandwidth;
 assign bandwidth to "{T}servoBandwidth.VALA";
 
-long bandwidthCarIn;                        /* input to servobwC CAR */
+int32_t bandwidthCarIn;                        /* input to servobwC CAR */
 assign bandwidthCarIn to "{T}servoBandwidthC.IVAL";
 
-long bandwidthCarErrIn;                     /* error input to servobwC CAR */
+int32_t bandwidthCarErrIn;                     /* error input to servobwC CAR */
 assign bandwidthCarErrIn to "{T}servoBandwidthC.IERR";
 
 string bandwidthCarMessIn;                  /* message input to servobwC CAR */
@@ -907,13 +907,13 @@ assign bandwidthCarMessIn to "{T}servoBandwidthC.IMSS";
  * these connection are included to allow the interface to be demonstrated
  */
 
-long source;                            /* sensor source to which this record applies */
+int32_t source;                            /* sensor source to which this record applies */
 assign source to "{T}guideConfig.VALA";
 
 double sampleFrequency;                     /* update frequency of source (Hertz) */
 assign sampleFrequency to "{T}guideConfig.VALB";
 
-long  filterType;                       /* type of filter to be applied */
+int32_t  filterType;                       /* type of filter to be applied */
 assign filterType to "{T}guideConfig.VALC";
 
 double frequency1;                      /* filter edge frequency */
@@ -932,7 +932,7 @@ assign xweight to "{T}guideConfig.VALF";
  * in-file globally available data items
  */
 
-long scsStateSad;                       /* current SCS running state (booting, init, running) */
+int32_t scsStateSad;                       /* current SCS running state (booting, init, running) */
 assign scsStateSad to "{D}state.VAL";   /* not to be confused with scsState */
 
 string topEndSad;                       /* current top end (F6 or F16) */
@@ -950,7 +950,7 @@ assign deployableSad to "{D}DeployBafflePos.VAL";
 string centralSad;                      /* central baffle position (key as for demand) */ 
 assign centralSad to "{D}CentralBafflePos.VAL";
 
-long moveBaffleCar;
+int32_t moveBaffleCar;
 assign moveBaffleCar to "{T}moveBaffleC.IVAL";
 
 double tempSad;
@@ -1078,29 +1078,25 @@ assign zWindup to "{T}zWindup.VAL";
 
 /* The following items are made available as state indicators */
 
-long myscsState;
+int32_t myscsState;
 /* current state of the SCS  use definition in interlock.h */
 
 assign myscsState to "{T}scsState.VAL";
 monitor myscsState;
 
-long cadProcessorState;
+int32_t cadProcessorState;
 assign cadProcessorState to "{T}cadProcessorState.VAL";
 monitor cadProcessorState;
 
-long followDemandState;
+int32_t followDemandState;
 assign  followDemandState to "{T}followDemandState.VAL";
 monitor followDemandState;
 
-long monitorSadState;
+int32_t monitorSadState;
 assign monitorSadState to "{T}monitorSadState.VAL";
 monitor monitorSadState;
 
-long monitorProcessState;
-assign monitorProcessState to "{T}monitorProcessState.VAL";
-monitor monitorProcessState;
-
-long rebootScsState;
+int32_t rebootScsState;
 assign rebootScsState to "{T}rebootScsState.VAL";
 monitor rebootScsState;
 
@@ -1108,7 +1104,7 @@ monitor rebootScsState;
 
 /* Commands and data from the M2 system to the SCS */
 
-long coincidence;
+int32_t coincidence;
 assign coincidence to "{T}coincidence.VAL";
 monitor coincidence;
 
@@ -1117,7 +1113,7 @@ sync coincidence to inPositionChange;
 
 /* servoInPosition flag for enabling servo on */
 
-long servoInPosition;
+int32_t servoInPosition;
 assign servoInPosition to "{T}readRmDiags.VALE";
 monitor servoInPosition;
 
@@ -1449,7 +1445,7 @@ ss CADprocessor {
       when(delay(30.0))
       {
          pvGet(initResponse);
-         printf("initResponse is %ld\n", initResponse);
+         printf("initResponse is %d\n", initResponse);
 
          errorLog("state startInit...", 1, ON);
          myscsState = INITIALISING;
@@ -1530,7 +1526,7 @@ ss CADprocessor {
          {
             /* originally this had WAIT_FOREVER as a timeout. 
              * We need something more reasonable -- 5 minutes maybe? (mdw) */
-            if(epicsEventWaitWithTimeout(pvLoadComplete, 300.0) != OK)
+            if(epicsEventWaitWithTimeout(pvLoadComplete, 30.0) != OK)
             {
                errorLog("timeout waiting for pvLoad completion", 1, ON);
                reportHealth(WARNING, "Timeout loading filter coefficients");
@@ -1543,13 +1539,13 @@ ss CADprocessor {
 
    state loadFiles
    {
-      when(delay(30.0))
+      when(delay(10.0))
       {
          cadProcessorState = LOADFILES;
          pvPut(cadProcessorState);
 
          pvGet(initResponse);
-         printf("state loadFiles ...initResponse is %ld\n", initResponse);
+         printf("state loadFiles ...initResponse is %d\n", initResponse);
 
          /* read instrument configuration details and write to local store*/
 
@@ -1677,15 +1673,15 @@ ss CADprocessor {
 
          /* clear out reflective mem */
 
-	     pvGet(moveXPosition);
-	 	 pvGet(moveYPosition);
+	 pvGet(moveXPosition);
+	 pvGet(moveYPosition);
        %{
          if (epicsMutexTryLock(setPointFree))
          {
-            if(debugLevel) {
-               errlogPrintf(" moveXposition set to %f \n",moveXPosition);
-               errlogPrintf(" moveYPosition set to %f \n",moveYPosition);
-            }
+
+            errlogPrintf(" moveXposition set to %f \n",moveXPosition);
+            errlogPrintf(" moveYPosition set to %f \n",moveYPosition);
+            
             setPoint.xTiltA =  0.0;
             setPoint.yTiltA =  0.0;
             setPoint.xTiltB =  0.0;
@@ -1708,11 +1704,10 @@ ss CADprocessor {
 
          if (epicsMutexTryLock(refMemFree))
          {
-            if(debugLevel) {
-               errlogPrintf(" moveXInputPos to RM %f \n",moveXInputPos);
-               errlogPrintf(" moveYInputPos to RM %f \n",moveYInputPos);
-               errlogPrintf(" xyPosDeadband to RM %f \n",xyPosDeadband);
-            }
+            errlogPrintf(" moveXInputPos to RM %f \n",moveXInputPos);
+            errlogPrintf(" moveYInputPos to RM %f \n",moveYInputPos);
+            errlogPrintf(" xyPosDeadband to RM %f \n",xyPosDeadband);
+            
             scsBase->page0.AxTilt = 0.0;
             scsBase->page0.BxTilt = 0.0;
             scsBase->page0.CxTilt = 0.0;
@@ -1846,7 +1841,7 @@ ss CADprocessor {
       when((initResponse == 0) && delay(30.0 ))
       {
          pvGet(initResponse);
-         printf("Init Complete ...initResponse is %ld\n", initResponse);
+         printf("Init Complete ...initResponse is %d\n", initResponse);
 
          cadProcessorState = WAITINITCOMPLETE;
          pvPut(cadProcessorState);
@@ -3684,10 +3679,11 @@ ss followDemandProcessing {
 ss monitorSad {
    state init {
       when() {
-         monitorSadState = MONSADENTRY; 
-         pvPut(monitorSadState);
+         //monitorSadState = MONSADENTRY; 
+         //pvPut(monitorSadState);
 
-      }   state updateSad
+      //}   state updateSad
+      } state init
    }
 
    state updateSad {
@@ -3834,61 +3830,6 @@ ss monitorSad {
          }   
 
       }   state updateSad
-   }
-}
-
-/* ===================================================================== */
-/* INDENT OFF */
-/* 
- *  Function Name:
- *  State set "monitorProcess"
- *
- *  Purpose:
- *  Refresh the public data
- *
- *  Description:
- *  Data which must be made available outside the SCS package at a rate faster
- *  than the SAD updates
- *
- *  Invocation:
- *  0.1 second timer elapse
- *
- *  Parameters: (">" input, "!" modified, "<" output)
- *  None
- *  
- *  Function value:
- *  n/a
- *
- *  External functions:
- *  The following SNL functions have been used
- *
- *  pvPut       write a value to a database channel
- *  pvGet       read a value from a database channel
- *
- *  Deficiencies:
- *
- */
-/* INDENT ON */
-/* ===================================================================== */
-
-ss monitorProcess {
-   state updateParameters {
-      when(delay(0.2)) {
-         monitorProcessState = UPDATEPARAMETERS; 
-         pvPut(monitorProcessState);
-
-         if(epicsMutexTryLock(refMemFree)) {
-            /* invert sense of in position*/
-            coincidence = !scsPtr->page1.inPosition;
-            epicsMutexUnlock(refMemFree);
-         }
-         else {
-            errorLog("state updateParameters - couldn't obtain refMemFree mutex", 1, ON);
-         }
-
-         pvPut(coincidence);
-
-      } state updateParameters
    }
 }
 
@@ -4199,7 +4140,7 @@ ss rebootScs {
          //if(loggingNow != OFF)
          //   %%scsLogDestruct();
 
-         %%reboot(BOOT_QUICK_AUTOBOOT);
+         //%%reboot(BOOT_QUICK_AUTOBOOT);
 
          /* At this point the system shall reboot so no further code */
          /* execution is permitted. The return state has been set to */
