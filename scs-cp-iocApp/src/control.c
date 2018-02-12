@@ -323,7 +323,7 @@ static int  frameConvert (converted *result, frameChange *f, const double x,
 void phasorShow(void);
 
 int flipGuide = 0;
-int simLevel = 1;
+int simLevel = 0;
 memMap *scsPtr = NULL;
 memMap *scsBase = NULL;
 memMap *m2Ptr = NULL;
@@ -2486,7 +2486,7 @@ void scsReceive (void)
       {
          scsrx2++; 
          errorLog ("scsReceive - scsReceiveNow timeout", 1, ON);
-         errlogMessage("rscsReceive - scsReceiveNow timeout\n");
+         //errlogMessage("rscsReceive - scsReceiveNow timeout\n");
       }
    }
 }
@@ -3334,6 +3334,7 @@ epicsExportAddress(int, scsrx1 );
 epicsExportAddress(int, scsrx2 );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
+epicsExportAddress(int, simLevel );
 epicsExportAddress(double, waittime );
 
 
