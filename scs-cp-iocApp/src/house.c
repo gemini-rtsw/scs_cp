@@ -119,35 +119,35 @@ long    CADtest (struct cadRecord * pcad)
 
     switch (pcad->dir)
     {
-    case menuDirectiveMARK:
-        break;
+        case menuDirectiveMARK:
+            break;
 
-    case menuDirectiveCLEAR:
-        break;
+        case menuDirectiveCLEAR:
+            break;
 
-    case menuDirectivePRESET:
-        break;
+        case menuDirectivePRESET:
+            break;
 
-    case menuDirectiveSTART:
+        case menuDirectiveSTART:
 
-        if (interlockFlag != 1)
-        {
-            /* trigger forward link */
-        }
-        else
-        {
-            strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+            if (interlockFlag != 1)
+            {
+                /* trigger forward link */
+            }
+            else
+            {
+                strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+                status = CAD_REJECT;
+            }
+            break;
+
+        case menuDirectiveSTOP:
+            break;
+
+        default:
+            strncpy (pcad->mess, "Inappropriate CAD directive", MAX_STRING_SIZE - 1);
             status = CAD_REJECT;
-        }
-        break;
-
-    case menuDirectiveSTOP:
-        break;
-
-    default:
-        strncpy (pcad->mess, "Inappropriate CAD directive", MAX_STRING_SIZE - 1);
-        status = CAD_REJECT;
-        break;
+            break;
     }
 
     return (status);
@@ -207,37 +207,37 @@ long    CADinit (struct cadRecord * pcad)
 
     switch (pcad->dir)
     {
-    case menuDirectiveMARK:
-        break;
+        case menuDirectiveMARK:
+            break;
 
-    case menuDirectiveCLEAR:
-        break;
+        case menuDirectiveCLEAR:
+            break;
 
-    case menuDirectivePRESET:
-        break;
+        case menuDirectivePRESET:
+            break;
 
-    case menuDirectiveSTART:
+        case menuDirectiveSTART:
 
-        if (interlockFlag != 1)
-        {
-            /* trigger forward link */
-            puts ("init CAD start");
-        }
-        else
-        {
-            strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+            if (interlockFlag != 1)
+            {
+                /* trigger forward link */
+                puts ("init CAD start");
+            }
+            else
+            {
+                strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+                status = CAD_REJECT;
+            }
+
+            break;
+
+        case menuDirectiveSTOP:
+            break;
+
+        default:
+            strncpy (pcad->mess, "init -Inappropriate CAD directive", MAX_STRING_SIZE - 1);
             status = CAD_REJECT;
-        }
-
-        break;
-
-    case menuDirectiveSTOP:
-        break;
-
-    default:
-        strncpy (pcad->mess, "init -Inappropriate CAD directive", MAX_STRING_SIZE - 1);
-        status = CAD_REJECT;
-        break;
+            break;
     }
 
     return (status);
@@ -297,37 +297,37 @@ long    CADinitXY (struct cadRecord * pcad)
 
     switch (pcad->dir)
     {
-    case menuDirectiveMARK:
-        break;
+        case menuDirectiveMARK:
+            break;
 
-    case menuDirectiveCLEAR:
-        break;
+        case menuDirectiveCLEAR:
+            break;
 
-    case menuDirectivePRESET:
-        break;
+        case menuDirectivePRESET:
+            break;
 
-    case menuDirectiveSTART:
+        case menuDirectiveSTART:
 
-        if (interlockFlag != 1)
-        {
-            /* trigger forward link */
-            puts ("initXY CAD start");
-        }
-        else
-        {
-            strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+            if (interlockFlag != 1)
+            {
+                /* trigger forward link */
+                puts ("initXY CAD start");
+            }
+            else
+            {
+                strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+                status = CAD_REJECT;
+            }
+
+            break;
+
+        case menuDirectiveSTOP:
+            break;
+
+        default:
+            strncpy (pcad->mess, "initXY -Inappropriate CAD directive", MAX_STRING_SIZE - 1);
             status = CAD_REJECT;
-        }
-
-        break;
-
-    case menuDirectiveSTOP:
-        break;
-
-    default:
-        strncpy (pcad->mess, "initXY -Inappropriate CAD directive", MAX_STRING_SIZE - 1);
-        status = CAD_REJECT;
-        break;
+            break;
     }
 
     return (status);
@@ -385,36 +385,36 @@ long    CADreboot (struct cadRecord * pcad)
 
     switch (pcad->dir)
     {
-    case menuDirectiveMARK:
-        break;
+        case menuDirectiveMARK:
+            break;
 
-    case menuDirectiveCLEAR:
-        break;
+        case menuDirectiveCLEAR:
+            break;
 
-    case menuDirectivePRESET:
-        break;
+        case menuDirectivePRESET:
+            break;
 
-    case menuDirectiveSTART:
+        case menuDirectiveSTART:
 
-        if (interlockFlag != 1)
-        {
-            /* trigger forward link */
-        }
-        else
-        {
-            strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+            if (interlockFlag != 1)
+            {
+                /* trigger forward link */
+            }
+            else
+            {
+                strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+                status = CAD_REJECT;
+            }
+
+            break;
+
+        case menuDirectiveSTOP:
+            break;
+
+        default:
+            strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
             status = CAD_REJECT;
-        }
-
-        break;
-
-    case menuDirectiveSTOP:
-        break;
-
-    default:
-        strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
-        status = CAD_REJECT;
-        break;
+            break;
     }
 
     return (status);
@@ -474,36 +474,36 @@ long    CADdatum (struct cadRecord * pcad)
 
     switch (pcad->dir)
     {
-    case menuDirectiveMARK:
-        break;
+        case menuDirectiveMARK:
+            break;
 
-    case menuDirectiveCLEAR:
-        break;
+        case menuDirectiveCLEAR:
+            break;
 
-    case menuDirectivePRESET:
-        break;
+        case menuDirectivePRESET:
+            break;
 
-    case menuDirectiveSTART:
+        case menuDirectiveSTART:
 
-        if (interlockFlag != 1)
-        {
-            /* trigger forward link */
-        }
-        else
-        {
-            strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+            if (interlockFlag != 1)
+            {
+                /* trigger forward link */
+            }
+            else
+            {
+                strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+                status = CAD_REJECT;
+            }
+
+            break;
+
+        case menuDirectiveSTOP:
+            break;
+
+        default:
+            strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
             status = CAD_REJECT;
-        }
-
-        break;
-
-    case menuDirectiveSTOP:
-        break;
-
-    default:
-        strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
-        status = CAD_REJECT;
-        break;
+            break;
     }
 
     return (status);
@@ -557,7 +557,7 @@ long    CADsimulate (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
     static int simBuffer;
-        static char *simOpts[]= {"NONE", "VSM", "FAST", "FULL", NULL} ;
+    static char *simOpts[]= {"NONE", "VSM", "FAST", "FULL", NULL} ;
 
     cadDirLog ("simulate", pcad->dir, 1, pcad);
 
@@ -566,55 +566,55 @@ long    CADsimulate (struct cadRecord * pcad)
 
     switch (pcad->dir)
     {
-    case menuDirectiveMARK:
-        break;
+        case menuDirectiveMARK:
+            break;
 
-    case menuDirectiveCLEAR:
-        break;
+        case menuDirectiveCLEAR:
+            break;
 
-    case menuDirectivePRESET:
+        case menuDirectivePRESET:
 
-                status = CAD_REJECT ;
+            status = CAD_REJECT ;
 
-                if (pcad->a[0])
-        {
-                  if (tcsDcString (simOpts, "level - ", pcad->a, &simBuffer, pcad) )
-          {
-              errorLog ("CADsimulate - unrecognised sim selection", 2, ON);
-              break ;
-                  }
+            if (pcad->a[0])
+            {
+                if (tcsDcString (simOpts, "level - ", pcad->a, &simBuffer, pcad) )
+                {
+                    errorLog ("CADsimulate - unrecognised sim selection", 2, ON);
+                    break ;
                 }
-        else
-        {
-            tcsCsAppendMessage(pcad, "no level specified");
-            break ;
-                }
+            }
+            else
+            {
+                tcsCsAppendMessage(pcad, "no level specified");
+                break ;
+            }
 
-                status = CAD_ACCEPT ;
-        break;
+            status = CAD_ACCEPT ;
+            break;
 
-    case menuDirectiveSTART:
+        case menuDirectiveSTART:
 
-        if (interlockFlag != 1)
-        {
-            simLevel = simBuffer;
-            strcpy(pcad->vala, simOpts[simBuffer]);
-        }
-        else
-        {
-            strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+            if (interlockFlag != 1)
+            {
+                simLevel = simBuffer;
+                strcpy(pcad->vala, simOpts[simBuffer]);
+            }
+            else
+            {
+                strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
+                status = CAD_REJECT;
+            }
+
+            break;
+
+        case menuDirectiveSTOP:
+            break;
+
+        default:
+            strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
             status = CAD_REJECT;
-        }
-
-        break;
-
-    case menuDirectiveSTOP:
-        break;
-
-    default:
-        strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
-        status = CAD_REJECT;
-        break;
+            break;
     }
 
     return (status);
@@ -676,11 +676,11 @@ long    CADsimulate (struct cadRecord * pcad)
 /* ===================================================================== */
 
 /*
-long    carInit (struct genSubRecord * pgsub)
-{
-    return (OK);
-}
-*/
+   long    carInit (struct genSubRecord * pgsub)
+   {
+   return (OK);
+   }
+   */
 
 long    carDrive1 (struct genSubRecord * pgsub)
 {
