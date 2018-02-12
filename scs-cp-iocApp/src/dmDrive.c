@@ -116,13 +116,14 @@
 
 /* INDENT ON */
 /* ===================================================================== */
+static int reallock1 = 0;
+static int reallock2 = 0;
 long    realDrive (struct genSubRecord * pgsub)
 {
 
     /* note sense reversal for in position, on ref mem 0 = in position */
-    errlogSevPrintf(errlogInfo, "realDrive start.\n");
-
     epicsMutexLock(refMemFree);
+    reallock1++;
 
     *(long *) pgsub->vala   = scsPtr->page1.checksum;
     *(long *) pgsub->valb   = scsPtr->page1.NR;
@@ -135,9 +136,9 @@ long    realDrive (struct genSubRecord * pgsub)
     *(long *) pgsub->vali   = scsPtr->page1.inPosition;
 
     if (scsPtr->page1.chopTransition)
-       *(long *) pgsub->valj   = 0;
-    else
-       *(long *) pgsub->valj   = 1;
+        *(long *) pgsub->valj   = 0;
+     else
+        *(long *) pgsub->valj   = 1;
 
     *(long *) pgsub->valk   = (long) scsPtr->page1.statusWord.all;
     *(long *) pgsub->vall   = scsPtr->page1.heartbeat;
@@ -152,7 +153,6 @@ long    realDrive (struct genSubRecord * pgsub)
     *(long *) pgsub->valu   = scsPtr->page1.topEnd;
 
     epicsMutexUnlock(refMemFree);
-
     return (OK);
 }
 
@@ -203,12 +203,12 @@ long    realDrive (struct genSubRecord * pgsub)
 long    real2Drive (struct genSubRecord * pgsub)
 {
 
-    errlogSevPrintf(errlogInfo, "real2Drive start.\n");
     epicsMutexLock(refMemFree);
     *(double *) pgsub->vala = scsPtr->page1.upperBearingAngle;
     *(double *) pgsub->valb = scsPtr->page1.lowerBearingAngle;
     epicsMutexUnlock(refMemFree);
 
+    reallock2++;
     return (OK);
 }
 
@@ -522,4 +522,5 @@ epicsRegisterFunction(real2Drive);
 epicsRegisterFunction(displayScs);
 epicsRegisterFunction(displayScs2);
 epicsRegisterFunction(statusDrive);
-
+epicsExportAddress(int, reallock1);
+epicsExportAddress(int, reallock2);
