@@ -88,31 +88,31 @@ static  float       temperature = 23.4;
 /* =========================================================== */
 /* The following groups of paramaters access the channels to the Capfast diagrams */
 
-long vibControl;
+int32_t vibControl;
 assign vibControl to "{S}vibControl.VAL";
 
 /* chop configuration variables */
 
-long chopProfile;
+int32_t chopProfile;
 assign chopProfile to "{S}mechanism.C";
 
 double chopFrequency;
 assign chopFrequency to "{S}mechanism.D";
 
-long chopOn;                        /* chop on/off demand */
+int32_t chopOn;                        /* chop on/off demand */
 assign chopOn to "{S}mechanism.B";
 
-long syncSource;
+int32_t syncSource;
 assign syncSource to "{S}mechanism.E";
 
 /* command and status data to and from the SCS */
 
 evflag scsCommand;                  /* new command received */
 
-long tiltEnable;                    /* enable signal for all m2 mechanisms */
+int32_t tiltEnable;                    /* enable signal for all m2 mechanisms */
 assign tiltEnable to "{S}enable.VAL";
 
-long offLoaders;
+int32_t offLoaders;
 assign offLoaders to "{S}offLoaders.VAL";
 
 /* strings to display system status to the engineering screens */
@@ -122,13 +122,13 @@ assign tiltState to "{S}tiltstate.VAL";
 
 /* =========================================================== */
 
-long m2Central;                         /* central baffle position */
+int32_t m2Central;                         /* central baffle position */
 assign m2Central to "{S}central.VAL";
 
-long m2Deployable;                      /* deployable baffle position */
+int32_t m2Deployable;                      /* deployable baffle position */
 assign m2Deployable to "{S}deployable.VAL";
 
-long m2Heartbeat;                       /* 200Hz incrementing hearbeat counter */
+int32_t m2Heartbeat;                       /* 200Hz incrementing hearbeat counter */
 assign m2Heartbeat to "{S}heartbeat.VAL";
 monitor m2Heartbeat;
 
@@ -138,19 +138,19 @@ monitor m2Health;
 
 /* error status bits */
 
-long sensorLimit;
+int32_t sensorLimit;
 assign sensorLimit to "{S}sensorLimit.VAL";
 
-long actuatorLimit;
+int32_t actuatorLimit;
 assign actuatorLimit to "{S}actuatorLimit.VAL";
 
-long thermalLimit;
+int32_t thermalLimit;
 assign thermalLimit to "{S}thermalLimit.VAL";
 
-long mirrorDsp;
+int32_t mirrorDsp;
 assign mirrorDsp to "{S}mirrorDsp.VAL";
 
-long vibrationDsp;
+int32_t vibrationDsp;
 assign vibrationDsp to "{S}vibrationDsp.VAL";
 
 /* =========================================================== */
@@ -462,7 +462,7 @@ ss readRefMem
                 epicsMutexUnlock(m2MemFree);
 
                 /* read command from message queue, returns ERROR if no message available   */
-                /* in which case assume that it's only a fast guide update          */
+                /* in which case assume that its only a fast guide update          */
 
                 {
                 if(epicsMessageQueueTryReceive(receiveQId,  &receivedCommand, sizeof (long)) == ERROR)
