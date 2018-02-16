@@ -976,7 +976,6 @@ void processGuides (void)
    static double tsold=0.0;
 
    /* Initialize Vibration Tracking*/
-#if 0
    phasorInit(&phasorX);
    showPhasorRotation(&phasorX);
 
@@ -988,7 +987,6 @@ void processGuides (void)
 
    vtkInit(&vtkY);
    showVtkRotation(&vtkY);
-#endif
 
    /* Initialize eventData structure */ 
    eventData.currentBeam = 0;
