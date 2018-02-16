@@ -371,7 +371,7 @@ extern frameChange *ag2m2[MAX_SOURCES];
 
 
 extern epicsEventId doPvLoad;
-extern epicsEventId pvLoadComplete;
+//extern epicsEventId pvLoadComplete;
 
 extern frameOfReference frame;
 

@@ -94,7 +94,7 @@ frameChange *ag2m2[MAX_SOURCES];
 // SEM_ID doPvLoad = NULL;
 // SEM_ID pvLoadComplete = NULL;
 epicsEventId doPvLoad;
-epicsEventId pvLoadComplete;
+//epicsEventId pvLoadComplete;
 
 
 extern epicsMessageQueueId healthQId;
@@ -964,7 +964,7 @@ long readHealth(struct genSubRecord *pgsub)
     return(OK);
 }   
 
-
+int loadComplete;
 
 /* why aren't these being loaded in the startup script? */
 int loadInitFiles(void*p)
@@ -995,7 +995,8 @@ int loadInitFiles(void*p)
       else
          errlogPrintf("pvload instConfig.dat\n");
 
-      epicsEventSignal(pvLoadComplete);
+      //epicsEventSignal(pvLoadComplete);
+      loadComplete = 1;
     }
 }
 
@@ -1464,7 +1465,7 @@ int  modifyFrame
         
     /* access frame */
 
-    if(epicsMutexTryLock(f->access))
+    if(epicsMutexLock(f->access))
     {
         /* update the structure */
 
@@ -1539,7 +1540,7 @@ int   showFrame (int source)
 
     /* access frame */
 
-    if(epicsMutexTryLock(f->access) == OK)
+    if(epicsMutexLock(f->access) == OK)
     {
         /* copy the frame contents */
 
