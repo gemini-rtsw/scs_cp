@@ -53,15 +53,11 @@
                            statusCompiled, doPvLoad, pvLoadComplete */
 #include "guide.h"      /* For createFilter, setPointFree */
 #include "m2Log.h"          /* For cadDirLog */
-//#include "archive.h"    /* For loggerTask, refMemFree, logCAddr */
 #include "control.h"    /* For fireLoops, slowTransmit, scsReceive, scsPtr, 
                            scsBase, m2Ptr, m2MemFree, slowUpdate, wfsFree
                            diagnosticsAvailable, scsDataAvailable,
                            scsReceiveNow, commandQId, receiveQId 
                            SYSTEM_CLOCK_RATE */
-
-
-//#define TOP "m2:"
 
 /* #define TRUESCSBASE     0xf0A00040      / * Base address of node 0 */
 #define TRUESCSBASE     0xfAA00040      /* Base address of node 0 
@@ -69,10 +65,26 @@
 /* #define TRUEM2BASE      0xf0600040      / * Base address of node 1 */
 #define TRUEM2BASE      0xfA600040      /* Base address of node 1 
                                            reflective memory card (m2 )  */
+extern void rmISR2(int);
+extern void rmISR3(int);
 
 /* Declare externals */
-
 epicsMessageQueueId  healthQId = NULL;
+
+int  scsConfigureISR(void) {
+
+
+    int status = ERROR;
+
+    if ( (status = rmIntConnect(2, rmISR2)) != OK) 
+        return status;
+
+    if ( (status = rmIntConnect(3, rmISR3)) != OK )
+        return status;
+
+    return status;
+    
+}
 
 /* ===================================================================== */
 /* INDENT OFF */
@@ -132,10 +144,14 @@ int scsInit (void)
 {
    int source = PWFS1;
 
+   if (scsConfigureISR() != OK) {
+
+       errlogSevPrintf(errlogInfo, "Failed to connect interrupts.\n");
+   }
 
    /* create semaphores to control pvload of initialisation files */
    doPvLoad = epicsEventMustCreate(epicsEventEmpty);
-   pvLoadComplete = epicsEventMustCreate(epicsEventEmpty);
+   //pvLoadComplete = epicsEventMustCreate(epicsEventEmpty);
 
    /* mutex semaphore to prevent multiple access to guide data */
    for (source = PWFS1; source <= GYRO; source++)
@@ -253,7 +269,7 @@ int scsInit (void)
 
    memset ((void *) scsBase, 0, sizeof (memMap));
 
-   /* Do in startup in order that xycom has already been initted.
+   /* Do in startup in order that xycom has already been inited.
     * Then, if TIME_LATENCY needed, everything w.r.t. port addresses will
     * have been defined */
 
@@ -275,22 +291,7 @@ int scsInit (void)
                    epicsThreadGetStackSize(epicsThreadStackSmall),
                    (EPICSTHREADFUNC)fireLoops, (void *)NULL);
 
-/*
-   if ((taskSpawn ("cemTimerS", 101, VX_FP_TASK, 20000, (FUNCPTR) cemTimerStart, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) == ERROR)
-   {
-      printf ("taskSpawn fail - cemTimerS\n");
-      return (ERROR);
-   }
-
-   if ((taskSpawn ("cemTimerE", 101, VX_FP_TASK, 20000, (FUNCPTR) cemTimerEnd, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) == ERROR)
-   {
-      printf ("taskSpawn fail - cemTimerE\n");
-      return (ERROR);
-   }
-*/
-
    return (OK);
-
 }
 
 
@@ -303,7 +304,6 @@ static void scsInitCallFunc(const iocshArgBuf *args)
 static void scsRegisterCommands(void)
 {
     iocshRegister(&scsInitFuncDef, scsInitCallFunc);
-
 }
 
 epicsExportRegistrar(scsRegisterCommands);

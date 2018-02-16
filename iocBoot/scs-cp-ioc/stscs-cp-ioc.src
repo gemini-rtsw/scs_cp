@@ -30,8 +30,8 @@ drvXy240Config(1, 32, 0xd000)
 drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 
 # connect rm interrupts to handler routines
-rmIntConnect(2, rmISR2)
-rmIntConnect(3, rmISR3)
+#rmIntConnect(2, rmISR2)
+#rmIntConnect(3, rmISR3)
 
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled
@@ -59,7 +59,8 @@ dbpf "m2:interlockOverride","1"
 #dbpf "m2:guideConfigReset.DIR","0"
 ###### Start any sequence programs
 seq &timeSeq, "sys=m2:, top=tc1:"
-#seq &tilt_st, "S=m2:tilt:"
+seq &scs_mon "T=m2:"
+seq &tilt_st, "S=m2:tilt:"
 #seq &scs_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
 ###dbpr "m2:interlock"
 ##### Comment out during testing signal from GIS:

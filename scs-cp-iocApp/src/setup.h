@@ -40,6 +40,7 @@
 
 /* Public functions */
 int scsInit(void);
+int scsConfigureISR(void);
 
 /* Global variables */
 
