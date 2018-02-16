@@ -26,6 +26,7 @@ scs-cp-ioc_DBD += timelib.dbd
 scs-cp-ioc_DBD += slalib.dbd
 scs-cp-ioc_DBD += timeProbe.dbd
 scs-cp-ioc_DBD += initTrace.dbd
+scs-cp-ioc_DBD += symb.dbd
 scs-cp-ioc_DBD += scs.dbd
 
 # scs-cp-ioc_registerRecordDeviceDriver.cpp derives from scs-cp-ioc.dbd
@@ -53,6 +54,7 @@ scs-cp-ioc_SRCS += m2ParseMsg.c
 scs-cp-ioc_SRCS += showEngineering.c
 scs-cp-ioc_SRCS += guide.c
 scs-cp-ioc_SRCS += initTrace.c
+scs-cp-ioc_SRCS += scs.syms.cpp
 
 LIBRARY_IOC += scsSupport
 scsSupport_LIBS += seq pv
@@ -72,6 +74,7 @@ scs-cp-ioc_LIBS += timelib
 scs-cp-ioc_LIBS += slalib
 scs-cp-ioc_LIBS += devIocStats 
 scs-cp-ioc_LIBS += timeProbe 
+scs-cp-ioc_LIBS += Symb 
 
 # Finally link to the EPICS Base libraries
 scs-cp-ioc_LIBS += scsSupport seq pv
