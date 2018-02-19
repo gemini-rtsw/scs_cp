@@ -55,12 +55,17 @@ iocInit
 startGuideSim
 dbpf "m2:interlockOverride","1"
 
+##M2TS TTL SERVO ON Card0, PORT7, Bit 1, HIGH #####
+#xy240_writePortBit (0,7,1,1)
+
+##M2TS CEM POWER ON Card0, PORT7, Bit 0, HIGH #####
+#xy240_writePortBit (0,7,0,1)
 
 #dbpf "m2:guideConfigReset.DIR","0"
 ###### Start any sequence programs
-seq &timeSeq, "sys=m2:, top=tc1:"
-seq &scs_mon "T=m2:"
-seq &tilt_st, "S=m2:tilt:"
+seq &timeSeq, "sys=m2:, top=tcs:"
+#seq &scs_mon "T=m2:, D=m2:"
+#seq &tilt_st, "S=m2:tilt:, debug=0"
 #seq &scs_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
 ###dbpr "m2:interlock"
 ##### Comment out during testing signal from GIS:

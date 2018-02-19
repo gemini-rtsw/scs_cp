@@ -146,7 +146,7 @@ int scsInit (void)
 
    if (scsConfigureISR() != OK) {
 
-       errlogSevPrintf(errlogInfo, "Failed to connect interrupts.\n");
+       errlogSevPrintf(errlogMajor, "Failed to connect interrupts.\n");
    }
 
    /* create semaphores to control pvload of initialisation files */
@@ -283,9 +283,11 @@ int scsInit (void)
                   epicsThreadGetStackSize(epicsThreadStackBig),
                   (EPICSTHREADFUNC)scsReceive, (void *)NULL);
 
+   /*
    epicsThreadMustCreate("ttiltRx", epicsThreadPriorityMedium,
                   epicsThreadGetStackSize(epicsThreadStackBig),
                   (EPICSTHREADFUNC)tiltReceive, (void *)NULL);
+*/
 
    epicsThreadMustCreate("tfireLoops", epicsThreadPriorityLow,
                    epicsThreadGetStackSize(epicsThreadStackSmall),

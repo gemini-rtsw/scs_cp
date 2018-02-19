@@ -964,8 +964,6 @@ long readHealth(struct genSubRecord *pgsub)
     return(OK);
 }   
 
-int loadComplete;
-
 /* why aren't these being loaded in the startup script? */
 int loadInitFiles(void*p)
 {
@@ -2095,5 +2093,6 @@ epicsRegisterFunction(scsStateStringConvert);
 epicsRegisterFunction(snlStateStringInit);
 epicsRegisterFunction(snlStateStringConvert);
 epicsRegisterFunction(driveEvent);
+epicsExportAddress(int, debugLevel);
 
 

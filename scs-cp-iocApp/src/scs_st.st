@@ -102,7 +102,6 @@
 
    option -a;  /* synchronous          Default  */
    option +c;  /* wait for connections Default  */
-   option +d;  /* debug messages on    Default  */
    option +e;  /* new event flag mode  Default  */
    option +l;  /* C compiler messages  Default  */
    option -r;  /* not reentrant        Default (Only one instance of this seq program allowed)   */
@@ -111,7 +110,6 @@
    %%#include "m2Log.h"        /* For cadDirLog*/
    %%#include "chop.h"         /* For chopIsOn, jogBeam, instruments */
    %%#include "chopControl.h"  /* For eventSem */
-   %%#include "config.h"       /* For depBaffle, cenBaffle */
    %%#include "control.h"      /* For writeCommand, scsPtr, scsBase, filtered,
                                   followOn, controller */
    %%#include "guide.h"        /* For guideOn, setPoint, setPointFree */
@@ -122,11 +120,9 @@
    %%#include "testFunctions.h"        /* For startGuideSim, endGuideSim */
    %%#include "interlock.h"    /* For startGuideSim, endGuideSim */
 
-
    %%#include <stdlib.h>
    %%#include <string.h>
    %%#include <math.h>
-
    %%#include <car.h>
 
    %%#define CMD_RESPONSE_TIMEOUT    40.0 /* command acknowledgement timeout in 
@@ -145,6 +141,7 @@
    %%#define STATUS_OK       0
    %%#define STATUS_WARNING  1
    %%#define STATUS_ERROR    2
+   %%enum {NOT_COMPLETE, COMPLETE};
 
    %{
 
@@ -688,9 +685,6 @@ assign activeC to "{T}activeC.IVAL";
 
 int32_t currentId;
 
-int32_t followS;
-assign followS to "{T}followS.VAL";
-
 /* ===================================================================== */
 
 /* Stop record connections
@@ -907,9 +901,6 @@ assign bandwidthCarMessIn to "{T}servoBandwidthC.IMSS";
  * these connection are included to allow the interface to be demonstrated
  */
 
-int32_t source;                            /* sensor source to which this record applies */
-assign source to "{T}guideConfig.VALA";
-
 double sampleFrequency;                     /* update frequency of source (Hertz) */
 assign sampleFrequency to "{T}guideConfig.VALB";
 
@@ -935,145 +926,6 @@ assign xweight to "{T}guideConfig.VALF";
 int32_t scsStateSad;                       /* current SCS running state (booting, init, running) */
 assign scsStateSad to "{D}state.VAL";   /* not to be confused with scsState */
 
-string topEndSad;                       /* current top end (F6 or F16) */
-assign topEndSad to "{D}topEnd.VAL";
-
-string chopping;                        /* currently chopping (yes or no) */
-assign chopping to "{D}chopping.VAL";
-
-string inPositionSad;                   /* in position (1=not in position, 0=in position) */
-assign inPositionSad to "{D}inPosition.VAL";
-
-string deployableSad;                   /* deployable baffle position (key as for demand) */
-assign deployableSad to "{D}DeployBafflePos.VAL";
-
-string centralSad;                      /* central baffle position (key as for demand) */ 
-assign centralSad to "{D}CentralBafflePos.VAL";
-
-int32_t moveBaffleCar;
-assign moveBaffleCar to "{T}moveBaffleC.IVAL";
-
-double tempSad;
-assign tempSad to "{D}temperature.VAL";
-
-/* NOT USED ANYWHERE IN THE SNL 
-   double xTiltPosSad;                     // x tilt position 
-   assign xTiltPosSad to "{D}xTiltPos.VAL";
-
-   double yTiltPosSad;                     // y tilt position 
-   assign yTiltPosSad to "{D}yTiltPos.VAL";
-
-   double zFocusPosSad;                    // z focus position 
-   assign zFocusPosSad to "{D}zPos.VAL";
-
-   double xTiltDemandSad;                  // demanded x tilt position 
-   assign xTiltDemandSad to "{D}xNetTiltDmd.VAL";
-
-   double yTiltDemandSad;                  // demanded y tilt position 
-   assign yTiltDemandSad to "{D}yNetTiltDmd.VAL";
-
-   double zFocusDemandSad;                 // demanded z focus position 
-   assign zFocusDemandSad to "{D}zNetDmd.VAL";
-
-   double xTiltErrorSad;                   // x tilt position error 
-   assign xTiltErrorSad to "{D}xTiltErr.VAL";
-
-   double yTiltErrorSad;                   // y tilt position error 
-   assign yTiltErrorSad to "{D}yTiltErr.VAL";
-
-   double zFocusErrorSad;                  // z focus position error 
-   assign zFocusErrorSad to "{D}zErr.VAL";
-
-   double xPositionSad;                    // x position 
-   assign xPositionSad to "{D}xPos.VAL";
-
-   double xDemandSad;                      // demanded x position 
-   assign xDemandSad to "{D}xPosDmd.VAL";
-
-   double xErrorSad;                       // x position error 
-   assign xErrorSad to "{D}xPosErr.VAL";
-
-   double yPositionSad;                    // y position 
-   assign yPositionSad to "{D}yPos.VAL";
-
-   double yDemandSad;                      // demanded y position 
-   assign yDemandSad to "{D}yPosDmd.VAL";
-
-   double yErrorSad;                       // y position error 
-   assign yErrorSad to "{D}yPosErr.VAL";
-
-   double xTiltGuideSad;                   // net x tilt correction 
-   assign xTiltGuideSad to "{D}xTiltGuide.VAL";
-
-   double yTiltGuideSad;                   // net y tilt correction 
-   assign yTiltGuideSad to "{D}yTiltGuide.VAL";
-
-   double zFocusGuideSad;                  // net z focus correction 
-   assign zFocusGuideSad to "{D}zGuide.VAL";
-
-   string scsHealth;                       // current health of the SCS 
-   assign scsHealth to "{D}health.VAL";
- */
-/* ===================================================================== */
-
-/* channel addresses to display guide sources */
-
-double x[5];
-assign x[0] to "{T}xtilt0.VAL";
-assign x[1] to "{T}xtilt1.VAL";
-assign x[2] to "{T}xtilt2.VAL";
-assign x[3] to "{T}xtilt3.VAL";
-assign x[4] to "{T}xtilt4.VAL";
-
-double y[5];
-assign y[0] to "{T}ytilt0.VAL";
-assign y[1] to "{T}ytilt1.VAL";
-assign y[2] to "{T}ytilt2.VAL";
-assign y[3] to "{T}ytilt3.VAL";
-assign y[4] to "{T}ytilt4.VAL";
-
-double z[5];
-assign z[0] to "{T}focus0.VAL";
-assign z[1] to "{T}focus1.VAL";
-assign z[2] to "{T}focus2.VAL";
-assign z[3] to "{T}focus3.VAL";
-assign z[4] to "{T}focus4.VAL";
-
-double xerr[5];
-assign xerr[0] to "{T}xerr0.VAL";
-assign xerr[1] to "{T}xerr1.VAL";
-assign xerr[2] to "{T}xerr2.VAL";
-assign xerr[3] to "{T}xerr3.VAL";
-assign xerr[4] to "{T}xerr4.VAL";
-
-double yerr[5];
-assign yerr[0] to "{T}yerr0.VAL";
-assign yerr[1] to "{T}yerr1.VAL";
-assign yerr[2] to "{T}yerr2.VAL";
-assign yerr[3] to "{T}yerr3.VAL";
-assign yerr[4] to "{T}yerr4.VAL";
-
-double zerr[5];
-assign zerr[0] to "{T}zerr0.VAL";
-assign zerr[1] to "{T}zerr1.VAL";
-assign zerr[2] to "{T}zerr2.VAL";
-assign zerr[3] to "{T}zerr3.VAL";
-assign zerr[4] to "{T}zerr4.VAL";
-
-double xRateLimit;
-assign xRateLimit to "{T}xRateLimit.VAL";
-double yRateLimit;
-assign yRateLimit to "{T}yRateLimit.VAL";
-double zRateLimit;
-assign zRateLimit to "{T}zRateLimit.VAL";
-
-double xWindup;
-assign xWindup to "{T}xWindup.VAL";
-double yWindup;
-assign yWindup to "{T}yWindup.VAL";
-double zWindup;
-assign zWindup to "{T}zWindup.VAL";
-
 /* ===================================================================== */
 
 /* The following items are made available as state indicators */
@@ -1091,10 +943,6 @@ monitor cadProcessorState;
 int32_t followDemandState;
 assign  followDemandState to "{T}followDemandState.VAL";
 monitor followDemandState;
-
-int32_t monitorSadState;
-assign monitorSadState to "{T}monitorSadState.VAL";
-monitor monitorSadState;
 
 int32_t rebootScsState;
 assign rebootScsState to "{T}rebootScsState.VAL";
@@ -1164,6 +1012,12 @@ monitor servoInPosition;
 
 ss CADprocessor {
    state init {
+
+      option +e;
+      entry{
+        printf("CADprocessor: init");
+      }
+
       when() {
          /* set current SCS state to IDLE */
 
@@ -1187,34 +1041,13 @@ ss CADprocessor {
    }
 
    /* ===================================================================== */
-
-   state clearFlags {
-      when() {
-         /* clear all event flags */
-
-         efClear(testCadChange);
-         efClear(initCadChange);
-         efClear(initXYCadChange);
-         efClear(moveCadChange);
-         efClear(stopCadChange);
-         efClear(parkCadChange);
-         efClear(guideSimChange);
-         efClear(chopControlCadChange);
-         efClear(newBeamA);
-         efClear(bandwidthCadChange);
-         efClear(toleranceCadChange);
-         efClear(inPositionChange);
-         efClear(followCadChange);
-         efClear(actuatorCadChange);
-         efClear(vtkChange);
-
-         puts("Cleared flags, starting INIT in 10.0 secs...");
-
-      }   state startInit
-   }
-
-   /* ===================================================================== */
    state idle {
+      
+      option +e;
+      entry{
+        printf("CADprocessor: idle");
+      }
+
       when() {
          cadProcessorState = CADPROCIDLE;
          pvPut(cadProcessorState);
@@ -1227,12 +1060,16 @@ ss CADprocessor {
    }
 
    /* ===================================================================== */
-
    state waitForCommand {
+
+      option +e;
+      entry{
+        printf("CADprocessor: waitForCommand");
+      }
+
       /* when the appropriate event flag is set, clear it and vector to
        * the corresponding handling routine
        */
-
       when(efTest(testCadChange)) 
       {
          /* clear event flag */
@@ -1328,6 +1165,38 @@ ss CADprocessor {
 
       }   state startVtkChange
 
+   }
+
+   /* ===================================================================== */
+   state clearFlags {
+
+      option +e;
+      entry{
+        printf("CADprocessor: clearFlags");
+      }
+      
+      when() {
+         /* clear all event flags */
+
+         efClear(testCadChange);
+         efClear(initCadChange);
+         efClear(initXYCadChange);
+         efClear(moveCadChange);
+         efClear(stopCadChange);
+         efClear(parkCadChange);
+         efClear(guideSimChange);
+         efClear(chopControlCadChange);
+         efClear(newBeamA);
+         efClear(bandwidthCadChange);
+         efClear(toleranceCadChange);
+         efClear(inPositionChange);
+         efClear(followCadChange);
+         efClear(actuatorCadChange);
+         efClear(vtkChange);
+
+         puts("Cleared flags, starting INIT in 10.0 secs...");
+
+      }   state startInit
    }
 
    /* ===================================================================== */
@@ -1442,7 +1311,7 @@ ss CADprocessor {
    state startInit
    {
       /* The following delay is in units of 0.33 seconds.*/
-      when(delay(30.0))
+      when(delay(10.0))
       {
          pvGet(initResponse);
          printf("initResponse is %d\n", initResponse);
@@ -1485,67 +1354,30 @@ ss CADprocessor {
          guideSwitch = 0;
          pvPut(guideSwitch);
 
-         /* REMOVED: 22-June-2000 
-            turn on tilt system by writing to the event system 
+         printf("startInit - turn on power and servo...\n");
 
-            if(eventConfig.change == 0)
-            {
-            if previous changes have been acknowledged, 
-            write new data, flag change and give sem 
-
-            printf("startInit - turn on tilt system...\n");
-            printf("startInit - setting up a new eventConfig\n");
-            eventConfig.change  = 1;
-            eventConfig.m2Power = ON;
-            eventConfig.m2Servo = ON;
-            printf("startInit - giving eventSem semaphore\n");
-            epicsEventSignal(eventSem); 
-            }
-            else
-            {
-            errorLog("startInit - command not acknowledged", 1, ON);
-            printf("startInit - command not acknowledged\n");
-            }
-          */
-
-         /* REPLACED WITH: Just set these, so that power is stays ON.
-          * Note that it is set to on as part of the reboot sequence.
-          * So there is no need to set change to 1 or to give sem to 
-          * call the hndlr routine */
-
-         eventConfig.m2Power = ON;
-         eventConfig.m2Servo = ON;
-
+         %%eventConfig.m2Power = ON;
+         %%eventConfig.m2Servo = ON;
 
          /* give semaphore to allow loading of initialisation files */
+         %%epicsEventSignal(doPvLoad);
 
-         epicsEventSignal(doPvLoad);
-
-         /* wait on semaphore showing load completed */
-
-         {
-            /* originally this had WAIT_FOREVER as a timeout. 
-             * We need something more reasonable -- 5 minutes maybe? (mdw) */
-            if(epicsEventWaitWithTimeout(pvLoadComplete, 30.0) != OK)
-            {
-               errorLog("timeout waiting for pvLoad completion", 1, ON);
-               reportHealth(WARNING, "Timeout loading filter coefficients");
-            }
-         }
-
-         puts("Files now loaded, wait 10.0 seconds...");
       } state loadFiles
    }
 
    state loadFiles
    {
-      when(delay(10.0))
+      option +e;
+      entry {
+         printf("CADprocessor:loadFiles 10.0 second timer\n");
+      }
+      when(delay(10.0) && loadComplete == COMPLETE)
       {
          cadProcessorState = LOADFILES;
          pvPut(cadProcessorState);
 
          pvGet(initResponse);
-         printf("state loadFiles ...initResponse is %d\n", initResponse);
+         printf("...initResponse is %d\n", initResponse);
 
          /* read instrument configuration details and write to local store*/
 
@@ -1601,7 +1433,7 @@ ss CADprocessor {
          pvGet(ics4capability);
          strncpy(instruments[5].capability, ics4capability, MAX_STRING_SIZE - 1);
 
-         printf("instrument data loaded\n");
+         printf("CADProc:LF instrument data loaded\n");
 
          strncpy(inst0, instruments[0].name, MAX_STRING_SIZE - 1);
          pvPut(inst0);
@@ -1641,6 +1473,7 @@ ss CADprocessor {
 
          pvGet(focusScaling);
 
+         printf("CADProc:LF pre-frame\n");
          %{
             frame.tiltCosTheta = cos(tiltSkew * DEGS2RADS);
             frame.tiltSinTheta = sin(tiltSkew * DEGS2RADS);
@@ -1663,138 +1496,147 @@ ss CADprocessor {
             frame.gyroOffsetY = gyroOffsetY;
 
             frame.focusScaling = focusScaling;
+
+            writeCommand(ACT_PWR_ON);
+            /*         writeCommand(MEND);
+                       writeCommand(VEND); */
+            writeCommand(MOFFLOFF);
+            writeCommand(CMD_INIT);
+
          }%
 
-         writeCommand(ACT_PWR_ON);
-         /*            writeCommand(MEND);
-                       writeCommand(VEND); */
-         writeCommand(MOFFLOFF);
-         writeCommand(CMD_INIT);
-
          /* clear out reflective mem */
-
 	 pvGet(moveXPosition);
 	 pvGet(moveYPosition);
-       %{
-         if (epicsMutexTryLock(setPointFree))
-         {
 
-            errlogPrintf(" moveXposition set to %f \n",moveXPosition);
-            errlogPrintf(" moveYPosition set to %f \n",moveYPosition);
-            
-            setPoint.xTiltA =  0.0;
-            setPoint.yTiltA =  0.0;
-            setPoint.xTiltB =  0.0;
-            setPoint.yTiltB =  0.0;
-            setPoint.xTiltC =  0.0;
-            setPoint.yTiltC =  0.0;
-            setPoint.zFocus =  0.0;
-            setPoint.xPosition =  moveXPosition;
-            setPoint.yPosition =  moveYPosition;
-            epicsMutexUnlock(setPointFree);
-         }
-         else
-         {
-            errorLog ("state startInit - couldn't obtain setPointFree mutex", 1, ON);
-         } 
-       }%
+         printf("CADProc:LF pre-setpoint\n");
+         /* Update position setpoint*/  
+         %{
+             if (epicsMutexLock(setPointFree))
+             {
+
+                errlogPrintf(" moveXposition set to %f \n",moveXPosition);
+                errlogPrintf(" moveYPosition set to %f \n",moveYPosition);
+                
+                setPoint.xTiltA =  0.0;
+                setPoint.yTiltA =  0.0;
+                setPoint.xTiltB =  0.0;
+                setPoint.yTiltB =  0.0;
+                setPoint.xTiltC =  0.0;
+                setPoint.yTiltC =  0.0;
+                setPoint.zFocus =  0.0;
+                setPoint.xPosition =  moveXPosition;
+                setPoint.yPosition =  moveYPosition;
+                epicsMutexUnlock(setPointFree);
+             }
+             else
+             {
+                errorLog ("state startInit - couldn't obtain setPointFree mutex", 1, ON);
+             } 
+         }%
+
+         printf("CADProc:LF post-setpoint\n");
          pvGet(moveXInputPos);
          pvGet(moveYInputPos);
          pvGet(xyPosDeadband);
 
-         if (epicsMutexTryLock(refMemFree))
-         {
-            errlogPrintf(" moveXInputPos to RM %f \n",moveXInputPos);
-            errlogPrintf(" moveYInputPos to RM %f \n",moveYInputPos);
-            errlogPrintf(" xyPosDeadband to RM %f \n",xyPosDeadband);
-            
-            scsBase->page0.AxTilt = 0.0;
-            scsBase->page0.BxTilt = 0.0;
-            scsBase->page0.CxTilt = 0.0;
-            scsBase->page0.AyTilt = 0.0;
-            scsBase->page0.ByTilt = 0.0;
-            scsBase->page0.CyTilt = 0.0;
-            scsBase->page0.xTiltGuide = 0.0;
-            scsBase->page0.yTiltGuide = 0.0;
-            scsBase->page0.zFocusGuide = 0.0; 
-            scsBase->page0.xDemand = moveXPosition;
-            scsBase->page0.yDemand = moveYPosition;
-            scsBase->page0.centralBaffle = 0; 
-            scsBase->page0.deployBaffle = 0;
-            scsBase->page0.chopProfile = 0;
-            scsBase->page0.chopFrequency = 0.0;
-            scsBase->page0.chopDutyCycle = 0.0;
-            scsBase->page0.xTiltTolerance = 0.0;
-            scsBase->page0.yTiltTolerance = 0.0;
-            scsBase->page0.zFocusTolerance = 0.0;
-            scsBase->page0.xPositionTolerance = 0.0;
-            scsBase->page0.yPositionTolerance = 0.0;
-            scsBase->page0.bandwidth = 0.0;
-            scsBase->page0.xTiltGain =0.0;
-            scsBase->page0.yTiltGain = 0.0;
-            scsBase->page0.zFocusGain = 0.0;
-            scsBase->page0.xTiltShift = 0.0;
-            scsBase->page0.yTiltShift = 0.0;
-            scsBase->page0.zFocusShift = 0.0;
-            scsBase->page0.xTiltSmooth = 0.0;
-            scsBase->page0.yTiltSmooth = 0.0;
-            scsBase->page0.zFocusSmooth = 0.0;
-            scsBase->page0.xTcsMinRange = 0.0;
-            scsBase->page0.yTcsMinRange = 0.0;
-            scsBase->page0.xTcsMaxRange = 0.0;
-            scsBase->page0.yTcsMaxRange = 0.0; 
-            scsBase->page0.xPMinRange = 0.0;
-            scsBase->page0.yPMinRange = 0.0;
-            scsBase->page0.xPMaxRange = 0.0;
-            scsBase->page0.yPMaxRange = 0.0; 
-            scsBase->page0.follower = 0;
-            scsBase->page0.foldir = 0;
-            scsBase->page0.followersteps = 0;
-            scsBase->page0.offloader = 0;
-            scsBase->page0.ofldir = 0;
-            scsBase->page0.offloadersteps = 0;
-            scsBase->page0.cbafdir = 0;
-            scsBase->page0.cbsteps = 0;
-            scsBase->page0.deployable_baffle = 0;
-            scsBase->page0.dbafdir = 0;
-            scsBase->page0.dbsteps = 0;
-            scsBase->page0.xy_motor = 0;
-            scsBase->page0.xydir = 0;
-            scsBase->page0.xysteps = 0;
-            scsBase->page0.zFocus = 0.0; 
-            scsBase->page0.zGuide = 0.0; 
-            scsBase->page0.rawXGuide = 0.0;
-            scsBase->page0.rawYGuide = 0.0;
-            scsBase->page0.rawZGuide = 0.0;
-            scsBase->page0.xGrossTiltDmd = 0.0;
-            scsBase->page0.yGrossTiltDmd = 0.0;
-            scsBase->page0.xyPositionDeadband = xyPosDeadband;
+         printf("CADProc:LF pre-page0\n");
+         %{
+             if (epicsMutexLock(refMemFree))
+             {
+                errlogPrintf(" moveXInputPos to RM %f \n",moveXInputPos);
+                errlogPrintf(" moveYInputPos to RM %f \n",moveYInputPos);
+                errlogPrintf(" xyPosDeadband to RM %f \n",xyPosDeadband);
+                
+                scsBase->page0.AxTilt = 0.0;
+                scsBase->page0.BxTilt = 0.0;
+                scsBase->page0.CxTilt = 0.0;
+                scsBase->page0.AyTilt = 0.0;
+                scsBase->page0.ByTilt = 0.0;
+                scsBase->page0.CyTilt = 0.0;
+                scsBase->page0.xTiltGuide = 0.0;
+                scsBase->page0.yTiltGuide = 0.0;
+                scsBase->page0.zFocusGuide = 0.0; 
+                scsBase->page0.xDemand = moveXPosition;
+                scsBase->page0.yDemand = moveYPosition;
+                scsBase->page0.centralBaffle = 0; 
+                scsBase->page0.deployBaffle = 0;
+                scsBase->page0.chopProfile = 0;
+                scsBase->page0.chopFrequency = 0.0;
+                scsBase->page0.chopDutyCycle = 0.0;
+                scsBase->page0.xTiltTolerance = 0.0;
+                scsBase->page0.yTiltTolerance = 0.0;
+                scsBase->page0.zFocusTolerance = 0.0;
+                scsBase->page0.xPositionTolerance = 0.0;
+                scsBase->page0.yPositionTolerance = 0.0;
+                scsBase->page0.bandwidth = 0.0;
+                scsBase->page0.xTiltGain =0.0;
+                scsBase->page0.yTiltGain = 0.0;
+                scsBase->page0.zFocusGain = 0.0;
+                scsBase->page0.xTiltShift = 0.0;
+                scsBase->page0.yTiltShift = 0.0;
+                scsBase->page0.zFocusShift = 0.0;
+                scsBase->page0.xTiltSmooth = 0.0;
+                scsBase->page0.yTiltSmooth = 0.0;
+                scsBase->page0.zFocusSmooth = 0.0;
+                scsBase->page0.xTcsMinRange = 0.0;
+                scsBase->page0.yTcsMinRange = 0.0;
+                scsBase->page0.xTcsMaxRange = 0.0;
+                scsBase->page0.yTcsMaxRange = 0.0; 
+                scsBase->page0.xPMinRange = 0.0;
+                scsBase->page0.yPMinRange = 0.0;
+                scsBase->page0.xPMaxRange = 0.0;
+                scsBase->page0.yPMaxRange = 0.0; 
+                scsBase->page0.follower = 0;
+                scsBase->page0.foldir = 0;
+                scsBase->page0.followersteps = 0;
+                scsBase->page0.offloader = 0;
+                scsBase->page0.ofldir = 0;
+                scsBase->page0.offloadersteps = 0;
+                scsBase->page0.cbafdir = 0;
+                scsBase->page0.cbsteps = 0;
+                scsBase->page0.deployable_baffle = 0;
+                scsBase->page0.dbafdir = 0;
+                scsBase->page0.dbsteps = 0;
+                scsBase->page0.xy_motor = 0;
+                scsBase->page0.xydir = 0;
+                scsBase->page0.xysteps = 0;
+                scsBase->page0.zFocus = 0.0; 
+                scsBase->page0.zGuide = 0.0; 
+                scsBase->page0.rawXGuide = 0.0;
+                scsBase->page0.rawYGuide = 0.0;
+                scsBase->page0.rawZGuide = 0.0;
+                scsBase->page0.xGrossTiltDmd = 0.0;
+                scsBase->page0.yGrossTiltDmd = 0.0;
+                scsBase->page0.xyPositionDeadband = xyPosDeadband;
 
-            epicsMutexUnlock(refMemFree);
-         }
-         else
-         {
-            errorLog ("state startInit - couldn't obtain refMemFree mutex", 1, ON);
-         } 
+                epicsMutexUnlock(refMemFree);
+             }
+             else
+             {
+                errorLog ("state startInit - couldn't obtain refMemFree mutex", 1, ON);
+             } 
 
-         controller[FOCUS].sum = 0.0;
-         controller[FOCUS].oldSum = 0.0;
-         controller[FOCUS].oldError = 0.0;
-         controller[XTILT].sum = 0.0;
-         controller[XTILT].oldSum = 0.0;
-         controller[XTILT].oldError = 0.0;
-         controller[YTILT].sum = 0.0;
-         controller[YTILT].oldSum = 0.0;
-         controller[YTILT].oldError = 0.0;
+             printf("CADProc:LF post-page0\n");
+             controller[FOCUS].sum = 0.0;
+             controller[FOCUS].oldSum = 0.0;
+             controller[FOCUS].oldError = 0.0;
+             controller[XTILT].sum = 0.0;
+             controller[XTILT].oldSum = 0.0;
+             controller[XTILT].oldError = 0.0;
+             controller[YTILT].sum = 0.0;
+             controller[YTILT].oldSum = 0.0;
+             controller[YTILT].oldError = 0.0;
 
-         /* set health to good until proved otherwise */
-         reportHealth(GOOD, "");
-         puts("init - wait for init response: then wait 10 seconds...");
+             /* set health to good until proved otherwise */
+             reportHealth(GOOD, "");
+             puts("init - wait for init response: then wait 10 seconds...");
 
-         /* clear message field */
-         strncpy(initCarMessIn, "M2 is initialising...", MAX_STRING_SIZE - 1);
+             /* clear message field */
+             strncpy(initCarMessIn, "M2 is initialising...", MAX_STRING_SIZE - 1);
+
+         }%
          pvPut(initCarMessIn);
-
          pvGet(initResponse);
 
       }   state waitForInitStart
@@ -2101,7 +1943,7 @@ ss CADprocessor {
 
          /* clear out reflective mem */
 %{
-         if (epicsMutexTryLock(setPointFree))
+         if (epicsMutexLock(setPointFree))
          {
             setPoint.xPosition =  0.0;
             setPoint.yPosition =  0.0;
@@ -2112,7 +1954,7 @@ ss CADprocessor {
             errorLog ("state startInitXY - couldn't obtain setPointFree mutex", 1, ON);
          } 
 
-         if (epicsMutexTryLock(refMemFree))
+         if (epicsMutexLock(refMemFree))
          {
             scsBase->page0.xDemand = moveXPosition;
             scsBase->page0.yDemand = moveYPosition;
@@ -2338,7 +2180,7 @@ ss CADprocessor {
 
          /* copy values to demands structure for access by SNL */
 %{
-         if(epicsMutexTryLock(setPointFree))
+         if(epicsMutexLock(setPointFree))
          {
             setPoint.xTiltA = moveAXTilt;
             setPoint.yTiltA = moveAYTilt;
@@ -2497,7 +2339,7 @@ ss CADprocessor {
          pvGet(actYTilt);
          pvGet(actZFocus);
 %{
-         if(epicsMutexTryLock(setPointFree))
+         if(epicsMutexLock(setPointFree))
          {
             setPoint.xTiltA = actXTilt;
             setPoint.yTiltA = actYTilt;
@@ -2940,7 +2782,7 @@ ss CADprocessor {
          printf(" yPos %f \n",yPosDef);
 
 %{
-         if(epicsMutexTryLock(setPointFree))
+         if(epicsMutexLock(setPointFree))
          {
             setPoint.xTiltA = parkPosition.xTilt;
             setPoint.yTiltA = parkPosition.yTilt;
@@ -3048,7 +2890,6 @@ ss CADprocessor {
    state startChopControl
    {
       /* the SCS merely passes on the chop control variables to the M2 system */
-
       when()
       {
          cadProcessorState = STARTCHOPCONTROL; 
@@ -3363,7 +3204,7 @@ ss CADprocessor {
 
          pvGet(bandwidth);
 %{
-            if(epicsMutexTryLock(refMemFree))
+            if(epicsMutexLock(refMemFree))
             {
                scsPtr->page0.bandwidth = bandwidth;
                epicsMutexUnlock(refMemFree);
@@ -3518,7 +3359,7 @@ ss CADprocessor {
          pvGet(yPosTol);
          pvGet(xyPosDeadband);
 %{
-            if(epicsMutexTryLock(refMemFree))
+            if(epicsMutexLock(refMemFree))
             {
                scsPtr->page0.xTiltTolerance        = (float) xTiltTol;
                scsPtr->page0.yTiltTolerance        = (float) yTiltTol;
@@ -3643,685 +3484,8 @@ ss followDemandProcessing {
    }
 }
 
-/* ===================================================================== */
-/* INDENT OFF */
-/* 
- *  Function Name:
- *  State set "monitorSad"
- *
- *  Purpose:
- *  Refresh the SAD database
- *
- *  Description:
- *  The monitor process updates the SAD database at a refresh rate of 1Hz
- *
- *  Invocation:
- *  1.0 second timer elapse
- *
- *  Parameters: (">" input, "!" modified, "<" output)
- *  None
- *  
- *  Function value:
- *  n/a
- *
- *  External functions:
- *  The following SNL functions have been used
- *
- *  pvPut       write a value to a database channel
- *  pvGet       read a value from a database channel
- *
- *  Deficiencies:
- *
- */
-/* INDENT ON */
-/* ===================================================================== */
 
-ss monitorSad {
-   state init {
-      when() {
-         //monitorSadState = MONSADENTRY; 
-         //pvPut(monitorSadState);
 
-      //}   state updateSad
-      } state init
-   }
-
-   state updateSad {
-      when(delay(1.0)) {
-         monitorSadState = UPDATESAD; 
-         pvPut(monitorSadState);
-
-%{
-         if(epicsMutexTryLock(refMemFree)) {
-
-            if(scsPtr->page1.inPosition != 0 || followOn || guideOn)
-               strncpy(inPositionSad, "TRUE", MAX_STRING_SIZE - 1);
-            else
-               strncpy(inPositionSad, "FALSE", MAX_STRING_SIZE - 1);
-
-
-            /*strncpy(topEndSad, topEndNames[scsPtr->page1.topEnd], 
-              MAX_STRING_SIZE - 1);*/
-
-            /* Write position of deployable baffle to SAD, 0, 1, 2 and 3 
-               are valid positions. Any other is treated as moving */
-
-            if ((scsPtr->page1.deployBaffle == 0) | 
-                  (scsPtr->page1.deployBaffle == 1) | 
-                  (scsPtr->page1.deployBaffle == 2) | 
-                  (scsPtr->page1.deployBaffle == 3)) {
-               strncpy(deployableSad, 
-                     depBaffle[scsPtr->page1.deployBaffle], 
-                     MAX_STRING_SIZE - 1);
-
-               moveBaffleCar = CAR_IDLE;
-            }
-            else {
-               strncpy(deployableSad, "MOVING", MAX_STRING_SIZE - 1);
-               moveBaffleCar = CAR_BUSY;
-            }
-
-            /* Write position of central baffle to SAD, 0 and 1 
-               are valid positions. Any other is treated as moving */
-
-            if ((scsPtr->page1.centralBaffle == 0) | 
-                  (scsPtr->page1.centralBaffle == 1)) {
-               strncpy(centralSad, 
-                     cenBaffle[scsPtr->page1.centralBaffle], 
-                     MAX_STRING_SIZE - 1);
-
-               moveBaffleCar = CAR_IDLE;
-            }
-
-            else {
-               strncpy(centralSad, "MOVING", MAX_STRING_SIZE - 1);
-               moveBaffleCar = CAR_BUSY;
-            }
-
-            tempSad = scsPtr->page1.enclosureTemp;
-            epicsMutexUnlock(refMemFree);
-         }
-         else
-         {
-            errorLog("state updateSad - couldn't obtain refMemFree mutex", 1, ON);
-         }
-}%
-
-         pvPut(inPositionSad);
-         /*pvPut(topEndSad);*/
-         pvPut(deployableSad);
-         pvPut(centralSad);
-         pvPut(moveBaffleCar);
-         pvPut(tempSad);
-
-         /* show chopping state */
-
-         if(chopIsOn == ON)
-            strncpy(chopping, "YES", MAX_STRING_SIZE - 1);
-         else
-            strncpy(chopping, "NO", MAX_STRING_SIZE - 1);
-
-         pvPut(chopping);
-
-         /* update follow S indicator */
-
-         followS = followOn;
-         pvPut(followS);
-
-         /* check m2 error status bits */
-
-         %%checkTiltStatus();
-
-         /* update guider screens */
-
-         x[0] = filtered[PWFS1].z1;
-         y[0] = filtered[PWFS1].z2;
-         z[0] = filtered[PWFS1].z3;
-         xerr[0] = filtered[PWFS1].err1;
-         yerr[0] = filtered[PWFS1].err2;
-         zerr[0] = filtered[PWFS1].err3;
-
-         x[1] = filtered[PWFS2].z1;
-         y[1] = filtered[PWFS2].z2;
-         z[1] = filtered[PWFS2].z3;
-         xerr[1] = filtered[PWFS2].err1;
-         yerr[1] = filtered[PWFS2].err2;
-         zerr[1] = filtered[PWFS2].err3;
-
-         x[2] = filtered[OIWFS].z1;
-         y[2] = filtered[OIWFS].z2;
-         z[2] = filtered[OIWFS].z3;
-         xerr[2] = filtered[OIWFS].err1;
-         yerr[2] = filtered[OIWFS].err2;
-         zerr[2] = filtered[OIWFS].err3;
-
-         x[3] = filtered[GAOS].z1;
-         y[3] = filtered[GAOS].z2;
-         z[3] = filtered[GAOS].z3;
-         xerr[3] = filtered[GAOS].err1;
-         yerr[3] = filtered[GAOS].err2;
-         zerr[3] = filtered[GAOS].err3;
-
-         x[4] = filtered[GYRO].z1;
-         y[4] = filtered[GYRO].z2;
-         z[4] = filtered[GYRO].z3;
-         xerr[4] = filtered[GYRO].err1;
-         yerr[4] = filtered[GYRO].err2;
-         zerr[4] = filtered[GYRO].err3;
-
-         xWindup = controller[XTILT].sum;
-         yWindup = controller[YTILT].sum;
-         zWindup = controller[FOCUS].sum;
-
-         /* Question for someday... this never seems to get very high.
-            ie, instead of being the "sum" it looks more like the 
-            instantaneous guide */
-         pvPut(xWindup);
-         pvPut(yWindup);
-         pvPut(zWindup);
-
-         for(source = 0; source < 5; source++) {
-            pvPut(x[source]);
-            pvPut(y[source]);
-            pvPut(z[source]);
-            pvPut(xerr[source]);
-            pvPut(yerr[source]);
-            pvPut(zerr[source]);
-         }   
-
-      }   state updateSad
-   }
-}
-
-
-/* ===================================================================== */
-/* INDENT OFF */
-/* 
- *  Function Name:
- *  State set "rebootScs"
- *
- *  State Group Names:
- *  initReboot
- *  waitForRebootCmd
- *  startReboot
- *  waitForParkReboot
- *  rebootNow
- *
- *  Purpose:
- *  To execute the reboot command
- *
- *  Description:
- *  Waits for the reboot command and executes it
- *  The reboot CAR status is set BUSY, a reset command is issued to the
- *  tilt system and the vxWorks reboot command executed
- *
- *  Invocation:
- *  Runs continuously
- *
- *  Parameters: (">" input, "!" modified, "<" output)
- *  None
- *  
- *  Function value:
- *  n/a
- *
- *  External functions:
- *  The following SNL functions have been used
- *
- *  pvPut       write a value to a database channel
- *  pvGet       read a value from a database channel
- *
- *  Deficiencies:
- *
- *  Author:     J.F.Maclean
- *
- */
-/* INDENT ON */
-/* ===================================================================== */
-
-ss rebootScs {
-   state initReboot {
-      when() {
-         rebootScsState = INITREBOOT;
-         pvPut(rebootScsState);
-
-         efClear(rebootCadChange);
-      } state waitForRebootCmd
-   }
-
-   state waitForRebootCmd {
-      when(efTest(rebootCadChange)) {
-         rebootScsState = WAITFORREBOOTCMD;
-         pvPut(rebootScsState);
-
-         /* clear event flag */
-         efClear(rebootCadChange);
-      } state startReboot
-   }
-
-   state startReboot {
-      /* first park the system to ensure safe shutdown */
-
-      when() {
-         rebootScsState = STARTREBOOT;
-         pvPut(rebootScsState);
-
-         /* write busy to reboot CAR */
-         rebootCarIn = CAR_BUSY;
-         pvPut(rebootCarIn);
-
-         /* write busy to park CAR */
-         parkCarIn = CAR_BUSY;
-         pvPut(parkCarIn);
-
-         /* turn off chop */
-
-         writeCommand(DECS_OFF);
-         /* writeCommand(VDECS_OFF); */
-         writeCommand(CHOP_OFF);
-
-         chopIsOn = 0;
-
-         /* turn off guiding */
-
-         guideOn = OFF;
-
-         /* turn off following */
-
-         followOn = OFF;
-
-         /* Doing this without turning off servos, causes actators
-            to fail. 
-
-            Would be better to use the real PARK SNL to avoid
-            redundancy here  (11jul00).
-          */
-
-         /* NEW 16-Aug-2000 */
-         writeCommand(ACT_PWR_ON);
-         writeCommand(MEND);
-         writeCommand(VEND);
-         writeCommand(MOFFLON);
-
-         printf("startReboot - wait for mirror control to disable\n");
-      } state proceedWithRebootPark
-   }
-
-   state proceedWithRebootPark {
-      when(servoOnStat == 0) {
-         printf("mirror control disable - proceed with move\n");
-
-         myscsState = PARKED;
-         scsState = myscsState;
-         pvPut(myscsState);
-
-         /* write park demand conditions to the control loops */
-
-         parkPosition.xTilt  = xTiltAdef;
-         parkPosition.yTilt  = yTiltAdef;
-         parkPosition.zFocus = zFocusDef;
-         parkPosition.xPos   = xPosTcsDef;
-         parkPosition.yPos   = yPosTcsDef;
-
-         tcs2m2(&parkPosition);
-%{
-         if(epicsMutexTryLock(setPointFree)) {
-            setPoint.xTiltA = parkPosition.xTiltNew;
-            setPoint.yTiltA = parkPosition.yTiltNew;
-            setPoint.zFocus = parkPosition.zFocusNew;
-            setPoint.xTiltB = parkPosition.xTiltNew;
-            setPoint.yTiltB = parkPosition.yTiltNew;
-            setPoint.xTiltC = parkPosition.xTiltNew;
-            setPoint.yTiltC = parkPosition.yTiltNew;
-            setPoint.xPosition = parkPosition.xPosNew;
-            setPoint.yPosition = parkPosition.yPosNew;
-
-            epicsMutexUnlock(setPointFree);
-         }
-         else {
-            errorLog("state proceedWithRebootPark - couldn't obtain setPointFree mutex", 1, ON);
-         }
-}%
-      } state rebootParkWaitForCoincidence
-
-
-      /* SCS has not detected that the mirror control have been turned off so
-       * aborts the move 
-       */
-      when(delay(SERVO_OFF_TIMEOUT))       {
-         cadProcessorState = SERVOOFFTIMEOUT;
-         pvPut(cadProcessorState);
-
-         printf("proceedWithRebootPark - Servo off timeout n");
-         errorLog
-            ("proceedWithRebootPark - M2 system not switching sevos off",
-             1, ON);
-
-         parkCarErrIn = STATUS_ERROR; /* parkCar or rebootCar ?? */
-         pvPut(parkCarErrIn);
-         strncpy(parkCarMessIn,
-               "M2 not switching mirror control off", MAX_STRING_SIZE - 1);
-         pvPut(parkCarMessIn);
-
-      } state rebootParkWaitForCoincidence 
-
-      /* bug fix 14nov2000 - this was 'idle' and we do not want this. If the
-       * servos will not turn off, keep going to the next state. Later: figure
-       * out why servos do not turn off sometimes. */
-   }
-
-   state rebootParkWaitForCoincidence {
-      /* wait for system to achieve the desired position */
-
-      when(delay(10.0) && (servoInPosition == 1)) {
-         rebootScsState = WAITFORPARKREBOOT;
-         pvPut(rebootScsState);
-
-         /* in close range - no need to restart mirror control */
-
-         /* shut down the unused functions */
-
-         writeCommand(VEND);
-         writeCommand(MEND);
-         writeCommand(MOFFLOFF);
-         writeCommand(ACT_PWR_OFF);
-
-         /* NEW for 22-jun-2000: */
-         /* Toggle tilt system by writing to the event system */
-
-         if (eventConfig.change == 0) {
-            /* if previous changes have been acknowledged, 
-               write new data, flag change and give sem  */
-
-            printf("powerCycleCEM - Shutting off CEM power\n");
-            eventConfig.change  = 1;
-            eventConfig.on = 0;    /* make sure you do not send an ON */
-            eventConfig.m2Servo = OFF;
-            eventConfig.m2Power = OFF;
-            epicsEventSignal(eventSem); 
-         }
-         else {
-            errorLog("waitForParkReboot - command not acknowledged", 1, ON);
-            printf("waitForParkReboot - command not acknowledged\n");
-         }
-      }   state powerCycleCEM
-
-      when(delay(TIMEOUT)) {
-         rebootScsState = TIMEOUTWAITFORPARKREBOOT;
-         pvPut(rebootScsState);
-
-         parkCarErrIn = STATUS_ERROR;
-         pvPut(parkCarErrIn);
-
-         strncpy(parkCarMessIn, "No response to park command", MAX_STRING_SIZE - 1);
-         pvPut(parkCarMessIn);
-
-         parkCarIn = CAR_ERROR;
-         pvPut(parkCarIn);
-
-         /* shut down the unused functions */
-
-         writeCommand(VEND);
-         writeCommand(MEND);
-         writeCommand(MOFFLOFF);
-         writeCommand(ACT_PWR_OFF);
-
-         /* NEW for 22-jun-2000: */
-         /* Toggle tilt system by writing to the event system */
-
-         printf("state waitForParkReboot\n");
-         if (eventConfig.change == 0) {
-            /* if previous changes have been acknowledged, 
-               write new data, flag change and give sem  */
-
-            printf("waitForParkReboot - Shutting off CEM power\n");
-            eventConfig.change  = 1;
-            eventConfig.on = 0;    /* make sure you do not send an ON */
-            eventConfig.m2Servo = OFF;
-            eventConfig.m2Power = OFF;
-            epicsEventSignal(eventSem); 
-         }
-         else {
-            errorLog("waitForParkReboot - command not acknowledged", 1, ON);
-            printf("waitForParkReboot - command not acknowledged\n");
-         }
-      } state powerCycleCEM
-   }
-
-   state powerCycleCEM {
-      when(delay(1.0)) {
-         printf("state powerCycleCEM\n");
-         if (eventConfig.change == 0) {
-            /* if previous changes have been acknowledged, 
-               write new data, flag change and give sem  */
-
-            printf("waitForParkReboot - Turning CEM power back on\n");
-            eventConfig.change  = 1;
-            eventConfig.on = 0;    /* make sure you do not send an ON */
-            eventConfig.m2Servo = ON;
-            eventConfig.m2Power = ON;
-            epicsEventSignal(eventSem); 
-         }
-         else {
-            errorLog("powerCycleCEM - command not acknowledged", 1, ON);
-            printf("waitForParkReboot - command not acknowledged\n");
-         }
-
-         /* send idle indication to the parkC record */
-
-         parkCarIn = CAR_IDLE;
-         pvPut(parkCarIn);
-
-         strncpy(parkCarMessIn, "", MAX_STRING_SIZE - 1);
-         pvPut(parkCarMessIn);
-
-      }   state rebootNow
-   }
-
-
-   state rebootNow {
-      when(delay (5.0)) {
-         rebootScsState = REBOOTNOW;
-         pvPut(rebootScsState);
-
-         myscsState = REBOOTING;
-         scsState = myscsState;
-         pvPut(myscsState);
-
-         scsStateSad = BOOTING;
-         pvPut(scsStateSad);
-
-         /* write busy to reboot CAR */
-
-         rebootCarIn = CAR_BUSY;
-         pvPut(rebootCarIn);
-
-         /* if logging file is open, close it */
-
-         //if(loggingNow != OFF)
-         //   %%scsLogDestruct();
-
-         //%%reboot(BOOT_QUICK_AUTOBOOT);
-
-         /* At this point the system shall reboot so no further code */
-         /* execution is permitted. The return state has been set to */
-         /* startReboot to keep it tidy and local            */
-
-      }   state startReboot
-   }
-}
-
-
-/* ===================================================================== */
-/* INDENT OFF */
-/* 
- *  Function Name:
- *  State set "clearGuideFocus"
- *
- *  State Group Names:
- *  initClearGuideFocus
- *  waitForClearGuideFocusCmd
- *  clearGuideFocus
- *  waitForClearGuideFocus
- *
- *  Purpose:
- *  To execute the clear guide focus command
- *
- *  Description:
- *  Waits for the clear guide focus command and executes it
- *  The Clear Guide Focus CAR status is set BUSY, a reset command is issued to
- *  the system 
- *
- *  Invocation:
- *  Runs continuously
- *
- *  Parameters: (">" input, "!" modified, "<" output)
- *  None
- *  
- *  Function value:
- *  n/a
- *
- *  External functions:
- *  The following SNL functions have been used
- *
- *  pvPut       write a value to a database channel
- *  pvGet       read a value from a database channel
- *
- *  Deficiencies:
- *
- *  Author:     J.F.Maclean
- *
- */
-/* INDENT ON */
-/* ===================================================================== */
-
-ss clearguidefocusScs
-{
-   state initClearGuideFocus
-   {
-      when()
-      {
-         efClear(clearGuideFocusCadChange);
-
-      } state waitForClearGuideFocusCmd
-   }
-
-   state waitForClearGuideFocusCmd
-   {
-      when(efTest(clearGuideFocusCadChange))
-      {
-
-         /* clear event flag */
-         efClear(clearGuideFocusCadChange);
-      } state startClearGuideFocus
-   }
-
-   state startClearGuideFocus
-   {
-
-      when()
-      {
-         clearGuideFocusCarIn = CAR_BUSY;
-         pvPut(clearGuideFocusCarIn);
-
-         printf("startClearGuideFocus - wait for clear guide focus value\n");
-      } state proceedWithClearGuideFocus
-   }
-
-   state proceedWithClearGuideFocus
-   {
-      when(controller[FOCUS].sum >= 500 )
-      {
-         controller[FOCUS].sum -= 500.;
-         controller[FOCUS].oldSum -= 500.;
-
-         printf ("proceedWith + sum %f oldS %f \n",
-               controller[FOCUS].sum, controller[FOCUS].oldSum);
-
-      }   state clearGuideFocusWaitForCoincidence
-
-      when( controller[FOCUS].sum <= -500 )
-      {
-         controller[FOCUS].sum += 500.;
-         controller[FOCUS].oldSum += 500.;
-
-         printf ("proceedWith - sum %f oldS %f \n",
-               controller[FOCUS].sum, controller[FOCUS].oldSum);
-
-      }   state clearGuideFocusWaitForCoincidence
-
-
-      when(controller[FOCUS].sum >= -500 && controller[FOCUS].sum <= 500 )
-      {
-         printf ("proceedWith +- SUm %f oldS %f \n",
-               controller[FOCUS].sum, controller[FOCUS].oldSum);
-      }   state clearGuideFocusWaitForCoincidence
-
-      when(delay(TIMEOUT))
-      {
-
-         clearGuideFocusCarErrIn = STATUS_ERROR;
-         pvPut(clearGuideFocusCarErrIn);
-
-         strncpy(clearGuideFocusCarMessIn, "proceedWith:No response to clear guide focus command", MAX_STRING_SIZE - 1);
-         pvPut(clearGuideFocusCarMessIn);
-
-         clearGuideFocusCarIn = CAR_ERROR;
-         pvPut(clearGuideFocusCarIn);
-
-      } state clearGuideFocusWaitForCoincidence
-
-   }
-
-   state clearGuideFocusWaitForCoincidence
-   {
-
-      when(controller[FOCUS].sum >= -500 && controller[FOCUS].sum <= 500 )
-      {
-         controller[FOCUS].sum = 0.0;
-         controller[FOCUS].oldSum = 0.0;
-         controller[FOCUS].oldError = 0.0;
-
-         printf ("clearGuideFocusWaitForCoincidence - sum %f oldS %f \n",
-               controller[FOCUS].sum, controller[FOCUS].oldSum);
-
-         clearGuideFocusCarIn = CAR_IDLE;
-         pvPut(clearGuideFocusCarIn);
-
-         strncpy(clearGuideFocusCarMessIn, "", MAX_STRING_SIZE - 1);
-         pvPut(clearGuideFocusCarMessIn);
-
-      }  state waitForClearGuideFocusCmd
-
-      when( delay(3.0) && controller[FOCUS].sum >= 500 )
-      {
-         printf ("WaitForCoincidence + Sum %f oldS %f \n",
-               controller[FOCUS].sum, controller[FOCUS].oldSum);
-
-      }   state proceedWithClearGuideFocus
-
-      when( delay(3.0) && controller[FOCUS].sum <= -500 )
-      {
-         printf ("WaitForCoincidence - Sum %f oldS %f \n",
-               controller[FOCUS].sum, controller[FOCUS].oldSum);
-
-      }   state proceedWithClearGuideFocus
-
-      when(delay(TIMEOUT))
-      {
-
-         clearGuideFocusCarErrIn = STATUS_ERROR;
-         pvPut(clearGuideFocusCarErrIn);
-
-         strncpy(clearGuideFocusCarMessIn, "WaitForCoincidence:No response to clear guide focus command", MAX_STRING_SIZE - 1);
-         pvPut(clearGuideFocusCarMessIn);
-
-         clearGuideFocusCarIn = CAR_ERROR;
-         pvPut(clearGuideFocusCarIn);
-
-      }  state waitForClearGuideFocusCmd
-   }
-
-}
 
 
 

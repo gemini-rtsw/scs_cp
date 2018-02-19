@@ -1426,7 +1426,7 @@ void processGuides (void)
           * occurred and bypass timestamp checking 
           */
 
-         errlogSevPrintf(errlogInfo, "guideUpdateNow timeout\n");
+         //errlogSevPrintf(errlogInfo, "guideUpdateNow timeout\n");
          guideUpdate = FALSE;         
          procGuideCount2++; /*2*/
       }
@@ -2375,6 +2375,8 @@ void tiltReceive (void)
 
 static int scsrx1= 0; 
 static int scsrx2= 0;
+static int scsrx3= 0;
+static int scsrx4= 0;
 void scsReceive (void)
 {
    long simCheck = 0xabcd;
@@ -2434,55 +2436,52 @@ void scsReceive (void)
 
          if (simCheck == localStatusBlock.checksum)
          {
-            if (local.m2Heartbeat == localStatusBlock.heartbeat)
-            {
-               errorLog ("scsReceive - heartbeat stuck", 1, ON);
-            }
-            else
-            {
-               /* all is well, copy the checked data to the scs buffer */
-               local.m2Heartbeat = localStatusBlock.heartbeat;
+             scsrx3++; 
+             if (local.m2Heartbeat == localStatusBlock.heartbeat)
+             {
+                 errorLog ("scsReceive - heartbeat stuck", 1, ON);
+             }
+             else
+             {
+                 /* all is well, copy the checked data to the scs buffer */
+                 local.m2Heartbeat = localStatusBlock.heartbeat;
 
-               epicsMutexLock(refMemFree);
-               *(statusBlock *) & scsPtr->page1 = localStatusBlock;
-               epicsMutexUnlock(refMemFree);
+                 epicsMutexLock(refMemFree);
+                 *(statusBlock *) & scsPtr->page1 = localStatusBlock;
+                 epicsMutexUnlock(refMemFree);
 
 
-               if (local.NS != localStatusBlock.NR)
-               {
-                  errorLog ("scsReceive - frame unacknowledged", 1, ON);
-               }
+                 if (local.NS != localStatusBlock.NR)
+                 {
+                     errorLog ("scsReceive - frame unacknowledged", 1, ON);
+                 }
 
-               if (local.testRequest == 0 && 
-                     localStatusBlock.statusWord.flags.diagnosticsAvailable == 1)
-               {
-                  *(diagBlock *) & scsPtr->testResults = 
-                     *(diagBlock *) & m2Ptr->testResults;
-                  epicsEventSignal(diagnosticsAvailable);
-               }
+                 if (local.testRequest == 0 && 
+                         localStatusBlock.statusWord.flags.diagnosticsAvailable == 1)
+                 {
+                     *(diagBlock *) & scsPtr->testResults = 
+                         *(diagBlock *) & m2Ptr->testResults;
+                     epicsEventSignal(diagnosticsAvailable);
+                 }
 
-               local.testRequest = 
-                  scsPtr->page1.statusWord.flags.diagnosticsAvailable;
-            }
+                 local.testRequest = 
+                     scsPtr->page1.statusWord.flags.diagnosticsAvailable;
+             }
          }
          else
          {
-#ifdef MK
-            if ((debugLevel > DEBUG_NONE) & (debugLevel <= DEBUG_MED))
-#else
-               if (debugLevel > DEBUG_RESERVED1)
-#endif
-               {
-                  sprintf(errBuff, "checksum calc = %lx, received = %lx\n", 
-                        simCheck, localStatusBlock.checksum);
-                  errlogPrintf("%s", errBuff);
-               }
-            errorLog ("scsReceive - checksum fail", 1, ON);
+             if (debugLevel > DEBUG_RESERVED1)
+             {
+                 sprintf(errBuff, "checksum calc = %lx, received = %lx\n", 
+                         simCheck, localStatusBlock.checksum);
+                 errlogPrintf("%s", errBuff);
+             }
+             errorLog ("scsReceive - checksum fail", 1, ON);
          }
       }
       else
       {
-         scsrx2++; 
+         scsrx4++; 
          errorLog ("scsReceive - scsReceiveNow timeout", 1, ON);
          //errlogMessage("rscsReceive - scsReceiveNow timeout\n");
       }
@@ -3330,6 +3329,8 @@ epicsExportAddress(int, procGuideCount9 );
 epicsExportAddress(int, procGuideCount10 );
 epicsExportAddress(int, scsrx1 );
 epicsExportAddress(int, scsrx2 );
+epicsExportAddress(int, scsrx3 );
+epicsExportAddress(int, scsrx4 );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
 epicsExportAddress(int, simLevel );
