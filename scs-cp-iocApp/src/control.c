@@ -1712,31 +1712,19 @@ void processGuides (void)
          scsBase->page0.commandCode = command;
          lastNS = scsBase->page0.NS;
          scsBase->page0.NS = ++local.NS;
-         if (fabs(lastNS - scsBase->page0.NS) > 1000)
-         {
-            epicsPrintf("SCS sending NS = %ld\n", lastNS);
-         }
          scsBase->page0.heartbeat = local.scsHeartbeat++;
+         if (debugLevel > 0)
+         {
+            epicsPrintf("SCS sending NS = %ld, local.hb=%ld\n",
+                    lastNS, local.scsHeartbeat);
+         }
          scsBase->page0.checksum = 
             checkSum ((void *) &scsBase->page0.NS, COMMAND_BLOCK_SIZE);
 
          /* flag availability of new data */
          /* The original ideal of sending only everyother pulse has bee removed */
 
-         /* DO NOT Send Every Pulse */
-         if (!sep) {
-            indx++; 
-            if (command > FAST_ONLY || indx > 1 )
-            {  
-               rmIntSend (INT2, M2_NODE);
-               indx = 0; 
-            }
-         }
-
-         /* Send Every Pulse */
-         else {
-            rmIntSend (INT2, M2_NODE);
-         }
+         rmIntSend (INT2, M2_NODE);
          /*Start timer to profile interrupt cycle times between SCS and CEM*/
          /*
             semGive(cemTimerStartSem);
@@ -2376,6 +2364,7 @@ void tiltReceive (void)
 static int scsrx1= 0; 
 static int scsrx2= 0;
 static int scsrx3= 0;
+static int scsrx3a= 0;
 static int scsrx4= 0;
 void scsReceive (void)
 {
@@ -2436,13 +2425,15 @@ void scsReceive (void)
 
          if (simCheck == localStatusBlock.checksum)
          {
-             scsrx3++; 
              if (local.m2Heartbeat == localStatusBlock.heartbeat)
              {
-                 errorLog ("scsReceive - heartbeat stuck", 1, ON);
+                 scsrx3++; 
+                 errlogPrintf ("scsReceive - heartbeat stuck local=%ld, statblkHB=%ld\n",
+                         local.m2Heartbeat, localStatusBlock.heartbeat);
              }
              else
              {
+                 scsrx3a++; 
                  /* all is well, copy the checked data to the scs buffer */
                  local.m2Heartbeat = localStatusBlock.heartbeat;
 
@@ -2453,7 +2444,8 @@ void scsReceive (void)
 
                  if (local.NS != localStatusBlock.NR)
                  {
-                     errorLog ("scsReceive - frame unacknowledged", 1, ON);
+                     errlogPrintf  ("scsReceive - frame unacknowledged localNS=%ld, statblkNR=%ld\n",
+                             local.NS, localStatusBlock.NR);
                  }
 
                  if (local.testRequest == 0 && 
@@ -3330,6 +3322,7 @@ epicsExportAddress(int, procGuideCount10 );
 epicsExportAddress(int, scsrx1 );
 epicsExportAddress(int, scsrx2 );
 epicsExportAddress(int, scsrx3 );
+epicsExportAddress(int, scsrx3a );
 epicsExportAddress(int, scsrx4 );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
