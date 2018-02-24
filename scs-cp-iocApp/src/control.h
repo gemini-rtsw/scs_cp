@@ -42,7 +42,7 @@
 #define PROJECT   1
 
 #define SCS_NODE                0       /* Node 0 is the SCS       */
-#define M2_NODE                 1       /* Node 1 is the M2 system */      
+#define M2_NODE                 129       /* Node 1 is the M2 system */      
 #define AGP1_NODE               2       /* Node 2 is the A&G PWFS1 */   
 #define AGP2_NODE               3       /* Node 3 is the A&G PWFS2 */   
 
@@ -211,7 +211,6 @@ typedef struct
     long            xydir;
     long            xysteps;
     float           xyPositionDeadband;
-    char            scsTime[16];
     float           zFocus;    /*not used by M2. for dm display purposes only*/
     float           zGuide;    /*not used by M2. for dm display purposes only*/
     float           rawXGuide; /*not used by M2. for dm display purposes only*/
@@ -219,7 +218,7 @@ typedef struct
     float           rawZGuide; /*not used by M2. for dm display purposes only*/
     float           xGrossTiltDmd; /*not used by M2. for dm display purposes only*/
     float           yGrossTiltDmd; /*not used by M2. for dm display purposes only*/
-    float           pad[184]; /* Was 188 before scsTime */
+    float           pad[188]; /* Was 188 before scsTime */
 }commandBlock;
 
 /* M2 to SCS status block */
@@ -543,7 +542,7 @@ extern epicsEventId scsReceiveNow;
 extern epicsMessageQueueId commandQId;
 extern epicsMessageQueueId receiveQId;
 
-extern long interlockFlag;
+extern int interlockFlag;
 extern statusBlock safeBlock;
 /* get current guide values to send to TCS */
 extern double xGuideTcs;

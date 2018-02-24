@@ -116,7 +116,8 @@
 #define MAX_FILENAME_SIZE       100
 #define LOG_INTERVAL            5
 
-int sep = 0;   /* Send Every guide pulse (Default, NO. Send every other pulse.*/ 
+int sendpulse = 0;    
+int showcs = 0;   
 static void reportTimes();
 struct timespec timeStart, timeEnd;
 int mytimeshow = 0;
@@ -338,7 +339,7 @@ epicsEventId scsReceiveNow = NULL;
 epicsMutexId eventDataSem = NULL;
 epicsEventId cemTimerEndSem = NULL;
 epicsEventId cemTimerStartSem = NULL;
-long interlockFlag = OFF;
+int interlockFlag = OFF;
 statusBlock safeBlock;
 
 /* get current guide values to send to TCS */
@@ -937,6 +938,15 @@ int rxwaitticks = 0;
 int useDynamicVtk =0;
 
 static double waittime = 0.5;   
+static double waittime2 = 2;   
+static double xDemandPg0 = 0.000001;   
+static double zFocusSmoothPg0 = 0.000001;   
+static int heartbeatPg0 = 1;   
+static double xTiltGuidePg0 = 0.000001;
+static double yTiltGuidePg0 = 0.000001;
+static double zFocusGuidePg0 = 0.000001;
+static int NSPg0 = 1;   
+static int fixVal = 0;   
 static int procGuideCount1 = 0;
 static int procGuideCount2 = 0;
 static int procGuideCount3 = 0;
@@ -1001,6 +1011,7 @@ void processGuides (void)
    }
 
    procGuideCount1++;
+   scsBase->page0.xysteps = 31416;
    for (;;)
    {
 
@@ -1678,12 +1689,19 @@ void processGuides (void)
 
          if (yvtkGuideRecycle)
             yNetGuideU = 0.0;
-
-         scsBase->page0.xTiltGuide = (float) xNetGuideU;
-         scsBase->page0.yTiltGuide = (float) yNetGuideU;
-         scsBase->page0.zFocusGuide = 
-            (float) confine ((setPoint.zFocus + zNetGuideU), 
-                  Z_FOCUS_LIMIT, -Z_FOCUS_LIMIT);
+         
+         /* IA: This mutex is being locked when transmitting to protect page0
+          * from being accessed by other threads. So it's called before rmIntSend()
+          * which generates the interrupt to M2.
+          * This mutex is unlocked with the rmisr2 which is the ack interrupt which
+          * releases the scs receive binary semaphore to access page1 memory.
+          * */
+         epicsMutexLock(refMemFree); 
+         /*scsBase->page0.xTiltGuide = (float) xNetGuideU;*/
+         /*scsBase->page0.yTiltGuide = (float) yNetGuideU;*/
+         /*scsBase->page0.zFocusGuide = */
+            /*(float) confine ((setPoint.zFocus + zNetGuideU), */
+                  /*Z_FOCUS_LIMIT, -Z_FOCUS_LIMIT);*/
 
          /* Not used by M2, so not part of the checksum just used for displaying
           * the components of the focus. Decided to use RM page 0 just to make sure
@@ -1710,25 +1728,46 @@ void processGuides (void)
          }
 
          scsBase->page0.commandCode = command;
-         lastNS = scsBase->page0.NS;
-         scsBase->page0.NS = ++local.NS;
-         scsBase->page0.heartbeat = local.scsHeartbeat++;
+         if (!fixVal){
+             lastNS = scsBase->page0.NS;
+             scsBase->page0.NS = ++local.NS;
+         }
+         else{
+             scsBase->page0.NS = (long) NSPg0;
+         }
+         /*scsBase->page0.heartbeat = local.scsHeartbeat++;*/
+         scsBase->page0.heartbeat = (long) heartbeatPg0;
+        
          if (debugLevel > 0)
          {
             epicsPrintf("SCS sending NS = %ld, local.hb=%ld\n",
                     lastNS, local.scsHeartbeat);
          }
+         /*showMemory(0);*/
          scsBase->page0.checksum = 
             checkSum ((void *) &scsBase->page0.NS, COMMAND_BLOCK_SIZE);
+         scsBase->page0.xDemand = (float) xDemandPg0;
+         scsBase->page0.zFocusSmooth = (float) zFocusSmoothPg0;
+         scsBase->page0.xTiltGuide = (float) xTiltGuidePg0;  
+         scsBase->page0.yTiltGuide = (float) yTiltGuidePg0; 
+         scsBase->page0.zFocusGuide = (float) zFocusGuidePg0;
+         if (showcs)
+             errlogPrintf("page0.checksum = %ld\n", scsBase->page0.checksum);
+         /*scsBase->page0.checksum = 666;*/
+
+
 
          /* flag availability of new data */
          /* The original ideal of sending only everyother pulse has bee removed */
 
-         rmIntSend (INT2, M2_NODE);
-         /*Start timer to profile interrupt cycle times between SCS and CEM*/
-         /*
-            semGive(cemTimerStartSem);
-            */
+         if (sendpulse) {
+
+             /*Toggle sendpulse back to off*/
+             sendpulse = 0;
+             rmIntSend (INT2, M2_NODE);
+         }
+
+         epicsMutexUnlock(refMemFree);
       }
       else /* simulation active, write to m2 buffer */
       {
@@ -1774,7 +1813,7 @@ void processGuides (void)
       /* Give the semaphore taken by "slowTransmit" since it is the guide task
        * that does the transmit of the slower items prepared for transmission to the
        * m2 system by "slowTransmit"  */
-      epicsEventSignal(slowUpdate);  
+      //epicsEventSignal(slowUpdate);  
 
       /* Update the ring buffers, all of them, here. Yes, even 
        * the ones that pertain to P2. This is where you would 
@@ -1791,7 +1830,7 @@ void processGuides (void)
       cbTime[cbCounter] = cbTimeStamp;
       // cbTick[cbCounter] = tickGet();
 
-
+      epicsMutexLock(refMemFree);
       /* Here is all the P2 specific stuff */
       cbXRawGuide[cbCounter] = scsBase->pwfs2.z1;
       cbYRawGuide[cbCounter] = scsBase->pwfs2.z2;
@@ -1852,6 +1891,7 @@ void processGuides (void)
 
       cbXGuidePhasor[cbCounter] = phasorX.command;
       cbYGuidePhasor[cbCounter] = phasorY.command;
+      epicsMutexUnlock(refMemFree);
 
       /* increment the counter and wrap around if necessary,
        * it is a circular buffer after all. */
@@ -1910,7 +1950,7 @@ void slowTransmit (void)
     * task prepares the slower items for transmission to the m2 system ready
     * for the guide task to pick up and transmit
     */
-
+   printf("Slow Transmit Running\n");
    for (;;)
    {
       if (localPtr == (commandBlock *) NULL)
@@ -1983,7 +2023,6 @@ void slowTransmit (void)
       epicsMutexLock(refMemFree);
       /* before 10sep: localCommandBlock = *(memMap *)scsPtr; */
       localCommandBlock = *(commandBlock *)&(scsPtr->page0);
-      epicsMutexUnlock(refMemFree);
 
       /* write demands to reflective memory interface */
 
@@ -2024,7 +2063,9 @@ void slowTransmit (void)
             scsBase->page0.ByTilt = (float) confine (setPoint.yTiltB, Y_TILT_LIMIT, -Y_TILT_LIMIT);
             scsBase->page0.CxTilt = (float) confine (setPoint.xTiltC, X_TILT_LIMIT, -X_TILT_LIMIT);
             scsBase->page0.CyTilt = (float) confine (setPoint.yTiltC, Y_TILT_LIMIT, -Y_TILT_LIMIT);
-            scsBase->page0.xDemand = (float) setPoint.xPosition;
+            /*scsBase->page0.xDemand = (float) setPoint.xPosition;*/
+            scsBase->page0.xDemand = (float) xDemandPg0;
+            errlogPrintf("page0.xDemand = %f, xDemandPg0 = %f \n", scsBase->page0.xDemand, (float) xDemandPg0);
             scsBase->page0.yDemand = (float) setPoint.yPosition;
          }
          else
@@ -2045,7 +2086,9 @@ void slowTransmit (void)
 
             scsBase->page0.zFocusGuide = lockPosition.zFocus;
 
-            scsBase->page0.xDemand = lockPosition.xPos;
+            /*scsBase->page0.xDemand = lockPosition.xPos;*/
+            scsBase->page0.xDemand = (float) xDemandPg0;
+            errlogPrintf("page0.xDemand = %f, xDemandPg0 = %f \n", scsBase->page0.xDemand, (float) xDemandPg0);
             scsBase->page0.yDemand = lockPosition.yPos;
          }
 
@@ -2057,10 +2100,8 @@ void slowTransmit (void)
          scsBase->page0.xTiltTolerance = localPtr->xTiltTolerance;
          scsBase->page0.yTiltTolerance = localPtr->yTiltTolerance;
          scsBase->page0.zFocusTolerance = localPtr->zFocusTolerance;
-         scsBase->page0.xPositionTolerance = 
-            localPtr->xPositionTolerance;
-         scsBase->page0.yPositionTolerance = 
-            localPtr->yPositionTolerance;
+         scsBase->page0.xPositionTolerance = localPtr->xPositionTolerance;
+         scsBase->page0.yPositionTolerance = localPtr->yPositionTolerance;
          scsBase->page0.bandwidth = localPtr->bandwidth;
          scsBase->page0.xTiltGain = localPtr->xTiltGain;
          scsBase->page0.yTiltGain = localPtr->yTiltGain;
@@ -2071,6 +2112,7 @@ void slowTransmit (void)
          scsBase->page0.xTiltSmooth = localPtr->xTiltSmooth;
          scsBase->page0.yTiltSmooth = localPtr->yTiltSmooth;
          scsBase->page0.zFocusSmooth = localPtr->zFocusSmooth;
+         //scsBase->page0.zFocusSmooth = (float) zFocusSmoothPg0;
          scsBase->page0.xTcsMinRange = localPtr->xTcsMinRange;
          scsBase->page0.yTcsMinRange = localPtr->yTcsMinRange;
          scsBase->page0.xTcsMaxRange = localPtr->xTcsMaxRange;
@@ -2094,7 +2136,6 @@ void slowTransmit (void)
          scsBase->page0.xydir = localPtr->xydir;
          scsBase->page0.xysteps = localPtr->xysteps;
          scsBase->page0.xyPositionDeadband = localPtr->xyPositionDeadband;
-         strncpy (scsBase->page0.scsTime, cemtime, CEM_TIME_SIZE - 1);
 
       }
       else
@@ -2190,6 +2231,7 @@ void slowTransmit (void)
          /* some missing here */
          epicsMutexUnlock(m2MemFree);
       }
+      epicsMutexUnlock(refMemFree); //This is the matching unlock from (around) line 1986
    } // for(;;)
 }
 
@@ -2373,14 +2415,18 @@ void scsReceive (void)
 
    for (;;)
    {
-      if (epicsEventWaitWithTimeout(scsReceiveNow, RECEIVE_TIMEOUT) == epicsEventWaitOK)
+      if (epicsEventWaitWithTimeout(scsReceiveNow, waittime2) == epicsEventWaitOK)
       {
+         /* This is where the mutex protected rmisr2 is unlocked
+          * */ 
          scsrx1++; 
          if (simLevel == 0)
          {
             /* no simulation active, grab data from reflective memory */
 
+            epicsMutexLock(m2MemFree);
             localStatusBlock = *(statusBlock *) & scsBase->page1;
+            epicsMutexUnlock(m2MemFree);
 
             /* grab the engineering data for logging */
             /* only does anything if m2LogActive is set (via
@@ -3326,8 +3372,17 @@ epicsExportAddress(int, scsrx3a );
 epicsExportAddress(int, scsrx4 );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
+epicsExportAddress(int, showcs );
+epicsExportAddress(int, sendpulse );
 epicsExportAddress(int, simLevel );
+epicsExportAddress(int, interlockFlag );
 epicsExportAddress(double, waittime );
-
-
-
+epicsExportAddress(double, waittime2 );
+epicsExportAddress(double, xDemandPg0 );
+epicsExportAddress(double, zFocusSmoothPg0 );
+epicsExportAddress(int, heartbeatPg0);
+epicsExportAddress(double, xTiltGuidePg0 );
+epicsExportAddress(double, yTiltGuidePg0 );
+epicsExportAddress(double, zFocusGuidePg0);
+epicsExportAddress(int, NSPg0);
+epicsExportAddress(int, fixVal);

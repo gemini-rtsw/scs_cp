@@ -466,10 +466,20 @@ void    big (void)
 
 /* ===================================================================== */
 
+void clearPage0 (void)
+{
+
+    epicsMutexLock(refMemFree); 
+    memcpy((long *) &scsBase->page0, 0, sizeof(commandBlock));
+    epicsMutexUnlock(refMemFree);
+}
+
+/* ===================================================================== */
+
 void    showCounts (void)
 {
-    printf ("BASE NS = %ld, NR = %ld\n", scsBase->page0.NS, scsBase->page1.NR);
-    printf ("SCS NS = %ld, NR = %ld\n", scsPtr->page0.NS, scsPtr->page1.NR);
+    printf ("BASE SCS NS = %ld, NR = %ld\n", scsBase->page0.NS, scsBase->page1.NR);
+    printf ("SCS  Sim NS = %ld, NR = %ld\n", scsPtr->page0.NS, scsPtr->page1.NR);
     printf ("M2  NS = %ld, NR = %ld\n", m2Ptr->page0.NS, m2Ptr->page1.NR);
 }
 
@@ -1616,6 +1626,26 @@ static void endfreeRunCallFunc(const iocshArgBuf *args)
 {
     endfreeRun();
 }
+/****Big****/
+static const iocshFuncDef bigFuncDef ={"scsBig", 0, NULL};
+static void bigCallFunc(const iocshArgBuf *args)
+{
+    big();
+}
+
+/****clearPage0****/
+static const iocshFuncDef clearPage0FuncDef ={"scsClearPage0", 0, NULL};
+static void clearPage0CallFunc(const iocshArgBuf *args)
+{
+    clearPage0();
+}
+
+/****showCounts****/
+static const iocshFuncDef showCountsFuncDef ={"scsShowCounts", 0, NULL};
+static void showCountsCallFunc(const iocshArgBuf *args)
+{
+    showCounts();
+}
 
 /****ShowMemory******/
 static const iocshArg smArg0 = {"page in rm <1-13>", iocshArgInt };
@@ -1634,6 +1664,9 @@ static void testFunctionsRegisterCommands(void)
     iocshRegister(&endGuideSimFuncDef, endGuideSimCallFunc);
     iocshRegister(&startfreeRunFuncDef, startfreeRunCallFunc);
     iocshRegister(&endfreeRunFuncDef, endfreeRunCallFunc);
+    iocshRegister(&bigFuncDef, bigCallFunc);
+    iocshRegister(&clearPage0FuncDef, clearPage0CallFunc);
+    iocshRegister(&showCountsFuncDef, showCountsCallFunc);
 }
 
 epicsExportRegistrar(testFunctionsRegisterCommands);
