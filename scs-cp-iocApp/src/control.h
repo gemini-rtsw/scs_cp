@@ -60,7 +60,7 @@
 
 #define STATUS_BLOCK_SIZE       23      /* number of longs for checksum 
                                            to consider                  */
-#define COMMAND_BLOCK_SIZE      61      /* number of longs for checksum 
+#define COMMAND_BLOCK_SIZE      62      /* number of longs for checksum 
                                            to consider                  */
 
 #define MAX_FAULTS              30  /* first 30 faults in diag block */
@@ -211,7 +211,6 @@ typedef struct
     long            xydir;
     long            xysteps;
     float           xyPositionDeadband;
-    char            scsTime[16];
     float           zFocus;    /*not used by M2. for dm display purposes only*/
     float           zGuide;    /*not used by M2. for dm display purposes only*/
     float           rawXGuide; /*not used by M2. for dm display purposes only*/
@@ -219,7 +218,7 @@ typedef struct
     float           rawZGuide; /*not used by M2. for dm display purposes only*/
     float           xGrossTiltDmd; /*not used by M2. for dm display purposes only*/
     float           yGrossTiltDmd; /*not used by M2. for dm display purposes only*/
-    float           pad[184]; /* Was 188 before scsTime */
+    float           pad[188]; 
 }commandBlock;
 
 /* M2 to SCS status block */
@@ -517,12 +516,13 @@ enum
     /* 47-58 reserved for xycom commands (defined in showEngineering.c */
     CMD_XYINIT=59,        /* 59 */
     XY_DEADBAND_CHANGE=60, /* 60 */
-    SCS_TIME_UPDATE=61          /* 61 */
+    //SCS_TIME_UPDATE=61          [> 61 <]
 };
 
 /* Global variables*/
 
 extern int simLevel;
+extern int refmem_mon1;
 extern memMap *scsPtr;
 extern memMap *scsBase;
 extern memMap *m2Ptr;
@@ -587,6 +587,7 @@ void swxon(void);
 void swyon(void);
 void swxoff(void);
 void swyoff(void);
+void setLocal(long);
 
 extern long servoOnStatus;
 

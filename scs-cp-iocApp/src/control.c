@@ -116,7 +116,8 @@
 #define MAX_FILENAME_SIZE       100
 #define LOG_INTERVAL            5
 
-int sep = 0;   /* Send Every guide pulse (Default, NO. Send every other pulse.*/ 
+int sendpulse = 2;    
+int showcs = 0;   
 static void reportTimes();
 struct timespec timeStart, timeEnd;
 int mytimeshow = 0;
@@ -197,7 +198,7 @@ static char *m2CmdName[] =
    "SEQUENCE3           ",
    "CMD_XYINIT          ",
    "XY_DEADBAND_CHANGE  ",
-   "SCS_TIME_UPDATE     ",
+   /*"SCS_TIME_UPDATE     ",*/
    NULL
 };
 
@@ -207,7 +208,8 @@ static struct
 {
    long NS;
    long scsHeartbeat;
-   long m2Heartbeat; long testRequest;
+   long m2Heartbeat;
+   long testRequest;
 }   local =
 
 {
@@ -324,6 +326,7 @@ void phasorShow(void);
 
 int flipGuide = 0;
 int simLevel = 0;
+int refmem_mon1 = 0;
 memMap *scsPtr = NULL;
 memMap *scsBase = NULL;
 memMap *m2Ptr = NULL;
@@ -464,9 +467,11 @@ static double cbVTKYdeltaPhase[CB_RECORD_NB];
 static double cbXGuidePhasor[CB_RECORD_NB];
 static double cbYGuidePhasor[CB_RECORD_NB];
 
-void setNS(int value)
+void setLocal(long value)
 {
    local.NS = value;
+   local.scsHeartbeat = value;
+   local.m2Heartbeat = value +1;
 }
 
 #if 0
@@ -937,6 +942,18 @@ int rxwaitticks = 0;
 int useDynamicVtk =0;
 
 static double waittime = 0.5;   
+static double waittime2 = 2;   
+
+/*static double xDemandPg0 = 0.000001;   
+static double zFocusSmoothPg0 = 0.000001;   
+static int heartbeatPg0 = 1;   
+static double xTiltGuidePg0 = 0.000001;
+static double yTiltGuidePg0 = 0.000001;
+static double zFocusGuidePg0 = 0.000001;
+static int NSPg0 = 1;   
+static int fixVal = 0;   
+*/
+
 static int procGuideCount1 = 0;
 static int procGuideCount2 = 0;
 static int procGuideCount3 = 0;
@@ -952,8 +969,6 @@ void processGuides (void)
    long command = FAST_ONLY;
    location    position;
    converted   result = {0,0,0};
-   int indx = 0; 
-   //char message[200];
    long lastNS = 0;
 
    long sensedGuideRate = GUIDE_200_HZ;
@@ -1724,11 +1739,15 @@ void processGuides (void)
          /* flag availability of new data */
          /* The original ideal of sending only everyother pulse has bee removed */
 
-         rmIntSend (INT2, M2_NODE);
-         /*Start timer to profile interrupt cycle times between SCS and CEM*/
-         /*
-            semGive(cemTimerStartSem);
-            */
+         if (sendpulse) {
+
+             /*Toggle sendpulse back to off for value 1.
+              * Greater than 1 is continuous mode*/
+             if (sendpulse == 1)
+                 sendpulse = 0;
+
+             rmIntSend (INT2, M2_NODE);
+         }
       }
       else /* simulation active, write to m2 buffer */
       {
@@ -1774,7 +1793,7 @@ void processGuides (void)
       /* Give the semaphore taken by "slowTransmit" since it is the guide task
        * that does the transmit of the slower items prepared for transmission to the
        * m2 system by "slowTransmit"  */
-      epicsEventSignal(slowUpdate);  
+      //epicsEventSignal(slowUpdate);  
 
       /* Update the ring buffers, all of them, here. Yes, even 
        * the ones that pertain to P2. This is where you would 
@@ -1975,7 +1994,7 @@ void slowTransmit (void)
       }
 
       if (scstimeUpdate == 1) {
-         writeCommand(SCS_TIME_UPDATE);
+         /*writeCommand(SCS_TIME_UPDATE);*/
          scstimeUpdate = 0;
       }
 
@@ -2057,10 +2076,8 @@ void slowTransmit (void)
          scsBase->page0.xTiltTolerance = localPtr->xTiltTolerance;
          scsBase->page0.yTiltTolerance = localPtr->yTiltTolerance;
          scsBase->page0.zFocusTolerance = localPtr->zFocusTolerance;
-         scsBase->page0.xPositionTolerance = 
-            localPtr->xPositionTolerance;
-         scsBase->page0.yPositionTolerance = 
-            localPtr->yPositionTolerance;
+         scsBase->page0.xPositionTolerance = localPtr->xPositionTolerance;
+         scsBase->page0.yPositionTolerance = localPtr->yPositionTolerance;
          scsBase->page0.bandwidth = localPtr->bandwidth;
          scsBase->page0.xTiltGain = localPtr->xTiltGain;
          scsBase->page0.yTiltGain = localPtr->yTiltGain;
@@ -2094,7 +2111,6 @@ void slowTransmit (void)
          scsBase->page0.xydir = localPtr->xydir;
          scsBase->page0.xysteps = localPtr->xysteps;
          scsBase->page0.xyPositionDeadband = localPtr->xyPositionDeadband;
-         strncpy (scsBase->page0.scsTime, cemtime, CEM_TIME_SIZE - 1);
 
       }
       else
@@ -2373,7 +2389,7 @@ void scsReceive (void)
 
    for (;;)
    {
-      if (epicsEventWaitWithTimeout(scsReceiveNow, RECEIVE_TIMEOUT) == epicsEventWaitOK)
+      if (epicsEventWaitWithTimeout(scsReceiveNow, waittime2) == epicsEventWaitOK)
       {
          scsrx1++; 
          if (simLevel == 0)
@@ -3326,8 +3342,20 @@ epicsExportAddress(int, scsrx3a );
 epicsExportAddress(int, scsrx4 );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
+epicsExportAddress(int, showcs );
+epicsExportAddress(int, sendpulse );
 epicsExportAddress(int, simLevel );
+epicsExportAddress(int, interlockFlag );
+epicsExportAddress(int,  refmem_mon1);
 epicsExportAddress(double, waittime );
-
-
-
+epicsExportAddress(double, waittime2 );
+/*
+epicsExportAddress(double, xDemandPg0 );
+epicsExportAddress(double, zFocusSmoothPg0 );
+epicsExportAddress(int, heartbeatPg0);
+epicsExportAddress(double, xTiltGuidePg0 );
+epicsExportAddress(double, yTiltGuidePg0 );
+epicsExportAddress(double, zFocusGuidePg0);
+epicsExportAddress(int, NSPg0);
+epicsExportAddress(int, fixVal);
+*/

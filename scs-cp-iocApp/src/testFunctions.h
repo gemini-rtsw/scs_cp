@@ -66,6 +66,7 @@ void rawTime(void);
 
 void testMem(const memMap* buffPtr);
 void printPage0(const memMap* buffPtr);
+void printPage0Long(const memMap* buffPtr);
 void printPage1(const memMap* buffPtr);
 void printPage2(const memMap* buffPtr);
 void printPage7(const memMap* buffPtr);

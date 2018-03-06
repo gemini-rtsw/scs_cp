@@ -206,10 +206,19 @@ long  readM2DiagnosticsInit (struct genSubRecord * pgsub)
  * 28-Jan-1999  Original version  (srp)
  *-
  */
+int m2diags1 = 0;
+int m2diags2 = 0;
+int m2diags3 = 0;
+int m2diags4 = 0;
+int m2diags5 = 0;
+int m2diags6 = 0;
+int m2diags7 = 0;
+int m2diags8 = 0;
+int m2diags9 = 0;
 
 long    readM2Diagnostics (struct genSubRecord * pgsub)
 { 
-    short junk;
+    //short junk;
     int index = 0;
     double act1[21], act2[21], act3[21], sys[21];
     location position;
@@ -234,14 +243,14 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     /* check 5588 synchro card memory location, exit if not found */
 
     //if (vxMemProbe ((void *)ptr, VX_READ, 1, &junk) != OK)    
-    if (devReadProbe(sizeof(char), ptr, &junk) != OK )
-    {
-        errlogSevPrintf(errlogMajor, "readM2Diagnostics - synchro card not detected at address %p\n", (void *)ptr);
-        return(ERROR);
-    }
+    //if (devReadProbe(sizeof(char), ptr, &junk) != OK )
+    //{
+    //    errlogSevPrintf(errlogMajor, "readM2Diagnostics - synchro card not detected at address %p\n", (void *)ptr);
+    //    return(ERROR);
+    //}
 
     /* read data from m2 diagnostic page into local arrays */
-
+m2diags1++;
     act1[0] = ptr->page1.actuator1;
     act1[1] = ptr->m2Eng.follow1;
     act1[2] = ptr->m2Eng.current1;
@@ -259,6 +268,7 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     act3[2] = ptr->m2Eng.current3;
     act3[3] = ptr->m2Eng.kaman3;
     act3[4] = ptr->m2Eng.integ3;
+m2diags2++;
 
     /* Tracking down the corrupted RM values. The following 
        are copies of the MCDSP real values, the scale factors 
@@ -274,6 +284,7 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
 
     act1[11] = ptr->m2Eng.rad2arcsec;
     act1[12] = ptr->m2Eng.mm2um;
+m2diags3++;
 
 
     /* write packaged arrays to val fields */
@@ -282,6 +293,7 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     memcpy ((double *)pgsub->valb, act2, 21*sizeof (double));
     memcpy ((double *)pgsub->valc, act1, 21*sizeof (double));
     memcpy ((double *)pgsub->vald, sys,  21*sizeof (double));
+m2diags4++;
 
     /* calculate whether position error is small enough to */
     /* turn on fine control */
@@ -293,7 +305,9 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     position.yTilt = ptr->page0.AyTilt;
     position.zFocus = ptr->page0.zFocusGuide;
 
+m2diags5++;
     tilt2act (&position);
+m2diags6++;
 
     if((fabs(position.actuator1-ptr->page1.actuator1) < (IN_POSITION_LIMIT+7)) &&
             (fabs(position.actuator2-ptr->page1.actuator2) < (IN_POSITION_LIMIT+7)) &&
@@ -305,6 +319,7 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     {
         servoInPosition = 0;
     }
+m2diags7++;
 
     /* write servoInPosition to output port e */
 
@@ -323,6 +338,7 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
     /* read last recorded M2 error from RM */
     m2errs->sysid = (long)(ptr->m2Eng.errorSystem);
     m2errs->code   = (long)(ptr->m2Eng.errorCode);
+m2diags8++;
 
     /* based on these values, determine the error msg */
     /* note: m2errs->sysid and m2errs->code must be > 0    */
@@ -361,8 +377,17 @@ long    readM2Diagnostics (struct genSubRecord * pgsub)
             lastErrorCode = m2errs->code;
         }
     }
+m2diags9++;
 
-    free(m2errs);
+    /* 
+     * mrippa Feb. 2018...
+     *
+     * You don't need this unless you're constantly
+     * malloc()ing... Here, m2errs is acquired once
+     * at iocInit().
+     *
+     * free(m2errs);
+     */
 
     return (OK);
 }
@@ -690,4 +715,12 @@ epicsRegisterFunction(readM2DiagnosticsInit);
 epicsRegisterFunction(readM2Diagnostics);
 epicsRegisterFunction(gensubFanDoubles);
 epicsRegisterFunction(issueM2Primitive);
-
+epicsExportAddress(int, m2diags1);
+epicsExportAddress(int, m2diags2);
+epicsExportAddress(int, m2diags3);
+epicsExportAddress(int, m2diags4);
+epicsExportAddress(int, m2diags5);
+epicsExportAddress(int, m2diags6);
+epicsExportAddress(int, m2diags7);
+epicsExportAddress(int, m2diags8);
+epicsExportAddress(int, m2diags9);

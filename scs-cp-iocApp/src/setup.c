@@ -309,4 +309,4 @@ static void scsRegisterCommands(void)
 }
 
 epicsExportRegistrar(scsRegisterCommands);
-
+epicsExportAddress(int, refmem_mon1);
