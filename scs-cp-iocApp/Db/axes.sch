@@ -41,7 +41,7 @@ p 161 -827 100 0 0 FTVD:DOUBLE
 p 448 -624 100 0 1 INAM:
 p 96 14 100 0 0 PREC:2
 p 464 -576 100 0 1 PV:$(top)
-p 448 -704 100 0 1 SCAN:Passive
+p 448 -704 100 0 1 SCAN:.05 second
 p 448 -656 100 0 1 SNAM:mechSim
 use ebis -176 167 100 0 enable
 xform 0 -48 240

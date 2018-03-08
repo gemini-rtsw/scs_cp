@@ -106,6 +106,10 @@
 #include <math.h>
 #include <epicsExport.h>
 #include <registryFunction.h>
+static int  mutex17  = 0;
+static int  mutex18 = 0;
+static int  mutex19  = 0;
+static int  mutex20 = 0;
 
 long mechSim (struct genSubRecord * pgsub)
 {
@@ -156,7 +160,7 @@ long mechSim (struct genSubRecord * pgsub)
     if (*(long *) pgsub->a == OFF)
     {
     /* get demands from reflective memory */
-
+    mutex17++;
     epicsMutexLock(m2MemFree);
     tiltDemand.xTiltA = m2Ptr->page0.AxTilt;
     tiltDemand.xTiltB = m2Ptr->page0.BxTilt;
@@ -180,6 +184,7 @@ long mechSim (struct genSubRecord * pgsub)
     tolerance[YPOSITION] = m2Ptr->page0.yPositionTolerance;
 
     epicsMutexUnlock(m2MemFree);
+    mutex18++;
 
     /* look at driveChop requirements */
 
@@ -364,7 +369,7 @@ long mechSim (struct genSubRecord * pgsub)
     tilt2act (&position);
 
     /* write results back to reflective memory */
-
+    mutex19++;
     epicsMutexLock(m2MemFree);
     m2Ptr->page1.xTilt = (float) xout[0];
     m2Ptr->page1.yTilt = (float) yout[0];
@@ -381,6 +386,7 @@ long mechSim (struct genSubRecord * pgsub)
     m2Ptr->page1.beamPosition = beam;
 
     epicsMutexUnlock(m2MemFree);
+    mutex20++;
 
     /* write calculated position to ouput ports */
 
@@ -406,4 +412,8 @@ long mechSim (struct genSubRecord * pgsub)
     return (OK);
 }
 epicsRegisterFunction(mechSim);
+epicsExportAddress(int, mutex17);
+epicsExportAddress(int, mutex18);
+epicsExportAddress(int, mutex19);
+epicsExportAddress(int, mutex20);
 

@@ -65,8 +65,8 @@ dbpf "m2:interlockOverride","1"
 ###### Start any sequence programs
 seq &timeSeq, "sys=m2:, top=tc1:"
 #seq &scs_mon "T=m2:, D=m2:"
-#seq &tilt_st, "S=m2:tilt:, debug=0"
-#seq &scs_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
+seq &tilt_st, "S=m2:tilt:, debug=0"
+seq &scs_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
 ###dbpr "m2:interlock"
 ##### Comment out during testing signal from GIS:
 ####

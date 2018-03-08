@@ -61,7 +61,7 @@ scsSupport_LIBS += seq pv
 scsSupport_LIBS += $(EPICS_BASE_IOC_LIBS)
 scsSupport_SRCS += scs_st.st
 scsSupport_SRCS += tilt_st.st
-scsSupport_SRCS += scs_mon.st
+#scsSupport_SRCS += scs_mon.st
 
 # Add all the support libraries used by this IOC
 scs-cp-ioc_LIBS += geminiRecords

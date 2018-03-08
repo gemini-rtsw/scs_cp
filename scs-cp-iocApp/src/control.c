@@ -941,8 +941,16 @@ void rmISR3 (int node)
 int rxwaitticks = 0;
 int useDynamicVtk =0;
 
-static double waittime = 0.5;   
-static double waittime2 = 2;   
+static double waittime = 0.5; 
+static double waittime2 = 2.0;   
+static int mutex1= 0;
+static int mutex2= 0;
+static int mutex3= 0;
+static int mutex4= 0;
+static int mutex5= 0;
+static int mutex6= 0;
+static int mutex7= 0;
+static int mutex8= 0;
 
 /*static double xDemandPg0 = 0.000001;   
 static double zFocusSmoothPg0 = 0.000001;   
@@ -1717,7 +1725,8 @@ void processGuides (void)
          if (command == CMD_TEST)
             local.testRequest = 1;
 
-         /* print command to screen for testing */
+         /* print command to screen for testing
+	  */
          if ((command > POSITION) && (debugLevel == DEBUG_MED))
          {
             errlogPrintf ("processGuides - sent command =  %s (%d)", 
@@ -1751,6 +1760,7 @@ void processGuides (void)
       }
       else /* simulation active, write to m2 buffer */
       {
+         mutex1++; 
          epicsMutexLock(m2MemFree);
          m2Ptr->page0.xTiltGuide = (float) xNetGuideU;
          m2Ptr->page0.yTiltGuide = (float) yNetGuideU;
@@ -1775,7 +1785,8 @@ void processGuides (void)
             checkSum ((void *) &m2Ptr->page0.NS, COMMAND_BLOCK_SIZE);
 
          epicsMutexUnlock(m2MemFree);
-
+         mutex2++;
+	  
          /* print command to screen for testing */
 
          if ((command > POSITION) && (debugLevel == DEBUG_MIN))
@@ -2117,6 +2128,7 @@ void slowTransmit (void)
       {
          /* simulation active */
 
+	 mutex3++;
          epicsMutexLock(m2MemFree);
          if (interlockFlag != ON)
          {
@@ -2205,6 +2217,7 @@ void slowTransmit (void)
          m2Ptr->page0.zFocusSmooth = localPtr->zFocusSmooth;
          /* some missing here */
          epicsMutexUnlock(m2MemFree);
+	 mutex4++;
       }
    } // for(;;)
 }
@@ -2267,7 +2280,9 @@ void tiltReceive (void)
    for (;;) {
       if (epicsEventWaitWithTimeout(scsDataAvailable, RECEIVE_TIMEOUT) == epicsEventWaitOK) {
 
-         epicsMutexMustLock(m2MemFree);
+         // epicsMutexMustLock(m2MemFree);
+	 mutex5++;
+	 epicsMutexLock(m2MemFree);
 
          scsCheck = checkSum ((void *) &m2Ptr->page0.NS, COMMAND_BLOCK_SIZE);
 
@@ -2316,7 +2331,7 @@ void tiltReceive (void)
                STATUS_BLOCK_SIZE);
 
          epicsMutexUnlock(m2MemFree);
-
+	 mutex6++;
          /* flag status data available */
          epicsEventSignal(scsReceiveNow);
 
@@ -2381,7 +2396,9 @@ static int scsrx1= 0;
 static int scsrx2= 0;
 static int scsrx3= 0;
 static int scsrx3a= 0;
+static int scsrx3b= 0;
 static int scsrx4= 0;
+
 void scsReceive (void)
 {
    long simCheck = 0xabcd;
@@ -2418,10 +2435,12 @@ void scsReceive (void)
          else
          {
             /* simulation active, get data from m2 buffers */
+	    mutex7++;
             epicsMutexLock(m2MemFree);
             localStatusBlock = *(statusBlock *) & m2Ptr->page1;
             epicsMutexUnlock(m2MemFree);
-
+	    mutex8++;
+	    
             /* grab the engineering data for logging */
             // m2LoggerTask (m2Ptr);
          }
@@ -2453,10 +2472,10 @@ void scsReceive (void)
                  /* all is well, copy the checked data to the scs buffer */
                  local.m2Heartbeat = localStatusBlock.heartbeat;
 
-                 epicsMutexLock(refMemFree);
+                 /* epicsMutexLock(refMemFree); */
                  *(statusBlock *) & scsPtr->page1 = localStatusBlock;
-                 epicsMutexUnlock(refMemFree);
-
+                 /* epicsMutexUnlock(refMemFree); */
+		  scsrx3b++; 
 
                  if (local.NS != localStatusBlock.NR)
                  {
@@ -3339,6 +3358,7 @@ epicsExportAddress(int, scsrx1 );
 epicsExportAddress(int, scsrx2 );
 epicsExportAddress(int, scsrx3 );
 epicsExportAddress(int, scsrx3a );
+epicsExportAddress(int, scsrx3b );
 epicsExportAddress(int, scsrx4 );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
@@ -3349,6 +3369,15 @@ epicsExportAddress(int, interlockFlag );
 epicsExportAddress(int,  refmem_mon1);
 epicsExportAddress(double, waittime );
 epicsExportAddress(double, waittime2 );
+epicsExportAddress(int, mutex1 );
+epicsExportAddress(int, mutex2 );
+epicsExportAddress(int, mutex3 );
+epicsExportAddress(int, mutex4 );
+epicsExportAddress(int, mutex5 );
+epicsExportAddress(int, mutex6 );
+epicsExportAddress(int, mutex7 );
+epicsExportAddress(int, mutex8 );
+
 /*
 epicsExportAddress(double, xDemandPg0 );
 epicsExportAddress(double, zFocusSmoothPg0 );

@@ -139,6 +139,8 @@ int  scsConfigureISR(void) {
 
 /* INDENT ON */
 /* ===================================================================== */
+static int  mutex15  = 0;
+static int  mutex16 = 0;
 
 int scsInit (void)
 {
@@ -262,11 +264,11 @@ int scsInit (void)
    epicsMutexLock(refMemFree);
    memset ((void *) scsPtr, 0, sizeof (memMap));
    epicsMutexUnlock(refMemFree);
-
+   mutex15++;
    epicsMutexLock(m2MemFree);
    memset ((void *) m2Ptr, 0, sizeof (memMap));
    epicsMutexUnlock(m2MemFree);
-
+   mutex16++;
    memset ((void *) scsBase, 0, sizeof (memMap));
 
    /* Do in startup in order that xycom has already been inited.
@@ -309,4 +311,6 @@ static void scsRegisterCommands(void)
 }
 
 epicsExportRegistrar(scsRegisterCommands);
-epicsExportAddress(int, refmem_mon1);
+/* epicsExportAddress(int, refmem_mon1);  */
+epicsExportAddress(int, mutex15);
+epicsExportAddress(int, mutex16);

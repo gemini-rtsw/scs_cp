@@ -2224,6 +2224,8 @@ long initDecimate (struct genSubRecord * pgsub)
      return (OK);
 }
 
+static int  mutex13  = 0;
+static int  mutex14 = 0;
 
 long decimate (struct genSubRecord * pgsub)
 {
@@ -2256,7 +2258,7 @@ long decimate (struct genSubRecord * pgsub)
      if(simLevel != 0)
      {
           /* simulation active */
-
+	  mutex13++;
           epicsMutexLock(m2MemFree);
 
           tcsData.xTiltPos = (double) m2Ptr->page1.xTilt;
@@ -2274,6 +2276,7 @@ long decimate (struct genSubRecord * pgsub)
           tcsData.yPos = (double) m2Ptr->page1.yPosition;
 
           epicsMutexUnlock(m2MemFree);
+	  mutex14++;
      }
      else
      {
@@ -2648,3 +2651,5 @@ epicsRegisterFunction(CADguideControl);
 epicsRegisterFunction(CADguideConfig);
 epicsRegisterFunction(CADguideReset);
 
+epicsExportAddress(int, mutex13);
+epicsExportAddress(int, mutex14);

@@ -122,8 +122,8 @@ long    realDrive (struct genSubRecord * pgsub)
 {
 
     /* note sense reversal for in position, on ref mem 0 = in position */
-    epicsMutexLock(refMemFree);
     reallock1++;
+    /* epicsMutexLock(refMemFree); */
 
     *(long *) pgsub->vala   = scsPtr->page1.checksum;
     *(long *) pgsub->valb   = scsPtr->page1.NR;
@@ -152,7 +152,8 @@ long    realDrive (struct genSubRecord * pgsub)
     *(double *) pgsub->valt = scsPtr->page1.baffleEncoderC;
     *(long *) pgsub->valu   = scsPtr->page1.topEnd;
 
-    epicsMutexUnlock(refMemFree);
+    /* epicsMutexUnlock(refMemFree); */
+    reallock2++;
     return (OK);
 }
 
@@ -199,16 +200,19 @@ long    realDrive (struct genSubRecord * pgsub)
 
 /* INDENT ON */
 /* ===================================================================== */
+static int reallock3 = 0;
+static int reallock4 = 0;
 
 long    real2Drive (struct genSubRecord * pgsub)
 {
 
-    epicsMutexLock(refMemFree);
+    reallock3++;
+    /* epicsMutexLock(refMemFree); */
     *(double *) pgsub->vala = scsPtr->page1.upperBearingAngle;
     *(double *) pgsub->valb = scsPtr->page1.lowerBearingAngle;
-    epicsMutexUnlock(refMemFree);
+    /* epicsMutexUnlock(refMemFree); */
 
-    reallock2++;
+    reallock4++;
     return (OK);
 }
 
@@ -275,10 +279,13 @@ long    real2Drive (struct genSubRecord * pgsub)
 /* INDENT ON */
 /* ===================================================================== */
 
+static int  mutex9  = 0;
+static int  mutex10 = 0;
 long    displayScs (struct genSubRecord * pgsub)
 {
     if(simLevel != 0)
     {
+        mutex9++;
         epicsMutexLock(m2MemFree);  
         *(double *) pgsub->vala = m2Ptr->page0.xTiltGuide;
         *(double *) pgsub->valb = m2Ptr->page0.yTiltGuide;
@@ -302,6 +309,7 @@ long    displayScs (struct genSubRecord * pgsub)
         *(double *) pgsub->valt = m2Ptr->page0.chopDutyCycle;
         *(long *) pgsub->valu = m2Ptr->page0.NS;
         epicsMutexUnlock(m2MemFree);
+	mutex10++;
     }
     else
     {
@@ -390,6 +398,8 @@ long    displayScs (struct genSubRecord * pgsub)
 
 /* INDENT ON */
 /* ===================================================================== */
+static int  mutex11  = 0;
+static int  mutex12 = 0;
 
 long    displayScs2 (struct genSubRecord * pgsub)
 {
@@ -402,6 +412,7 @@ long    displayScs2 (struct genSubRecord * pgsub)
 
     if(simLevel != 0)
     {
+    	mutex11++;
 	epicsMutexLock(m2MemFree);  
 	*(double *) pgsub->vala = m2Ptr->page0.zFocus;
 	*(double *) pgsub->valb = m2Ptr->page0.zGuide; 
@@ -411,6 +422,7 @@ long    displayScs2 (struct genSubRecord * pgsub)
         *(double *) pgsub->valf = m2Ptr->page0.xGrossTiltDmd;
         *(double *) pgsub->valg = m2Ptr->page0.yGrossTiltDmd;
 	epicsMutexUnlock(m2MemFree);
+    	mutex12++;
     }
     else
     {
@@ -500,7 +512,7 @@ long    displayScs2 (struct genSubRecord * pgsub)
 long    statusDrive (struct genSubRecord * pgsub)
 {
 
-    epicsMutexLock(refMemFree);
+    /* epicsMutexLock(refMemFree); */
 
     /* read the m2 status word as bytes and put out to ports */
     *(long *) pgsub->vala = (char) scsPtr->page1.statusWord.byte[3];
@@ -511,7 +523,7 @@ long    statusDrive (struct genSubRecord * pgsub)
     /* read enclosure temperature */
     *(double *) pgsub->vale = scsPtr->page1.enclosureTemp;
 
-    epicsMutexUnlock(refMemFree);
+    /* epicsMutexUnlock(refMemFree); */
 
     return (OK);
 }
@@ -524,3 +536,9 @@ epicsRegisterFunction(displayScs2);
 epicsRegisterFunction(statusDrive);
 epicsExportAddress(int, reallock1);
 epicsExportAddress(int, reallock2);
+epicsExportAddress(int, reallock3);
+epicsExportAddress(int, reallock4);
+epicsExportAddress(int, mutex9);
+epicsExportAddress(int, mutex10);
+epicsExportAddress(int, mutex11);
+epicsExportAddress(int, mutex12);
