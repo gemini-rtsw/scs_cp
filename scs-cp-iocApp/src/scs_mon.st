@@ -168,10 +168,15 @@ ss monitorProcess {
          monitorProcessState = UPDATEPARAMETERS; 
          pvPut(monitorProcessState);
 
-         epicsMutexLock(refMemFree);
-         /* invert sense of in position*/
-         coincidence = !scsPtr->page1.inPosition;
-         epicsMutexUnlock(refMemFree);
+         if(refMemFree) {
+            epicsMutexLock(refMemFree);
+            /* invert sense of in position*/
+            coincidence = !scsPtr->page1.inPosition;
+            epicsMutexUnlock(refMemFree);
+         }
+         else {
+            errorLog ("monitorProcess - refMemFree timeout", 1, ON);
+         }
 
          pvPut(coincidence);
 
@@ -229,7 +234,8 @@ ss monitorSad {
 
          printf("mon:updatesad page1\n");
          %{
-             if(epicsMutexLock(refMemFree)) {
+            if(refMemFree) {
+                 epicsMutexLock(refMemFree);
 
                  if(scsPtr->page1.inPosition != 0 || followOn || guideOn)
                      strncpy(inPositionSad, "TRUE", MAX_STRING_SIZE - 1);
@@ -304,7 +310,7 @@ ss monitorSad {
          pvPut(followS);
 
          /* check m2 error status bits */
-         // %%checkTiltStatus();
+         %%checkTiltStatus();
          /* update guider screens */
 
          x[0] = filtered[PWFS1].z1;

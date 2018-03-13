@@ -1846,7 +1846,7 @@ ss CADprocessor {
 
       /* verify that the M2 system is initialising */
 
-      when( (initResponse == 1) && delay(10.0))
+      when( (initResponse == 1) && delay(3.0))
       {
          cadProcessorState = WAITINITRESPONSE;
          pvPut(cadProcessorState);
