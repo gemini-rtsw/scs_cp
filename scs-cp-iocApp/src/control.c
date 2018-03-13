@@ -567,35 +567,39 @@ void projectSource (void)
           * time update
           */
 
-         epicsMutexLock(wfsFree[source]);
-         if (readArchive (&archiveEntry, filtered[source].time) == OK)
-         {
-            deltaX = xNow - archiveEntry.setX;
-            deltaY = yNow - archiveEntry.setY;
-            deltaZ = zNow - archiveEntry.setZ;
+       if ( wfsFree[source])) {
+           epicsMutexLock(wfsFree[source]);
+           if (readArchive (&archiveEntry, filtered[source].time) == OK)
+           {
+              deltaX = xNow - archiveEntry.setX;
+              deltaY = yNow - archiveEntry.setY;
+              deltaZ = zNow - archiveEntry.setZ;
 
-            filtered[source].z1 = 
-               archiveEntry.xTilt + filtered[source].z1 + deltaX;
-            filtered[source].z2 = 
-               archiveEntry.yTilt + filtered[source].z2 + deltaY;
-            filtered[source].z3 = 
-               archiveEntry.zFocus + filtered[source].z3 + deltaZ;
-         }
-         else
-         {
+              filtered[source].z1 = 
+                 archiveEntry.xTilt + filtered[source].z1 + deltaX;
+              filtered[source].z2 = 
+                 archiveEntry.yTilt + filtered[source].z2 + deltaY;
+              filtered[source].z3 = 
+                 archiveEntry.zFocus + filtered[source].z3 + deltaZ;
+           }
+           else
+           {
 
-            /*
-             * if position cannot be fetched, use current position
-             */
+              /*
+              * if position cannot be fetched, use current position
+              */
 
-            errorLog ("projectSource - can't retrieve archive position",
-                  1, ON);
+              errorLog ("projectSource - can't retrieve archive position",
+                    1, ON);
 
-            filtered[source].z1 = scsPtr->page1.xTilt + filtered[source].z1 + deltaX;
-            filtered[source].z2 = scsPtr->page1.yTilt + filtered[source].z2 + deltaY;
-            filtered[source].z3 = scsPtr->page1.zFocus + filtered[source].z3 + deltaZ;
-         }
-         epicsMutexUnlock(wfsFree[source]);
+              filtered[source].z1 = scsPtr->page1.xTilt + filtered[source].z1 + deltaX;
+              filtered[source].z2 = scsPtr->page1.yTilt + filtered[source].z2 + deltaY;
+              filtered[source].z3 = scsPtr->page1.zFocus + filtered[source].z3 + deltaZ;
+           }
+           epicsMutexUnlock(wfsFree[source]);
+       } else {
+         errorLog ("projectSource - couldn't obtain wfsFree[source] mutex", 1, ON);
+       } 
       }
    }
 }
@@ -1760,33 +1764,36 @@ void processGuides (void)
       }
       else /* simulation active, write to m2 buffer */
       {
-         mutex1++; 
-         epicsMutexLock(m2MemFree);
-         m2Ptr->page0.xTiltGuide = (float) xNetGuideU;
-         m2Ptr->page0.yTiltGuide = (float) yNetGuideU;
-         m2Ptr->page0.zFocusGuide = 
-            (float) confine ((setPoint.zFocus + zNetGuideU), 
-                  Z_FOCUS_LIMIT, -Z_FOCUS_LIMIT);
+	 if ( m2MemFree ) {
+            mutex1++;
+            epicsMutexLock(m2MemFree);
+            m2Ptr->page0.xTiltGuide = (float) xNetGuideU;
+            m2Ptr->page0.yTiltGuide = (float) yNetGuideU;
+            m2Ptr->page0.zFocusGuide = 
+                                 (float) confine ((setPoint.zFocus + zNetGuideU), 
+                                         Z_FOCUS_LIMIT, -Z_FOCUS_LIMIT);
 
-         /* package data */
+            /* package data */
 
-         /* fetch command from message queue */
+            /* fetch command from message queue */
 
-         if( epicsMessageQueueTryReceive(commandQId, (char *) &command, sizeof (long)) < 0)
-            command = FAST_ONLY;
+            if( epicsMessageQueueTryReceive(commandQId, (char *) &command, sizeof (long)) < 0)
+               command = FAST_ONLY;
 
-         if (command == CMD_TEST)
-            local.testRequest = 1;
+            if (command == CMD_TEST)
+               local.testRequest = 1;
 
-         m2Ptr->page0.commandCode = command;
-         m2Ptr->page0.NS = ++local.NS;
-         m2Ptr->page0.heartbeat = local.scsHeartbeat++;
-         m2Ptr->page0.checksum = 
+            m2Ptr->page0.commandCode = command;
+            m2Ptr->page0.NS = ++local.NS;
+            m2Ptr->page0.heartbeat = local.scsHeartbeat++;
+            m2Ptr->page0.checksum = 
             checkSum ((void *) &m2Ptr->page0.NS, COMMAND_BLOCK_SIZE);
 
-         epicsMutexUnlock(m2MemFree);
-         mutex2++;
-	  
+            epicsMutexUnlock(m2MemFree);
+            mutex2++;
+	 } else {
+            errorLog ("processGuides - couldn't obtain m2MemFree mutex", 1, ON);
+	 }
          /* print command to screen for testing */
 
          if ((command > POSITION) && (debugLevel == DEBUG_MIN))
@@ -1960,17 +1967,21 @@ void slowTransmit (void)
       {
          if (timeNow (&timeStamp) == OK)
          {
-            epicsMutexLock(setPointFree);
-            setPoint.xTiltA = getInterpolation (AX, timeStamp);
-            setPoint.yTiltA = getInterpolation (AY, timeStamp);
-            setPoint.xTiltB = getInterpolation (BX, timeStamp);
-            setPoint.yTiltB = getInterpolation (BY, timeStamp);
-            setPoint.xTiltC = getInterpolation (CX, timeStamp);
-            setPoint.yTiltC = getInterpolation (CY, timeStamp);
-            setPoint.zFocus = getInterpolation (Z, timeStamp);
-            setPoint.xPosition = tcs.xPosition;
-            setPoint.yPosition = tcs.yPosition;
-            epicsMutexUnlock(setPointFree);
+	    if( setPointFree ) {
+               epicsMutexLock(setPointFree);
+               setPoint.xTiltA = getInterpolation (AX, timeStamp);
+               setPoint.yTiltA = getInterpolation (AY, timeStamp);
+               setPoint.xTiltB = getInterpolation (BX, timeStamp);
+               setPoint.yTiltB = getInterpolation (BY, timeStamp);
+               setPoint.xTiltC = getInterpolation (CX, timeStamp);
+               setPoint.yTiltC = getInterpolation (CY, timeStamp);
+               setPoint.zFocus = getInterpolation (Z, timeStamp);
+               setPoint.xPosition = tcs.xPosition;
+               setPoint.yPosition = tcs.yPosition;
+               epicsMutexUnlock(setPointFree);
+	    } else {
+               errorLog ("slowTransmit - couldn't obtain setPointFree mutex", 1, ON);
+	    }
          }
          else
          {
@@ -2010,10 +2021,14 @@ void slowTransmit (void)
       }
 
       /* copy current SCS internal buffer to local buffer */
-      epicsMutexLock(refMemFree);
-      /* before 10sep: localCommandBlock = *(memMap *)scsPtr; */
-      localCommandBlock = *(commandBlock *)&(scsPtr->page0);
-      epicsMutexUnlock(refMemFree);
+      /* if ( refMemFree ) { */
+         epicsMutexLock(refMemFree);
+         /* before 10sep: localCommandBlock = *(memMap *)scsPtr; */
+         localCommandBlock = *(commandBlock *)&(scsPtr->page0);
+         epicsMutexUnlock(refMemFree);
+      /* } else {
+         errorLog ("slowTransmit - couldn't obtain refMemFree mutex", 1, ON);
+      } */
 
       /* write demands to reflective memory interface */
 
@@ -2127,7 +2142,7 @@ void slowTransmit (void)
       else
       {
          /* simulation active */
-
+	if (m2MemFree ) {
 	 mutex3++;
          epicsMutexLock(m2MemFree);
          if (interlockFlag != ON)
@@ -2218,6 +2233,9 @@ void slowTransmit (void)
          /* some missing here */
          epicsMutexUnlock(m2MemFree);
 	 mutex4++;
+       } else {
+         errorLog ("slowTransmit - couldn't obtain m2MemFree mutex", 1, ON);
+       }
       }
    } // for(;;)
 }
@@ -2281,6 +2299,7 @@ void tiltReceive (void)
       if (epicsEventWaitWithTimeout(scsDataAvailable, RECEIVE_TIMEOUT) == epicsEventWaitOK) {
 
          // epicsMutexMustLock(m2MemFree);
+	if ( m2MemFree ) {
 	 mutex5++;
 	 epicsMutexLock(m2MemFree);
 
@@ -2332,6 +2351,9 @@ void tiltReceive (void)
 
          epicsMutexUnlock(m2MemFree);
 	 mutex6++;
+       } else {
+         errorLog ("tiltReceive - couldn't obtain m2MemFree mutex", 1, ON);
+       }
          /* flag status data available */
          epicsEventSignal(scsReceiveNow);
 
@@ -2435,11 +2457,15 @@ void scsReceive (void)
          else
          {
             /* simulation active, get data from m2 buffers */
-	    mutex7++;
-            epicsMutexLock(m2MemFree);
-            localStatusBlock = *(statusBlock *) & m2Ptr->page1;
-            epicsMutexUnlock(m2MemFree);
-	    mutex8++;
+	    if ( m2MemFree ) {
+	       mutex7++;
+               epicsMutexLock(m2MemFree);
+               localStatusBlock = *(statusBlock *) & m2Ptr->page1;
+               epicsMutexUnlock(m2MemFree);
+	       mutex8++;
+            } else {
+               errorLog ("scsReceive - couldn't obtain m2MemFree mutex", 1, ON);
+            }
 	    
             /* grab the engineering data for logging */
             // m2LoggerTask (m2Ptr);
@@ -2472,10 +2498,14 @@ void scsReceive (void)
                  /* all is well, copy the checked data to the scs buffer */
                  local.m2Heartbeat = localStatusBlock.heartbeat;
 
-                 /* epicsMutexLock(refMemFree); */
-                 *(statusBlock *) & scsPtr->page1 = localStatusBlock;
-                 /* epicsMutexUnlock(refMemFree); */
-		  scsrx3b++; 
+		 if (refMemFree) {
+                    epicsMutexLock(refMemFree);
+                    *(statusBlock *) & scsPtr->page1 = localStatusBlock;
+                    epicsMutexUnlock(refMemFree); 
+		    scsrx3b++; 
+                 } else {
+                   errorLog ("scsReceive - couldn't obtain refMemFree mutex", 1, ON);
+                 }
 
                  if (local.NS != localStatusBlock.NR)
                  {
@@ -2583,10 +2613,13 @@ int checkTiltStatus (void)
    };
 
    /* grab copy of m2 status word */
-
-   epicsMutexLock(refMemFree);
-   tiltStatusWord = scsPtr->page1.statusWord;
-   epicsMutexUnlock(refMemFree);
+   if (refMemFree) {
+      epicsMutexLock(refMemFree);
+      tiltStatusWord = scsPtr->page1.statusWord;
+      epicsMutexUnlock(refMemFree);
+   } else {
+      errorLog ("checkTiltStatus - couldn't obtain refMemFree mutex", 1, ON);
+   }
 
    /* if a fault has arisen that wasn't present before, set health bad */
    if (tiltStatusWord.flags.health != 0 && errorLatch.health == 0)
@@ -2731,35 +2764,39 @@ int updateEventPage (int scsInPosition, int scsPresentBeam)
 
    int myScsInPosition = 0;
 
-   /* Protect eventData access to the eventData structure */
-   epicsMutexLock(eventDataSem); 
+   if ( eventDataSem ) {
+      /* Protect eventData access to the eventData structure */
+      epicsMutexLock(eventDataSem); 
 
-   if (scsPresentBeam == BEAMA) {
-      /*Only switch beam logic on high beam */
-      currentBeam = BEAMA;
+      if (scsPresentBeam == BEAMA) {
+         /*Only switch beam logic on high beam */
+         currentBeam = BEAMA;
 
-      if (!guideOnA) 
-         myScsInPosition = 0;
-      else 
-         myScsInPosition = scsInPosition; 
+         if (!guideOnA) 
+            myScsInPosition = 0;
+         else 
+            myScsInPosition = scsInPosition; 
+      }
+      else if (scsPresentBeam == BEAMB) {
+
+         /*Only switch beam logic on high beam */
+         currentBeam = BEAMB;
+
+         if (!guideOnB) 
+            myScsInPosition = 0;
+         else
+            myScsInPosition = scsInPosition;
+      }
+      else {
+         myScsInPosition = 0; /* Anything other than Beam A|B is invalid*/
+      }
+
+      eventData.inPosition = myScsInPosition;
+      eventData.currentBeam = currentBeam;
+      epicsMutexUnlock(eventDataSem);
+   } else {
+      errorLog ("updateEventPage - couldn't obtain eventDataSem mutex", 1, ON);
    }
-   else if (scsPresentBeam == BEAMB) {
-
-      /*Only switch beam logic on high beam */
-      currentBeam = BEAMB;
-
-      if (!guideOnB) 
-         myScsInPosition = 0;
-      else
-         myScsInPosition = scsInPosition;
-   }
-   else {
-      myScsInPosition = 0; /* Anything other than Beam A|B is invalid*/
-   }
-
-   eventData.inPosition = myScsInPosition;
-   eventData.currentBeam = currentBeam;
-   epicsMutexUnlock(eventDataSem);
 
 
    nodeISR3 = -99;
@@ -2891,13 +2928,16 @@ static int frameConvert (converted *result,
    }
 
    /* access frame */
-   epicsMutexLock(f->access); 
-   /* perform the conversion */
-   result->x = f->scaleX*(f->cosTheta*x - f->sinTheta*y) + f->offsetX;
-   result->y = f->scaleY*(f->sinTheta*x + f->cosTheta*y) + f->offsetY;
-   result->z = f->scaleZ * z;
-   epicsMutexUnlock(f->access);
-
+   if ( f->access ) {
+      epicsMutexLock(f->access); 
+      /* perform the conversion */
+      result->x = f->scaleX*(f->cosTheta*x - f->sinTheta*y) + f->offsetX;
+      result->y = f->scaleY*(f->sinTheta*x + f->cosTheta*y) + f->offsetY;
+      result->z = f->scaleZ * z;
+      epicsMutexUnlock(f->access);
+   } else {
+      errorLog ("frameConvert - couldn't obtain f->access mutex", 1, ON);
+   }
    return OK;
 }
 

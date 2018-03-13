@@ -1463,8 +1463,9 @@ int  modifyFrame
         
     /* access frame */
 
-    if(epicsMutexLock(f->access))
+    if(f->access)
     {
+        epicsMutexLock(f->access);
         /* update the structure */
 
         f->theta    = theta*DEGS2RADS;
@@ -1537,9 +1538,9 @@ int   showFrame (int source)
     f = ag2m2[source];
 
     /* access frame */
-
-    if(epicsMutexLock(f->access) == OK)
+    if(f->access)
     {
+        epicsMutexLock(f->access);
         /* copy the frame contents */
 
         grab = *f;

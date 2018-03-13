@@ -126,14 +126,14 @@
 
    %%#include <car.h>
 
-   %%#define CMD_RESPONSE_TIMEOUT    40.0 /* command acknowledgement timeout in 
+   %%#define CMD_RESPONSE_TIMEOUT    13.0 /* command acknowledgement timeout in 
                                              units equal to ~0.33 seconds */
-   %%#define INIT_COMPLETE_TIMEOUT 1200.0 /* init execution timeout in units
+   %%#define INIT_COMPLETE_TIMEOUT 400.0 /* init execution timeout in units
                                              equal to ~0.33 seconds */
-   %%#define TIMEOUT                200.0 /* normal command execution timeout in units equal to ~0.33 seconds */
-   %%#define CHOP_TIMEOUT                100.0 /* chop timeout */
-   %%#define MOVE_TIMEOUT           800.0 /* move command execution timeout in units equal to ~0.33 seconds */
-   %%#define SERVO_OFF_TIMEOUT       10.0 /* Time for sevos to switched off */
+   %%#define TIMEOUT                66.0 /* normal command execution timeout in units equal to ~0.33 seconds */
+   %%#define CHOP_TIMEOUT                33.0 /* chop timeout */
+   %%#define MOVE_TIMEOUT           265.0 /* move command execution timeout in units equal to ~0.33 seconds */
+   %%#define SERVO_OFF_TIMEOUT       3.0 /* Time for sevos to switched off */
 
    %%#define COUNTER_LIMIT           1    /* Times to count */
 
@@ -1169,7 +1169,7 @@ ss CADprocessor {
 
       option +e;
       entry{
-        printf("CADprocessor: init");
+        printf("CADprocessor: init\n");
       }
 
       when() {
@@ -1200,7 +1200,7 @@ ss CADprocessor {
 
       option +e;
       entry{
-        printf("CADprocessor: clearFlags");
+        printf("CADprocessor: clearFlags\n");
       }
       
       when() {
@@ -1229,6 +1229,7 @@ ss CADprocessor {
 
    /* ===================================================================== */
    state idle {
+
       when() {
          cadProcessorState = CADPROCIDLE;
          pvPut(cadProcessorState);
@@ -1243,6 +1244,7 @@ ss CADprocessor {
    /* ===================================================================== */
 
    state waitForCommand {
+
       /* when the appropriate event flag is set, clear it and vector to
        * the corresponding handling routine
        */
@@ -1372,6 +1374,12 @@ ss CADprocessor {
 
    state startTestHandshake
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startTestHandshake\n");
+      }
+
       when()
       {
          cadProcessorState = STARTTESTHANDSHAKE;
@@ -1387,7 +1395,13 @@ ss CADprocessor {
 
    state readAgain
    {
-      when(delay(1.0))
+
+      option +e;
+      entry{
+        printf("CADprocessor: readAgain\n");
+      }
+
+      when(delay(0.3))
       {
          cadProcessorState = READAGAIN;
          pvPut(cadProcessorState);
@@ -1455,8 +1469,14 @@ ss CADprocessor {
 
    state startInit
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startInit\n");
+      }
+
       /* The following delay is in units of 0.33 seconds.*/
-      when(delay(10.0))
+      when(delay(3.0))
       {
          pvGet(initResponse);
          printf("initResponse is %d\n", initResponse);
@@ -1540,11 +1560,13 @@ ss CADprocessor {
 
    state loadFiles
    {
+
       option +e;
       entry {
+        printf("CADprocessor: loadFiles\n");
          printf("CADprocessor:loadFiles 10.0 second timer\n");
       }
-      when(delay(10.0) && loadComplete == COMPLETE)
+      when(delay(3.0) && loadComplete == COMPLETE)
       {
          cadProcessorState = LOADFILES;
          pvPut(cadProcessorState);
@@ -1683,9 +1705,10 @@ ss CADprocessor {
          printf("CADProc:LF pre-setpoint\n");
          /* Update position setpoint*/  
          %{
-             if (epicsMutexLock(setPointFree))
+             if (setPointFree)
              {
 
+                epicsMutexLock(setPointFree);
                 errlogPrintf(" moveXposition set to %f \n",moveXPosition);
                 errlogPrintf(" moveYPosition set to %f \n",moveYPosition);
                 
@@ -1712,9 +1735,11 @@ ss CADprocessor {
          pvGet(xyPosDeadband);
 
          printf("CADProc:LF pre-page0\n");
-       
-             if (epicsMutexLock(refMemFree))
-             {
+
+         %{
+              if (refMemFree) 
+             { 
+                epicsMutexLock(refMemFree); 
                 
                 scsBase->page0.AxTilt = 0.0;
                 scsBase->page0.BxTilt = 0.0;
@@ -1778,12 +1803,13 @@ ss CADprocessor {
                 scsBase->page0.yGrossTiltDmd = 0.0;
                 scsBase->page0.xyPositionDeadband = xyPosDeadband;
 
-                epicsMutexUnlock(refMemFree);
-             }
+                epicsMutexUnlock(refMemFree); 
+              }
              else
              {
                 errorLog ("state startInit - couldn't obtain refMemFree mutex", 1, ON);
-             } 
+             }
+             }%
 
              printf("CADProc:LF post-page0\n");
              controller[FOCUS].sum = 0.0;
@@ -1812,9 +1838,15 @@ ss CADprocessor {
 
    state waitForInitStart
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: waitForInitStart\n");
+      }
+
       /* verify that the M2 system is initialising */
 
-      when( (initResponse == 1) && delay(30.0))
+      when( (initResponse == 1) && delay(3.0))
       {
          cadProcessorState = WAITINITRESPONSE;
          pvPut(cadProcessorState);
@@ -1848,7 +1880,13 @@ ss CADprocessor {
 
    state waitForInitCompletion
    {
-      when((initResponse == 0) && delay(30.0 ))
+
+      option +e;
+      entry{
+        printf("CADprocessor: waitForInitCompletion\n");
+      }
+
+      when((initResponse == 0) && delay(10.0 ))
       {
          pvGet(initResponse);
          printf("Init Complete ...initResponse is %d\n", initResponse);
@@ -1933,6 +1971,12 @@ ss CADprocessor {
 
    state initCompleteStartMove
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: initCompleteStartMove\n");
+      }
+
       when (delay(18.0))
       {
 
@@ -2062,6 +2106,12 @@ ss CADprocessor {
 
    state startInitXY
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startInitXY\n");
+      }
+
       when()
       {
          errorLog("state startInitXY...", 1, ON);
@@ -2103,6 +2153,12 @@ ss CADprocessor {
 
    state loadFilesXY
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: loadFilesXY\n");
+      }
+
       when()
       {
          cadProcessorState = LOADFILES;
@@ -2114,8 +2170,9 @@ ss CADprocessor {
 
          /* clear out reflective mem */
 %{
-         if (epicsMutexLock(setPointFree))
+         if (setPointFree)
          {
+            epicsMutexLock(setPointFree);
             setPoint.xPosition =  0.0;
             setPoint.yPosition =  0.0;
             epicsMutexUnlock(setPointFree);
@@ -2125,8 +2182,9 @@ ss CADprocessor {
             errorLog ("state startInitXY - couldn't obtain setPointFree mutex", 1, ON);
          } 
 
-         if (epicsMutexLock(refMemFree))
+         if (refMemFree)
          {
+            epicsMutexLock(refMemFree);
             scsBase->page0.xDemand = moveXPosition;
             scsBase->page0.yDemand = moveYPosition;
             scsBase->page0.xPositionTolerance = 0.0;
@@ -2150,11 +2208,11 @@ ss CADprocessor {
          {
             errorLog ("state startInitXY - couldn't obtain refMemFree mutex", 1, ON);
          } 
+}%
 
          /* set health to good until proved otherwise */
 
          reportHealth(GOOD, "");
-}%
 
          /* clear message field */
 
@@ -2168,6 +2226,12 @@ ss CADprocessor {
 
    state waitForInitStartXY
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: waitForInitStartXY\n");
+      }
+
       /* verify that the M2 system is initialising */
 
       when(initResponse == 1)
@@ -2203,6 +2267,12 @@ ss CADprocessor {
 
    state waitForInitCompletionXY
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: waitForInitCompletionXY\n");
+      }
+
       when(initResponse == 0)
       {
          cadProcessorState = WAITINITCOMPLETE;
@@ -2300,8 +2370,15 @@ ss CADprocessor {
 
    state startMove
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startMove\n");
+      }
+
       when()
       {
+         printf("Start Move - \n");
          cadProcessorState = STARTMOVE;
          pvPut(cadProcessorState);
 
@@ -2316,6 +2393,12 @@ ss CADprocessor {
 
    state proceedWithMove
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: proceedWithMove\n");
+      }
+
       when(servoOnStat == 0) 
       {
          printf("mirror control disabled - proceed with move\n");
@@ -2351,8 +2434,9 @@ ss CADprocessor {
 
          /* copy values to demands structure for access by SNL */
 %{
-         if(epicsMutexLock(setPointFree))
+         if(setPointFree)
          {
+            epicsMutexLock(setPointFree);
             setPoint.xTiltA = moveAXTilt;
             setPoint.yTiltA = moveAYTilt;
             setPoint.xTiltB = moveBXTilt;
@@ -2400,11 +2484,17 @@ ss CADprocessor {
 
    state moveWaitForCoincidence
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: moveWaitForCoincidence\n");
+      }
+
       /* the move CAD record shall be considered done when the 
        * mechanism is first in position
        */
 
-      when(delay(30.0) && (servoInPosition == 1) && ( XYmovingStatus == 0 ))
+      when(delay(10.0) && (servoInPosition == 1) && ( XYmovingStatus == 0 ))
       {
          cadProcessorState = MOVEWAITFORCOINCIDENCE;
          pvPut(cadProcessorState);
@@ -2477,6 +2567,12 @@ ss CADprocessor {
 
    state startActuator
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startActuator\n");
+      }
+
       when()
       {
          cadProcessorState = STARTACTUATOR;
@@ -2493,6 +2589,12 @@ ss CADprocessor {
 
    state proceedWithActMove
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: proceedWithActMove\n");
+      }
+
       when(servoOnStat == 0)
       {
          printf("mirror control disabled - proceed with move\n");
@@ -2510,8 +2612,9 @@ ss CADprocessor {
          pvGet(actYTilt);
          pvGet(actZFocus);
 %{
-         if(epicsMutexLock(setPointFree))
+         if(setPointFree)
          {
+            epicsMutexLock(setPointFree);
             setPoint.xTiltA = actXTilt;
             setPoint.yTiltA = actYTilt;
             setPoint.zFocus = actZFocus;
@@ -2554,11 +2657,17 @@ ss CADprocessor {
 
    state actuatorWaitForCoincidence
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: actuatorWaitForCoincidence\n");
+      }
+
       /* the actuator CAD record shall be considered done when the mechanism is first
        * in position
        */
 
-      when(delay(10.0) && (servoInPosition == 1))
+      when(delay(3.0) && (servoInPosition == 1))
       {  
          cadProcessorState = ACTUATORWAITFORCOINCIDENCE;
          pvPut(cadProcessorState);
@@ -2630,6 +2739,12 @@ ss CADprocessor {
 
    state startFollow
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startFollow\n");
+      }
+
       when()
       {
          cadProcessorState = STARTFOLLOW;
@@ -2650,6 +2765,12 @@ ss CADprocessor {
 
    state proceedWithFollow
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: proceedWithFollow\n");
+      }
+
       when(servoOnStat == 0)
       {
          printf("mirror control disabled - proceed with move\n");
@@ -2697,6 +2818,12 @@ ss CADprocessor {
 
    state waitForCoincidence
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: waitForCoincidence\n");
+      }
+
       /* the follow CAD record shall be considered done when the mechanism is first
        * in position although demand positions will still be passed on.
        */
@@ -2710,7 +2837,7 @@ ss CADprocessor {
          when(delay(30.0) && (servoInPosition == 1) && ( XYmovingStatus == 0 ))
        */
 
-      when(delay(30.0) && (servoInPosition == 1))
+      when(delay(10.0) && (servoInPosition == 1))
       {
          cadProcessorState = FOLLOWWAITFORCOINCIDENCE;
          pvPut(cadProcessorState);
@@ -2809,6 +2936,12 @@ ss CADprocessor {
 
    state startStop
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startStop\n");
+      }
+
       when()
       {
          myscsState = MOVING; 
@@ -2877,6 +3010,12 @@ ss CADprocessor {
 
    state startPark
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startPark\n");
+      }
+
       when()
       {
          cadProcessorState = STARTPARK;
@@ -2928,6 +3067,12 @@ ss CADprocessor {
 
    state proceedWithPark
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: proceedWithPark\n");
+      }
+
       when(servoOnStat == 0)
       {
          printf("mirror control disable - proceed with move\n");
@@ -2953,8 +3098,9 @@ ss CADprocessor {
          printf(" yPos %f \n",yPosDef);
 
 %{
-         if(epicsMutexLock(setPointFree))
+         if(setPointFree)
          {
+            epicsMutexLock(setPointFree);
             setPoint.xTiltA = parkPosition.xTilt;
             setPoint.yTiltA = parkPosition.yTilt;
             setPoint.zFocus = parkPosition.zFocus;
@@ -2997,9 +3143,15 @@ ss CADprocessor {
 
    state parkWaitForCoincidence
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: parkWaitForCoincidence\n");
+      }
+
       /* wait for system to achieve the desired position */
 
-      when(delay(30.0) && (servoInPosition == 1) && ( XYmovingStatus == 0 ))
+      when(delay(10.0) && (servoInPosition == 1) && ( XYmovingStatus == 0 ))
       {
          cadProcessorState = PARKWAITFORCOINCIDENCE; 
          pvPut(cadProcessorState);
@@ -3060,6 +3212,12 @@ ss CADprocessor {
 
    state startChopControl
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startChopControl\n");
+      }
+
       /* the SCS merely passes on the chop control variables to the M2 system */
       when()
       {
@@ -3279,6 +3437,12 @@ ss CADprocessor {
 
    state waitForChopResponse
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: waitForChopResponse\n");
+      }
+
       /* if SCS moving, wait for m2 to start chopping then update SCS state */
 
       when(chopResponse == 1 && chopOn == 1)  /* CHOPPING IS ON IN M2 and SCS */
@@ -3368,6 +3532,12 @@ ss CADprocessor {
 
    state startBandwidth
    {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startBandwith\n");
+      }
+
       when()
       {
          cadProcessorState = STARTBANDWITH; 
@@ -3375,8 +3545,9 @@ ss CADprocessor {
 
          pvGet(bandwidth);
 %{
-            if(epicsMutexLock(refMemFree))
+            if(refMemFree)
             {
+               epicsMutexLock(refMemFree);
                scsPtr->page0.bandwidth = bandwidth;
                epicsMutexUnlock(refMemFree);
             }
@@ -3402,6 +3573,7 @@ ss CADprocessor {
     */
    state startVtkChange
    {
+
         when()
         {
 
@@ -3433,6 +3605,12 @@ ss CADprocessor {
     */
 
    state startGuideSimChange {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startGuideSimChange\n");
+      }
+
       when() {
 
          if (guideSimStart == myOldGuideSimState){
@@ -3515,6 +3693,12 @@ ss CADprocessor {
    /* ===================================================================== */
 
    state startTolerance {
+
+      option +e;
+      entry{
+        printf("CADprocessor: startTolerance\n");
+      }
+
       when() {
          cadProcessorState = STARTTOLERANCE; 
          pvPut(cadProcessorState);
@@ -3530,8 +3714,9 @@ ss CADprocessor {
          pvGet(yPosTol);
          pvGet(xyPosDeadband);
 %{
-            if(epicsMutexLock(refMemFree))
+            if(refMemFree)
             {
+               epicsMutexLock(refMemFree);
                scsPtr->page0.xTiltTolerance        = (float) xTiltTol;
                scsPtr->page0.yTiltTolerance        = (float) yTiltTol;
                scsPtr->page0.zFocusTolerance       = (float) zFocusTol;
@@ -3635,7 +3820,7 @@ ss followDemandProcessing {
    }
 
    state waitForNextCoincidence {
-      when(delay(0.5) && coincidence == ENABLED) {
+      when(delay(0.1) && coincidence == ENABLED) {
          followDemandState = WAITFORNEXTCOINCIDENCE; 
          pvPut(followDemandState);
 
@@ -3698,12 +3883,14 @@ ss monitorSad {
    }
 
    state updateSad {
-      when(delay(10.0)) {
+      when(delay(3.0)) {
          monitorSadState = UPDATESAD; 
          pvPut(monitorSadState);
+         
+         %{
+         if(refMemFree) {
 
-         if(epicsMutexLock(refMemFree)) {
-
+            epicsMutexLock(refMemFree);
             if(scsPtr->page1.inPosition != 0 || followOn || guideOn)
                strncpy(inPositionSad, "TRUE", MAX_STRING_SIZE - 1);
             else
@@ -3755,6 +3942,7 @@ ss monitorSad {
          {
             errlogPrintf("updateSad - refMemFree timeout\n");
          }
+         }%
 
          pvPut(inPositionSad);
          /*pvPut(topEndSad);*/
@@ -3878,11 +4066,13 @@ ss monitorSad {
 
 ss monitorProcess {
    state updateParameters {
-      when(delay(1.0)) {
+      when(delay(0.3)) {
          monitorProcessState = UPDATEPARAMETERS; 
          pvPut(monitorProcessState);
 
-         if(epicsMutexLock(refMemFree)) {
+         %{
+         if(refMemFree) {
+            epicsMutexLock(refMemFree);
             /* invert sense of in position*/
             coincidence = !scsPtr->page1.inPosition;
             epicsMutexUnlock(refMemFree);
@@ -3890,6 +4080,7 @@ ss monitorProcess {
          else {
             errorLog ("updateParameters - refMemFree timeout", 1, ON);
          }
+         }%
 
          pvPut(coincidence);
 
@@ -4028,7 +4219,9 @@ ss rebootScs {
 
          tcs2m2(&parkPosition);
 
-         if(epicsMutexLock(setPointFree)) {
+         %{
+         if(setPointFree) {
+            epicsMutexLock(setPointFree);
             setPoint.xTiltA = parkPosition.xTiltNew;
             setPoint.yTiltA = parkPosition.yTiltNew;
             setPoint.zFocus = parkPosition.zFocusNew;
@@ -4044,6 +4237,7 @@ ss rebootScs {
          else {
             errlogPrintf("proceedWithRebootPark - setPointFree timeout\n");
          }
+         }%
 
       } state rebootParkWaitForCoincidence
 
@@ -4076,7 +4270,7 @@ ss rebootScs {
    state rebootParkWaitForCoincidence {
       /* wait for system to achieve the desired position */
 
-      when(delay(10.0) && (servoInPosition == 1)) {
+      when(delay(3.0) && (servoInPosition == 1)) {
          rebootScsState = WAITFORPARKREBOOT;
          pvPut(rebootScsState);
 
@@ -4094,200 +4288,6 @@ ss rebootScs {
 
          if (eventConfig.change == 0) {
             /* if previous changes have been acknowledged, 
-               write new data, flag change and give sem  */
-
-            printf("powerCycleCEM - Shutting off CEM power\n");
-            eventConfig.change  = 1;
-            eventConfig.on = 0;    /* make sure you do not send an ON */
-            eventConfig.m2Servo = OFF;
-            eventConfig.m2Power = OFF;
-            epicsEventSignal(eventSem); 
-         }
-         else {
-            errorLog("waitForParkReboot - command not acknowledged", 1, ON);
-            printf("waitForParkReboot - command not acknowledged\n");
-         }
-      }   state powerCycleCEM
-
-      when(delay(TIMEOUT)) {
-         rebootScsState = TIMEOUTWAITFORPARKREBOOT;
-         pvPut(rebootScsState);
-
-         parkCarErrIn = STATUS_ERROR;
-         pvPut(parkCarErrIn);
-
-         strncpy(parkCarMessIn, "No response to park command", MAX_STRING_SIZE - 1);
-         pvPut(parkCarMessIn);
-
-         parkCarIn = CAR_ERROR;
-         pvPut(parkCarIn);
-
-         /* shut down the unused functions */
-
-         writeCommand(VEND);
-         writeCommand(MEND);
-         writeCommand(MOFFLOFF);
-         writeCommand(ACT_PWR_OFF);
-
-         /* NEW for 22-jun-2000: */
-         /* Toggle tilt system by writing to the event system */
-
-         printf("state waitForParkReboot\n");
-         if (eventConfig.change == 0) {
-            /* if previous changes have been acknowledged, 
-               write new data, flag change and give sem  */
-
-            printf("waitForParkReboot - Shutting off CEM power\n");
-            eventConfig.change  = 1;
-            eventConfig.on = 0;    /* make sure you do not send an ON */
-            eventConfig.m2Servo = OFF;
-            eventConfig.m2Power = OFF;
-            epicsEventSignal(eventSem); 
-         }
-         else {
-            errorLog("waitForParkReboot - command not acknowledged", 1, ON);
-            printf("waitForParkReboot - command not acknowledged\n");
-         }
-      } state powerCycleCEM
-   }
-
-   state powerCycleCEM {
-      when(delay(1.0)) {
-         printf("state powerCycleCEM\n");
-         if (eventConfig.change == 0) {
-            /* if previous changes have been acknowledged, 
-               write new data, flag change and give sem  */
-
-            printf("waitForParkReboot - Turning CEM power back on\n");
-            eventConfig.change  = 1;
-            eventConfig.on = 0;    /* make sure you do not send an ON */
-            eventConfig.m2Servo = ON;
-            eventConfig.m2Power = ON;
-            epicsEventSignal(eventSem); 
-         }
-         else {
-            errorLog("powerCycleCEM - command not acknowledged", 1, ON);
-            printf("waitForParkReboot - command not acknowledged\n");
-         }
-
-         /* send idle indication to the parkC record */
-
-         parkCarIn = CAR_IDLE;
-         pvPut(parkCarIn);
-
-         strncpy(parkCarMessIn, "", MAX_STRING_SIZE - 1);
-         pvPut(parkCarMessIn);
-
-      }   state rebootNow
-   }
-
-
-   state rebootNow {
-      when(delay (5.0)) {
-         rebootScsState = REBOOTNOW;
-         pvPut(rebootScsState);
-
-         myscsState = REBOOTING;
-         scsState = myscsState;
-         pvPut(myscsState);
-
-         scsStateSad = BOOTING;
-         pvPut(scsStateSad);
-
-         /* write busy to reboot CAR */
-
-         rebootCarIn = CAR_BUSY;
-         pvPut(rebootCarIn);
-
-         /* if logging file is open, close it */
-
-     /*    if(loggingNow != OFF)
-            %%scsLogDestruct(); */
-
-         /* %%reboot(BOOT_QUICK_AUTOBOOT); */
-
-         /* At this point the system shall reboot so no further code */
-         /* execution is permitted. The return state has been set to */
-         /* startReboot to keep it tidy and local            */
-
-      }   state startReboot
-   }
-}
-
-
-/* ===================================================================== */
-/* INDENT OFF */
-/* 
- *  Function Name:
- *  State set "clearGuideFocus"
- *
- *  State Group Names:
- *  initClearGuideFocus
- *  waitForClearGuideFocusCmd
- *  clearGuideFocus
- *  waitForClearGuideFocus
- *
- *  Purpose:
- *  To execute the clear guide focus command
- *
- *  Description:
- *  Waits for the clear guide focus command and executes it
- *  The Clear Guide Focus CAR status is set BUSY, a reset command is issued to
- *  the system 
- *
- *  Invocation:
- *  Runs continuously
- *
- *  Parameters: (">" input, "!" modified, "<" output)
- *  None
- *  
- *  Function value:
- *  n/a
- *
- *  External functions:
- *  The following SNL functions have been used
- *
- *  pvPut       write a value to a database channel
- *  pvGet       read a value from a database channel
- *
- *  Deficiencies:
- *
- *  Author:     J.F.Maclean
- *
- */
-/* INDENT ON */
-/* ===================================================================== */
-
-ss clearguidefocusScs
-{
-   state initClearGuideFocus
-   {
-      when()
-      {
-         efClear(clearGuideFocusCadChange);
-
-      } state waitForClearGuideFocusCmd
-   }
-
-   state waitForClearGuideFocusCmd
-   {
-      when(efTest(clearGuideFocusCadChange))
-      {
-
-         /* clear event flag */
-         efClear(clearGuideFocusCadChange);
-      } state startClearGuideFocus
-   }
-
-   state startClearGuideFocus
-   {
-
-      when()
-      {
-         clearGuideFocusCarIn = CAR_BUSY;
-         pvPut(clearGuideFocusCarIn);
-
-         printf("startClearGuideFocus - wait for clear guide focus value\n");
       } state proceedWithClearGuideFocus
    }
 

@@ -287,11 +287,11 @@ long CADchopConfig (struct cadRecord * pcad)
        }
 
        /* write chop parameters to reflective memory */
-       epicsMutexLock(refMemFree);
+       /*epicsMutexLock(refMemFree);*/
        scsPtr->page0.chopFrequency = (float)frequency;
        scsPtr->page0.chopProfile   = (long)profile;
        scsPtr->page0.chopDutyCycle = (float)dutyCycle;
-       epicsMutexUnlock(refMemFree);
+       /*epicsMutexUnlock(refMemFree);*/
 
        /* flag that chop configuration has been changed */
        writeCommand(CHOP_CHANGE);

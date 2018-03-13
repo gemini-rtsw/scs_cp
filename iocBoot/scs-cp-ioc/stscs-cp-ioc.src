@@ -52,7 +52,7 @@ iocInit
 #loggingEnable = 1
 #CADlogging = 1
 
-startGuideSim
+#startGuideSim
 dbpf "m2:interlockOverride","1"
 
 ##M2TS TTL SERVO ON Card0, PORT7, Bit 1, HIGH #####

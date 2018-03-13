@@ -2258,6 +2258,7 @@ long decimate (struct genSubRecord * pgsub)
      if(simLevel != 0)
      {
           /* simulation active */
+      /*  if ( m2MemFree ) { */
 	  mutex13++;
           epicsMutexLock(m2MemFree);
 
@@ -2277,6 +2278,9 @@ long decimate (struct genSubRecord * pgsub)
 
           epicsMutexUnlock(m2MemFree);
 	  mutex14++;
+     /*   } else {
+         errorLog ("decimate - couldn't obtain m2MemFree mutex", 1, ON);
+       }  */
      }
      else
      {
@@ -2300,30 +2304,34 @@ long decimate (struct genSubRecord * pgsub)
 
      }
 
-     epicsMutexLock(setPointFree);
+/*      if ( setPointFree ) { */
+        epicsMutexLock(setPointFree);
 
-     switch (currentBeam)
-     {
-         case BEAMB:
-         case B2ARAMP:
-              tcsData.xNetTiltDmd = (double) setPoint.xTiltB;
-              tcsData.yNetTiltDmd = (double) setPoint.yTiltB;
-              break;
+        switch (currentBeam)
+        {
+            case BEAMB:
+            case B2ARAMP:
+                 tcsData.xNetTiltDmd = (double) setPoint.xTiltB;
+                 tcsData.yNetTiltDmd = (double) setPoint.yTiltB;
+                 break;
 
-         case BEAMC:
-              tcsData.xNetTiltDmd = (double) setPoint.xTiltC;
-              tcsData.yNetTiltDmd = (double) setPoint.yTiltC;
-              break;
+            case BEAMC:
+                 tcsData.xNetTiltDmd = (double) setPoint.xTiltC;
+                 tcsData.yNetTiltDmd = (double) setPoint.yTiltC;
+                 break;
 
-         default:
-              tcsData.xNetTiltDmd = (double) setPoint.xTiltA;
-              tcsData.yNetTiltDmd = (double) setPoint.yTiltA;
-     }
+            default:
+                 tcsData.xNetTiltDmd = (double) setPoint.xTiltA;
+                 tcsData.yNetTiltDmd = (double) setPoint.yTiltA;
+        }
 
-     tcsData.zNetDmd = (double) setPoint.zFocus;
+        tcsData.zNetDmd = (double) setPoint.zFocus;
 
-     epicsMutexUnlock(setPointFree);
-
+        epicsMutexUnlock(setPointFree); 
+ /*     } else {
+         errorLog ("decimate - couldn't obtain setPointFree mutex", 1, ON);
+     } 
+ */
 
      /* convert current position readings from m2 to tcs frame of reference */
 
