@@ -70,6 +70,13 @@
 #define M2SERVOON   0x2 	/* 00000010 */
 #define M2SERVOOFF  0xfd    	/* 11111101 */
 
+#define M2POWER_BIT 0
+#define M2SERVO_BIT 1
+#define M2_BIT      5
+
+#define SET   1
+#define RESET 0
+
 #define IN_POSITION_LIMIT 100.0 /* actuator error within this range (microns), OK to turn on servos */
 
 M2ErrorContainer *m2errs = NULL;
@@ -616,7 +623,8 @@ long    issueM2Primitive (struct cadRecord * pcad)
                 //*portPtr = *portPtr | M2POWERON;
                 //
                 //TODO: Test CEM_ON
-                if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWERON) == ERROR)
+                /*if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWERON) == ERROR)*/
+                if (xy240_writePortBit(XYCARDNUM, PORT7, M2POWER_BIT, SET) == ERROR)
                     errlogSevPrintf(errlogMajor, "xy240: M2POWERON Failed.");
             }
             else if(commandCode == CEM_OFF)
@@ -624,7 +632,8 @@ long    issueM2Primitive (struct cadRecord * pcad)
                 //*portPtr = *portPtr & M2POWEROFF;           
                 //
                 //TODO: Test CEM_OFF
-                if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWEROFF) == ERROR)
+                /*if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWEROFF) == ERROR)*/
+                if (xy240_writePortBit(XYCARDNUM, PORT7, M2POWER_BIT, RESET) == ERROR)
                     errlogSevPrintf(errlogMajor, "xy240: M2POWEROFF Failed.");
             }
             else if(commandCode == TTL_SERVO_ON)
@@ -632,7 +641,8 @@ long    issueM2Primitive (struct cadRecord * pcad)
                 //*portPtr = *portPtr | M2SERVOON;
                 //
                 //TODO: Test M2SERVOON
-                if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOON) == ERROR)
+                /*if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOON) == ERROR)*/
+                if (xy240_writePortBit(XYCARDNUM, PORT7, M2SERVO_BIT, SET) == ERROR)
                     errlogSevPrintf(errlogMajor, "xy240: M2SERVOON Failed.");
             }
             else if(commandCode == TTL_SERVO_OFF)
@@ -640,7 +650,8 @@ long    issueM2Primitive (struct cadRecord * pcad)
                 //*portPtr = *portPtr & M2SERVOOFF;           
                 //
                 //TODO: Test M2SERVOOFF
-                if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOOFF) == ERROR)
+                /*if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOOFF) == ERROR)*/
+                if (xy240_writePortBit(XYCARDNUM, PORT7, M2SERVO_BIT, RESET) == ERROR)
                     errlogSevPrintf(errlogMajor, "xy240: M2SERVOOF Failed.");
             }
             else if(commandCode == TOGGLE_CEM_POWER)
@@ -655,11 +666,13 @@ long    issueM2Primitive (struct cadRecord * pcad)
                 //      
                 //         
                 /* Turn SERVO OFF*/
-                if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOOFF) == ERROR)
+                /*if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOOFF) == ERROR)*/
+                if (xy240_writePortBit(XYCARDNUM, PORT7, M2SERVO_BIT, RESET) == ERROR)
                     errlogSevPrintf(errlogMajor, "xy240: M2SERVOOFF Failed.");
 
                 /* Then, turn POWER OFF*/
-                if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWEROFF) == ERROR)
+                /*if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWEROFF) == ERROR)*/
+                if (xy240_writePortBit(XYCARDNUM, PORT7, M2POWER_BIT, RESET) == ERROR)
                     errlogSevPrintf(errlogMajor, "xy240: M2POWEROFF Failed.");
 
                 /* ensure task is delayed for 2 seconds, instead
@@ -678,11 +691,13 @@ long    issueM2Primitive (struct cadRecord * pcad)
                 //*portPtr = *portPtr | M2SERVOON;
 
                 /* Turn SERVO ON*/
-                if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOON) == ERROR)
+                /*if (xy240_writePortByte(XYCARDNUM, PORT7, M2SERVOON) == ERROR)*/
+                if (xy240_writePortBit(XYCARDNUM, PORT7, M2SERVO_BIT, SET) == ERROR)
                     errlogSevPrintf(errlogMajor, "xy240: M2SERVOON Failed.");
 
                 /* Then, turn POWER OFF*/
-                if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWERON) == ERROR)
+                /*if (xy240_writePortByte(XYCARDNUM, PORT7, M2POWERON) == ERROR)*/
+                if (xy240_writePortBit(XYCARDNUM, PORT7, M2POWER_BIT, SET) == ERROR)
                     errlogSevPrintf(errlogMajor, "xy240: M2POWERON Failed.");
 
             }
