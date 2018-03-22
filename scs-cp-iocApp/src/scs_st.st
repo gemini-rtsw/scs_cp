@@ -118,6 +118,7 @@
    %%#include "eventBus.h"        /* For eventConfig */
    %%#include "testFunctions.h"        /* For startGuideSim, endGuideSim */
    %%#include "interlock.h"        /* For startGuideSim, endGuideSim */
+   %%#include <vmi5588.h>        /* For vmi5588_reboot */
 
 
    %%#include <stdlib.h>
@@ -136,6 +137,7 @@
    %%#define SERVO_OFF_TIMEOUT       3.0 /* Time for sevos to switched off */
 
    %%#define COUNTER_LIMIT           1    /* Times to count */
+   %%#define REBOOT_VALUE            1    /* Reboot val */
 
    /* Define general status indicators */
 
@@ -470,6 +472,9 @@ assign rebootCarErrIn to "{T}rebootC.IERR";
 
 string rebootCarMessIn;             /* message input to     */
 assign rebootCarMessIn to "{T}rebootC.IMSS";    /* rebootC CAR      */
+
+int32_t rebootIocStat;                /* iocStats reboot */
+assign rebootIocStat to "{T}iocStats:SYSRESET";
 
 
 /* ===================================================================== */
@@ -1846,7 +1851,7 @@ ss CADprocessor {
 
       /* verify that the M2 system is initialising */
 
-      when( (initResponse == 1) && delay(3.0))
+      when( (initResponse == 1) && delay(10.0))
       {
          cadProcessorState = WAITINITRESPONSE;
          pvPut(cadProcessorState);
@@ -1945,6 +1950,7 @@ ss CADprocessor {
          writeCommand(MOFFLON);
          writeCommand(VIBSTART);
          writeCommand(MSTART);
+
 
          myscsState = SYSTEMIDLE;
          scsState = myscsState;
@@ -2437,7 +2443,8 @@ ss CADprocessor {
          if(setPointFree)
          {
             epicsMutexLock(setPointFree);
-            setPoint.xTiltA = moveAXTilt;
+            printf("proceedWithMove - setPointFree taken\n");
+	    setPoint.xTiltA = moveAXTilt;
             setPoint.yTiltA = moveAYTilt;
             setPoint.xTiltB = moveBXTilt;
             setPoint.yTiltB = moveBYTilt;
@@ -2453,7 +2460,8 @@ ss CADprocessor {
          {
             errorLog("state startMove - couldn't obtain setPointFree mutex", 1, ON);
          }
-         servoInPosition = 0; 
+         printf("proceedWithMove - setPointFree released\n");
+	 servoInPosition = 0; 
 }%
       }   state moveWaitForCoincidence
 
@@ -4398,7 +4406,14 @@ ss rebootScs {
      /*    if(loggingNow != OFF)
             %%scsLogDestruct(); */
 
+	 /* turning off RM interrupts */
+	 	    
+	 vmi5588_reboot(NULL);
+
          /* %%reboot(BOOT_QUICK_AUTOBOOT); */
+	 rebootIocStat = REBOOT_VALUE;
+	 pvPut(rebootIocStat);
+	 
 
          /* At this point the system shall reboot so no further code */
          /* execution is permitted. The return state has been set to */
