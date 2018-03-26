@@ -116,7 +116,7 @@
 #define MAX_FILENAME_SIZE       100
 #define LOG_INTERVAL            5
 
-int sendpulse = 2;    
+int sendpulse = 0;    
 int showcs = 0;   
 static void reportTimes();
 struct timespec timeStart, timeEnd;
@@ -946,7 +946,7 @@ int rxwaitticks = 0;
 int useDynamicVtk =0;
 
 static double waittime = 0.5; 
-static double waittime2 = 2.0;   
+static double waittime2 = 2;   
 static int mutex1= 0;
 static int mutex2= 0;
 static int mutex3= 0;
@@ -981,6 +981,7 @@ void processGuides (void)
    long command = FAST_ONLY;
    location    position;
    converted   result = {0,0,0};
+   int indx = 0;
    long lastNS = 0;
 
    long sensedGuideRate = GUIDE_200_HZ;
@@ -1752,13 +1753,18 @@ void processGuides (void)
          /* flag availability of new data */
          /* The original ideal of sending only everyother pulse has bee removed */
 
-         if (sendpulse) {
+         if (!sendpulse) {
+             indx++;
 
              /*Toggle sendpulse back to off for value 1.
               * Greater than 1 is continuous mode*/
-             if (sendpulse == 1)
-                 sendpulse = 0;
-
+             if (command > FAST_ONLY || indx > 1){
+                 mutex7++;
+                 rmIntSend (INT2, M2_NODE);
+                 indx = 0;
+             }
+         }
+         else{
              rmIntSend (INT2, M2_NODE);
          }
       }
@@ -1811,7 +1817,7 @@ void processGuides (void)
       /* Give the semaphore taken by "slowTransmit" since it is the guide task
        * that does the transmit of the slower items prepared for transmission to the
        * m2 system by "slowTransmit"  */
-      //epicsEventSignal(slowUpdate);  
+      epicsEventSignal(slowUpdate);  
 
       /* Update the ring buffers, all of them, here. Yes, even 
        * the ones that pertain to P2. This is where you would 
@@ -2284,6 +2290,7 @@ void slowTransmit (void)
  */
 
 /* ===================================================================== */
+static int scsrx5= 0;
 
 void tiltReceive (void) 
 {
@@ -2355,6 +2362,7 @@ void tiltReceive (void)
          errorLog ("tiltReceive - couldn't obtain m2MemFree mutex", 1, ON);
        }
          /* flag status data available */
+	 scsrx5++;
          epicsEventSignal(scsReceiveNow);
 
          /* print command to screen for testing */
@@ -2431,10 +2439,12 @@ void scsReceive (void)
       if (epicsEventWaitWithTimeout(scsReceiveNow, waittime2) == epicsEventWaitOK)
       {
          scsrx1++; 
+         /*errlogPrintf ("nodeId = %d, counter = %d\n", nodeISR2, isr2);*/
          if (simLevel == 0)
          {
             /* no simulation active, grab data from reflective memory */
 
+            scsrx2++; 
             localStatusBlock = *(statusBlock *) & scsBase->page1;
 
             /* grab the engineering data for logging */
@@ -2458,11 +2468,9 @@ void scsReceive (void)
          {
             /* simulation active, get data from m2 buffers */
 	    if ( m2MemFree ) {
-	       mutex7++;
                epicsMutexLock(m2MemFree);
                localStatusBlock = *(statusBlock *) & m2Ptr->page1;
                epicsMutexUnlock(m2MemFree);
-	       mutex8++;
             } else {
                errorLog ("scsReceive - couldn't obtain m2MemFree mutex", 1, ON);
             }
@@ -2489,20 +2497,22 @@ void scsReceive (void)
              if (local.m2Heartbeat == localStatusBlock.heartbeat)
              {
                  scsrx3++; 
-                 errlogPrintf ("scsReceive - heartbeat stuck local=%ld, statblkHB=%ld\n",
-                         local.m2Heartbeat, localStatusBlock.heartbeat);
+                 /*errlogPrintf ("scsReceive - heartbeat stuck local=%ld, statblkHB=%ld\n",*/
+                         /*local.m2Heartbeat, localStatusBlock.heartbeat);*/
              }
              else
              {
                  scsrx3a++; 
                  /* all is well, copy the checked data to the scs buffer */
+                 /*errlogPrintf ("scsReceive - heartbeat not stuck local=%ld, statblkHB=%ld\n",*/
+                         /*local.m2Heartbeat, localStatusBlock.heartbeat);*/
                  local.m2Heartbeat = localStatusBlock.heartbeat;
 
-		 if (refMemFree) {
+		         if (refMemFree) {
                     epicsMutexLock(refMemFree);
                     *(statusBlock *) & scsPtr->page1 = localStatusBlock;
                     epicsMutexUnlock(refMemFree); 
-		    scsrx3b++; 
+		            scsrx3b++; 
                  } else {
                    errorLog ("scsReceive - couldn't obtain refMemFree mutex", 1, ON);
                  }
@@ -3400,6 +3410,7 @@ epicsExportAddress(int, scsrx3 );
 epicsExportAddress(int, scsrx3a );
 epicsExportAddress(int, scsrx3b );
 epicsExportAddress(int, scsrx4 );
+epicsExportAddress(int, scsrx5 );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
 epicsExportAddress(int, showcs );

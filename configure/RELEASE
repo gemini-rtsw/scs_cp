@@ -26,24 +26,29 @@ WORKSUP=/gem_sw/work/R3.14.12.7/support
 TESTSUPP=/home/mrippa/work/support
 
 #TIMELIB=$(PRODSUP)/timelib/1-9-13
-TIMELIB=$(TESTSUPP)/timelib-usecs-bfix
+#TIMELIB=$(TESTSUPP)/timelib-usecs-bfix
+TIMELIB=$(WORKSUP)/timelib-usec
 SLALIB=$(PRODSUP)/slalib/1-9-7
 GEMREC=$(PRODSUP)/geminiRec/4-1-6
 #TCSLIB=$(PRODSUP)/tcslib/1-0-6
-TCSLIB=$(TESTSUPP)/tcslib-usecs-bfix
+#TCSLIB=$(TESTSUPP)/tcslib-usecs-bfix
+TCSLIB=$(WORKSUP)/tcslib-usec
 SNCSEQ=$(PRODSUP)/seq/2-2-3-2
 PVLOAD=$(PRODSUP)/pvload/1-1-3
 #BANCOMM=$(PRODSUP)/bancomm/1-6-8
-BANCOMM=$(TESTSUPP)/bancomm-usecs-bfix
+#BANCOMM=$(TESTSUPP)/bancomm-usecs-bfix
+BANCOMM=$(WORKSUP)/bancomm-usec
 IOCSTATS=$(PRODSUP)/iocStats/3-1-14-4
 #TIMEPROBE=$(PRODSUP)/timeProbe/1-1-5
-TIMEPROBE=$(TESTSUPP)/timeProbe-usecs-bfix
+#TIMEPROBE=$(TESTSUPP)/timeProbe-usecs-bfix
+TIMEPROBE=$(WORKSUP)/timeProbe-usec
 SYMB=$(PRODSUP)/symb/1-0-2
 
-VMIC=$(PRODSUP)/vmi5588/1-0-3
-XYCOM=$(PRODSUP)/xycom/2-1-6br
-#XYCOM=$(WORKSUP)/xycom-new
-#VMIC=$(WORKSUP)/vmi5588/
+#VMIC=$(PRODSUP)/vmi5588/1-0-3
+#XYCOM=$(PRODSUP)/xycom/2-1-6br
+XYCOM=$(WORKSUP)/xycom-new
+VMIC=$(WORKSUP)/vmi5588/
+#VMIC=$(WORKSUP)/vmi5588-sbf
 
 
 # EPICS_BASE usually appears last so other apps can override stuff:

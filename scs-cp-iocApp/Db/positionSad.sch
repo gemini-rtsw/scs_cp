@@ -64,23 +64,23 @@ p 896 3216 100 0 -1 val(in):$(top)decimator.VALB
 use esirs 2208 3367 100 0 esirs#57
 xform 0 2416 3520
 p 2368 3664 100 0 -1 name:$(top)Xc
-p 2379 3516 100 0 1 SCAN:Passive
+p 2379 3516 100 0 1 SCAN:1 second
 use esirs 2208 3015 100 0 esirs#56
 xform 0 2416 3168
 p 2352 3312 100 0 -1 name:$(top)Yc
-p 2356 3173 100 0 1 SCAN:Passive
+p 2356 3173 100 0 1 SCAN:1 second
 use esirs 2208 2631 100 0 esirs#55
 xform 0 2416 2784
 p 2368 2928 100 0 -1 name:$(top)Zc
-p 2364 2768 100 0 1 SCAN:Passive
+p 2364 2768 100 0 1 SCAN:1 second
 use esirs 2208 2295 100 0 esirs#54
 xform 0 2416 2448
 p 2352 2592 100 0 -1 name:$(top)theta
-p 2336 2432 100 0 1 SCAN:Passive
+p 2336 2432 100 0 1 SCAN:1 second
 use esirs 2208 1943 100 0 esirs#53
 xform 0 2416 2096
 p 2368 2240 100 0 -1 name:$(top)phi
-p 2331 2101 100 0 1 SCAN:Passive
+p 2331 2101 100 0 1 SCAN:1 second
 use esirs 1184 3367 100 0 xTiltPos
 xform 0 1392 3520
 p 1135 3264 100 0 0 DESC:X tilt position

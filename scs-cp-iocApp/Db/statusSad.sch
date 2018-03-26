@@ -54,7 +54,7 @@ use esirs 2432 2599 100 0 topend
 xform 0 2640 2752
 p 2383 2176 100 0 0 EGU:none
 p 2383 2272 100 0 0 FTVL:STRING
-p 2619 2777 100 0 1 SCAN:Passive
+p 2619 2777 100 0 1 SCAN:1 second
 p 2544 2912 100 0 -1 name:$(top)topEnd
 use esirs 1248 2215 100 0 esirs#53
 xform 0 1456 2368

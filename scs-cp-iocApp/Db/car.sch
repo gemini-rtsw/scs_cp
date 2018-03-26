@@ -1,36 +1,37 @@
 [schematic2]
-uniq 271
+uniq 31
 [tools]
 [detail]
-w 2258 2411 100 0 n#270 hwin.hwin#269.in 2272 2400 2304 2400 egenSub.allCar2.INPF
-w 514 2283 100 0 n#268 hwin.hwin#267.in 544 2272 544 2272 egenSub.allCar.INPH
-w 1890 2763 100 0 n#264 egenSub.allCar1.VALA 1792 2752 2048 2752 2048 2736 2304 2736 2304 2720 egenSub.allCar2.INPA
-w 1906 2027 100 0 n#263 egenSub.allCar1.FLNK 1792 2016 2080 2016 2080 2048 2304 2048 egenSub.allCar2.SLNK
-w 994 2755 100 0 n#261 egenSub.allCar.VALA 832 2752 1216 2752 1216 2720 1504 2720 egenSub.allCar1.INPA
-w 1026 2019 100 0 n#260 egenSub.allCar.FLNK 832 2016 1280 2016 1280 2048 1504 2048 egenSub.allCar1.SLNK
-w 1474 2155 100 0 n#248 egenSub.allCar1.INPJ 1504 2144 1504 2144 hwin.hwin#259.in
-w 1474 2219 100 0 n#247 egenSub.allCar1.INPI 1504 2208 1504 2208 hwin.hwin#258.in
-w 1474 2283 100 0 n#246 egenSub.allCar1.INPH 1504 2272 1504 2272 hwin.hwin#257.in
-w 1474 2347 100 0 n#245 egenSub.allCar1.INPG 1504 2336 1504 2336 hwin.hwin#256.in
-w 1474 2411 100 0 n#244 egenSub.allCar1.INPF 1504 2400 1504 2400 hwin.hwin#255.in
-w 1474 2475 100 0 n#243 egenSub.allCar1.INPE 1504 2464 1504 2464 hwin.hwin#254.in
-w 1474 2603 100 0 n#241 egenSub.allCar1.INPC 1504 2592 1504 2592 hwin.hwin#252.in
-w 1474 2667 100 0 n#240 egenSub.allCar1.INPB 1504 2656 1504 2656 hwin.hwin#251.in
-w 2626 2731 100 0 n#238 egenSub.allCar2.OUTA 2592 2720 2720 2720 2720 2752 2816 2752 ecars.ecars#155.IVAL
-w 2756 2283 100 0 n#237 egenSub.allCar2.FLNK 2592 2016 2752 2016 2752 2560 2816 2560 ecars.ecars#155.SLNK
-w 2274 2475 100 0 n#218 egenSub.allCar2.INPE 2304 2464 2304 2464 hwin.hwin#229.in
-w 2274 2539 100 0 n#217 egenSub.allCar2.INPD 2304 2528 2304 2528 hwin.hwin#228.in
-w 2274 2603 100 0 n#216 egenSub.allCar2.INPC 2304 2592 2304 2592 hwin.hwin#227.in
-w 2274 2667 100 0 n#215 egenSub.allCar2.INPB 2304 2656 2304 2656 hwin.hwin#226.in
-w 514 2155 100 0 n#208 hwin.hwin#207.in 544 2144 544 2144 egenSub.allCar.INPJ
-w 514 2219 100 0 n#206 hwin.hwin#205.in 544 2208 544 2208 egenSub.allCar.INPI
-w 514 2347 100 0 n#202 hwin.hwin#201.in 544 2336 544 2336 egenSub.allCar.INPG
-w 514 2411 100 0 n#200 hwin.hwin#199.in 544 2400 544 2400 egenSub.allCar.INPF
-w 514 2475 100 0 n#198 hwin.hwin#197.in 544 2464 544 2464 egenSub.allCar.INPE
-w 514 2539 100 0 n#196 hwin.hwin#195.in 544 2528 544 2528 egenSub.allCar.INPD
-w 514 2603 100 0 n#194 hwin.hwin#193.in 544 2592 544 2592 egenSub.allCar.INPC
-w 514 2667 100 0 n#192 hwin.hwin#191.in 544 2656 544 2656 egenSub.allCar.INPB
-w 514 2731 100 0 n#190 hwin.hwin#189.in 544 2720 544 2720 egenSub.allCar.INPA
+w 2288 2403 100 0 n#1 hwin.hwin#269.in 2272 2400 2304 2400 egenSub.allCar2.INPF
+w 547 2275 100 0 n#2 hwin.hwin#267.in 544 2272 544 2272 egenSub.allCar.INPH
+w 1920 2755 100 0 n#3 egenSub.allCar1.VALA 1792 2752 2048 2752 2048 2736 2304 2736 2304 2720 egenSub.allCar2.INPA
+w 1936 2019 100 0 n#4 egenSub.allCar1.FLNK 1792 2016 2080 2016 2080 2048 2304 2048 egenSub.allCar2.SLNK
+w 1024 2755 100 0 n#5 egenSub.allCar.VALA 832 2752 1216 2752 1216 2720 1504 2720 egenSub.allCar1.INPA
+w 1056 2019 100 0 n#6 egenSub.allCar.FLNK 832 2016 1280 2016 1280 2048 1504 2048 egenSub.allCar1.SLNK
+w 1507 2147 100 0 n#7 egenSub.allCar1.INPJ 1504 2144 1504 2144 hwin.hwin#259.in
+w 1507 2211 100 0 n#8 egenSub.allCar1.INPI 1504 2208 1504 2208 hwin.hwin#258.in
+w 1507 2275 100 0 n#9 egenSub.allCar1.INPH 1504 2272 1504 2272 hwin.hwin#257.in
+w 1507 2339 100 0 n#10 egenSub.allCar1.INPG 1504 2336 1504 2336 hwin.hwin#256.in
+w 1507 2403 100 0 n#11 egenSub.allCar1.INPF 1504 2400 1504 2400 hwin.hwin#255.in
+w 1507 2467 100 0 n#12 egenSub.allCar1.INPE 1504 2464 1504 2464 hwin.hwin#254.in
+w 1507 2595 100 0 n#13 egenSub.allCar1.INPC 1504 2592 1504 2592 hwin.hwin#252.in
+w 1507 2659 100 0 n#14 egenSub.allCar1.INPB 1504 2656 1504 2656 hwin.hwin#251.in
+w 2656 2723 100 0 n#15 egenSub.allCar2.OUTA 2592 2720 2720 2720 2720 2752 2816 2752 ecars.ecars#155.IVAL
+w 2672 2019 100 0 n#16 egenSub.allCar2.FLNK 2592 2016 2752 2016 2752 2560 2816 2560 ecars.ecars#155.SLNK
+w 2307 2467 100 0 n#17 egenSub.allCar2.INPE 2304 2464 2304 2464 hwin.hwin#229.in
+w 2307 2531 100 0 n#18 egenSub.allCar2.INPD 2304 2528 2304 2528 hwin.hwin#228.in
+w 2307 2595 100 0 n#19 egenSub.allCar2.INPC 2304 2592 2304 2592 hwin.hwin#227.in
+w 2307 2659 100 0 n#20 egenSub.allCar2.INPB 2304 2656 2304 2656 hwin.hwin#226.in
+w 547 2147 100 0 n#21 hwin.hwin#207.in 544 2144 544 2144 egenSub.allCar.INPJ
+w 547 2211 100 0 n#22 hwin.hwin#205.in 544 2208 544 2208 egenSub.allCar.INPI
+w 547 2339 100 0 n#23 hwin.hwin#201.in 544 2336 544 2336 egenSub.allCar.INPG
+w 547 2403 100 0 n#24 hwin.hwin#199.in 544 2400 544 2400 egenSub.allCar.INPF
+w 547 2467 100 0 n#25 hwin.hwin#197.in 544 2464 544 2464 egenSub.allCar.INPE
+w 547 2531 100 0 n#26 hwin.hwin#195.in 544 2528 544 2528 egenSub.allCar.INPD
+w 547 2595 100 0 n#27 hwin.hwin#193.in 544 2592 544 2592 egenSub.allCar.INPC
+w 547 2659 100 0 n#28 hwin.hwin#191.in 544 2656 544 2656 egenSub.allCar.INPB
+w 547 2723 100 0 n#29 hwin.hwin#189.in 544 2720 544 2720 egenSub.allCar.INPA
+w 2314 2346 -100 0 n#30 hwin.hwin#271.in 2304 2336 2304 2336 egenSub.allCar2.INPG
 s 2816 752 100 0 24-Jun-98
 s 2544 720 100 0 checked: S.Prior
 s 2544 752 100 0 author: S.Prior
@@ -40,9 +41,11 @@ s 2784 800 100 0 OR together all CAR responses
 s 2784 864 100 0 Secondary Control System
 s 2608 3024 100 0 car.sch
 [cell use]
+use bc200tr -32 584 -100 0 frame
+xform 0 1648 1888
 use hwin 2080 2359 100 0 hwin#269
 xform 0 2176 2400
-p 1904 2352 100 0 -1 val(in):$(top)setVTKControlC.VAL
+p 1904 2352 100 0 -1 val(in):$(top)X:setVTKControlC.VAL
 use hwin 352 2679 100 0 hwin#189
 xform 0 448 2720
 p 144 2720 100 0 -1 val(in):$(top)debugC.VAL
@@ -164,6 +167,7 @@ use ecars 2816 2471 100 0 ecars#155
 xform 0 2976 2640
 p 2767 2400 100 0 0 DESC:active C CAR
 p 2896 2832 100 0 -1 name:$(top)activeC
-use bc200tr -32 584 -100 0 frame
-xform 0 1648 1888
+use hwin 2112 2295 100 0 hwin#271
+xform 0 2208 2336
+p 1936 2288 100 0 -1 val(in):$(top)Y:setVTKControlC.VAL
 [comments]
