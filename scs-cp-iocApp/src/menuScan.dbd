@@ -20,6 +20,6 @@ menu(menuScan) {
 	choice(menuScan_1_second,".1 second")
         # custom scan rates for SCS
 	choice(menuScan_05_second,".05 second")
-	choice(menuScan_05_second,".01 second")
+	choice(menuScan_01_second,".01 second")
 	choice(menuScan_005_second,".005 second")
 }
