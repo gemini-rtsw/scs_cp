@@ -945,8 +945,8 @@ void rmISR3 (int node)
 int rxwaitticks = 0;
 int useDynamicVtk =0;
 
-static double waittime = 0.5; 
-static double waittime2 = 2;   
+static double waittime = 0.1; 
+static double waittime2 = 0.5;   
 static int mutex1= 0;
 static int mutex2= 0;
 static int mutex3= 0;
@@ -1445,10 +1445,6 @@ void processGuides (void)
 
       else
       {
-#if 0
-         if (debugLevel == DEBUG_RESERVED2) 
-            errlogMessage("processGuides - guideUpdateNow timeout\n"); 
-#endif
 
          /* New, assume timeout must mean no guide update has
           * occurred and bypass timestamp checking 
@@ -1730,8 +1726,7 @@ void processGuides (void)
          if (command == CMD_TEST)
             local.testRequest = 1;
 
-         /* print command to screen for testing
-	  */
+         /* print command to screen for testing */
          if ((command > POSITION) && (debugLevel == DEBUG_MED))
          {
             errlogPrintf ("processGuides - sent command =  %s (%d)", 
@@ -1752,25 +1747,26 @@ void processGuides (void)
 
          /* flag availability of new data */
          /* The original ideal of sending only everyother pulse has bee removed */
-
-         if (!sendpulse) {
-             indx++;
+         mutex7++;
+         rmIntSend (INT2, M2_NODE);
+          /*if (!sendpulse) {*/
+             /*indx++; */
 
              /*Toggle sendpulse back to off for value 1.
               * Greater than 1 is continuous mode*/
-             if (command > FAST_ONLY || indx > 1){
-                 mutex7++;
-                 rmIntSend (INT2, M2_NODE);
-                 indx = 0;
-             }
-         }
-         else{
-             rmIntSend (INT2, M2_NODE);
-         }
-      }
-      else /* simulation active, write to m2 buffer */
+             /*if (command > FAST_ONLY || indx > 1){*/
+                 /*mutex7++;*/
+                 /*rmIntSend (INT2, M2_NODE);*/
+                 /*indx = 0;*/
+             /*}*/
+         /*}*/
+         /*else{*/
+             /*rmIntSend (INT2, M2_NODE);*/
+         /*} */
+       }
+       else /* simulation active, write to m2 buffer */
       {
-	 if ( m2MemFree ) {
+	      if ( m2MemFree ) {
             mutex1++;
             epicsMutexLock(m2MemFree);
             m2Ptr->page0.xTiltGuide = (float) xNetGuideU;
@@ -1797,9 +1793,9 @@ void processGuides (void)
 
             epicsMutexUnlock(m2MemFree);
             mutex2++;
-	 } else {
+	      } else {
             errorLog ("processGuides - couldn't obtain m2MemFree mutex", 1, ON);
-	 }
+	      }
          /* print command to screen for testing */
 
          if ((command > POSITION) && (debugLevel == DEBUG_MIN))
@@ -2290,7 +2286,6 @@ void slowTransmit (void)
  */
 
 /* ===================================================================== */
-static int scsrx5= 0;
 
 void tiltReceive (void) 
 {
@@ -2362,7 +2357,6 @@ void tiltReceive (void)
          errorLog ("tiltReceive - couldn't obtain m2MemFree mutex", 1, ON);
        }
          /* flag status data available */
-	 scsrx5++;
          epicsEventSignal(scsReceiveNow);
 
          /* print command to screen for testing */
@@ -2428,6 +2422,7 @@ static int scsrx3= 0;
 static int scsrx3a= 0;
 static int scsrx3b= 0;
 static int scsrx4= 0;
+static int scsrx5= 0;
 
 void scsReceive (void)
 {
@@ -2519,8 +2514,9 @@ void scsReceive (void)
 
                  if (local.NS != localStatusBlock.NR)
                  {
-                     errlogPrintf  ("scsReceive - frame unacknowledged localNS=%ld, statblkNR=%ld\n",
-                             local.NS, localStatusBlock.NR);
+                      scsrx5++;
+                     /*errlogPrintf  ("scsReceive - frame unacknowledged localNS=%ld, statblkNR=%ld\n",
+                             local.NS, localStatusBlock.NR); */
                  }
 
                  if (local.testRequest == 0 && 

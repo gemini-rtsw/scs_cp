@@ -1,72 +1,72 @@
 [schematic2]
-uniq 432
+uniq 62
 [tools]
 [detail]
-w 4034 811 100 0 n#428 egenSub.guideSimPROC.C 4064 608 3904 608 3904 800 4224 800 4224 912 4192 912 eaos.guideSimyscale.OUT
-w 3938 683 100 0 n#427 egenSub.guideSimPROC.B 4064 672 3872 672 3872 848 3760 848 eaos.guideSimxscale.OUT
-w 3394 -469 100 0 n#415 estringouts.freeRunStr.OUT 3152 -624 3248 -624 3248 -480 3600 -480 ecad2.freeRun.A
-w 2946 -485 100 0 n#411 ebos.freeRunGuideSim.VAL 3088 -336 3168 -336 3168 -496 2784 -496 2784 -576 2896 -576 estringouts.freeRunStr.DOL
-w 2946 -517 100 0 n#410 ebos.freeRunGuideSim.FLNK 3088 -304 3200 -304 3200 -528 2752 -528 2752 -608 2896 -608 estringouts.freeRunStr.SLNK
-w 3042 459 100 0 n#408 ebos.guidesimrqst.VAL 3184 608 3264 608 3264 448 2880 448 2880 368 2992 368 estringouts.guideSimRqstStr.DOL
-w 3922 747 100 0 n#407 ecad2.guideSimCAD.OUTA 3744 432 3840 432 3840 736 4064 736 egenSub.guideSimPROC.A
-w 3266 331 100 0 n#406 estringouts.guideSimRqstStr.OUT 3248 320 3344 320 3344 464 3424 464 ecad2.guideSimCAD.A
-w 3818 187 100 0 n#405 ecad2.guideSimCAD.STLK 3744 176 3952 176 3952 32 4064 32 egenSub.guideSimPROC.SLNK
-w 3042 427 100 0 n#403 ebos.guidesimrqst.FLNK 3184 640 3296 640 3296 416 2848 416 2848 336 2992 336 estringouts.guideSimRqstStr.SLNK
-w 2826 1627 100 0 n#387 ecad2.ecad2#333.VAL 2384 2288 2496 2288 2496 1616 3216 1616 cadplus.clearGuideFocusP.STAT
-w 2890 1659 100 0 n#386 ecad2.ecad2#333.SPLK 2384 1776 2624 1776 2624 1648 3216 1648 cadplus.clearGuideFocusP.SPIN
-w 3090 2107 100 0 n#385 eseqs.clearGuideFocusSeq.LNK2 3072 2096 3168 2096 3168 1680 3216 1680 cadplus.clearGuideFocusP.STIN
-w 1812 219 100 2 n#379 hwout.hwout#378.outp 1808 224 1808 224 egenSub.guideConfResetProc.OUTE
-w 1812 283 100 2 n#377 hwout.hwout#376.outp 1808 288 1808 288 egenSub.guideConfResetProc.OUTD
-w 1812 347 100 2 n#375 hwout.hwout#374.outp 1808 352 1808 352 egenSub.guideConfResetProc.OUTC
-w 1812 411 100 2 n#373 hwout.hwout#372.outp 1808 416 1808 416 egenSub.guideConfResetProc.OUTB
-w 1812 475 100 2 n#371 hwout.hwout#370.outp 1808 480 1808 480 egenSub.guideConfResetProc.OUTA
-w 1154 -101 100 0 n#369 ecad2.ecad2#382.STLK 1056 -112 1312 -112 1312 -192 1520 -192 egenSub.guideConfResetProc.SLNK
-w 1812 -37 100 2 n#366 hwout.hwout#365.outp 1808 -32 1808 -32 egenSub.guideConfResetProc.OUTI
-w 3284 1371 100 2 n#360 hwin.hwin#359.in 3280 1376 3280 1376 eseqs.clearTiltGuideSeq.DOL2
-w 3284 1403 100 2 n#358 hwin.hwin#357.in 3280 1408 3280 1408 eseqs.clearTiltGuideSeq.DOL1
-w 4132 1179 100 2 n#355 hwout.hwout#354.outp 4128 1184 4128 1184 ecars.clearTiltGuideC.FLNK
-w 3626 1387 100 0 n#353 eseqs.clearTiltGuideSeq.LNK2 3600 1376 3712 1376 3712 1408 junction
-w 3674 1419 100 0 n#353 eseqs.clearTiltGuideSeq.LNK1 3600 1408 3808 1408 ecars.clearTiltGuideC.IVAL
-w 3066 1099 100 0 n#352 ecad2.ecad2#345.STLK 2912 1088 3280 1088 eseqs.clearTiltGuideSeq.SLNK
-w 3098 2075 100 0 n#232 eseqs.clearGuideFocusSeq.LNK3 3072 2064 3184 2064 3184 2128 junction
-w 3146 2139 100 0 n#232 eseqs.clearGuideFocusSeq.LNK1 3072 2128 3280 2128 ecars.clearGuideFocusC.IVAL
-w 2538 1819 100 0 n#229 ecad2.ecad2#333.STLK 2384 1808 2752 1808 eseqs.clearGuideFocusSeq.SLNK
-w 2722 2107 100 0 n#227 eseqs.clearGuideFocusSeq.DOL2 2752 2096 2752 2096 hwin.hwin#338.in
-w 2722 2139 100 0 n#228 eseqs.clearGuideFocusSeq.DOL1 2752 2128 2752 2128 hwin.hwin#337.in
-w 3570 1915 100 0 n#154 ecars.clearGuideFocusC.FLNK 3600 1904 3600 1904 hwout.hwout#335.outp
-w 2474 2779 100 0 n#231 eseqs.guideControlSeq.LNK2 2448 2768 2560 2768 2560 2800 junction
-w 2522 2811 100 0 n#231 eseqs.guideControlSeq.LNK1 2448 2800 2656 2800 ecars.guideC.IVAL
-w 1914 2491 100 0 n#226 ecad2.control.STLK 1760 2480 2128 2480 eseqs.guideControlSeq.SLNK
-w 2098 2779 100 0 n#225 hwin.hwin#224.in 2128 2768 2128 2768 eseqs.guideControlSeq.DOL2
-w 2098 2811 100 0 n#223 hwin.hwin#222.in 2128 2800 2128 2800 eseqs.guideControlSeq.DOL1
-w 2946 2587 100 0 n#152 hwout.hwout#151.outp 2976 2576 2976 2576 ecars.guideC.FLNK
-w 674 1998 100 0 n#326 estringouts.filterStr.OUT 448 1760 672 1760 672 2176 768 2176 ecad20.guideConfig.C
-w 634 187 100 0 n#325 estringouts.resetStr.OUT 464 1312 592 1312 592 176 736 176 ecad2.ecad2#382.A
-w 330 2578 100 0 n#323 estringouts.sourceStr.FLNK 448 2272 576 2272 576 2576 144 2576 144 2976 224 2976 lookup.lookup#202.slnk
-w 498 2251 100 0 n#322 estringouts.sourceStr.OUT 448 2240 608 2240 608 2304 768 2304 ecad20.guideConfig.A
-w 306 2354 100 0 n#321 embbos.embbos#116.VAL 448 2384 528 2384 528 2352 144 2352 144 2288 192 2288 estringouts.sourceStr.DOL
-w 306 2338 100 0 n#320 embbos.embbos#116.FLNK 448 2448 544 2448 544 2336 128 2336 128 2256 192 2256 estringouts.sourceStr.SLNK
-w 314 1890 100 0 n#318 embbos.embbos#118.VAL 448 1952 528 1952 528 1888 160 1888 160 1808 192 1808 estringouts.filterStr.DOL
-w 314 1874 100 0 n#317 embbos.embbos#118.FLNK 448 2016 544 2016 544 1872 144 1872 144 1776 192 1776 estringouts.filterStr.SLNK
-w 306 1426 100 0 n#315 ebos.guideReset.VAL 464 1568 512 1568 512 1424 160 1424 160 1360 208 1360 estringouts.resetStr.DOL
-w 306 1410 100 0 n#314 ebos.guideReset.FLNK 464 1600 528 1600 528 1408 144 1408 144 1328 208 1328 estringouts.resetStr.SLNK
-w 1042 2795 100 0 n#312 ebos.guideon.FLNK 960 2848 1024 2848 1024 2784 1120 2784 estringouts.guideonStr.SLNK
-w 1010 2827 100 0 n#311 ebos.guideon.VAL 960 2816 1120 2816 estringouts.guideonStr.DOL
-w 1378 2771 100 0 n#310 estringouts.guideonStr.OUT 1376 2768 1440 2768 ecad2.control.A
-w 1586 1387 100 0 n#299 egenSub.guideConfigProc.SLNK 1504 1568 1344 1568 1344 1376 1888 1376 1888 1216 1808 1216 eseqs.eseqs#287.LNK2
-w 1924 1451 100 0 n#298 eseqs.eseqs#287.LNK1 1808 1248 1920 1248 1920 1664 junction
-w 1874 1675 100 0 n#298 egenSub.guideConfigProc.OUTJ 1792 1664 2016 1664 ecars.guideConfigC.IVAL
-w 1458 1259 100 0 n#296 eseqs.eseqs#287.DOL1 1488 1248 1488 1248 hwin.hwin#289.in
-w 1186 875 100 0 n#290 ecad20.guideConfig.STLK 1088 864 1344 864 1344 928 1488 928 eseqs.eseqs#287.SLNK
-w 2306 1451 100 0 n#269 hwout.hwout#153.outp 2336 1440 2336 1440 ecars.guideConfigC.FLNK
-w 1266 1835 100 0 n#245 ecad20.guideConfig.OUTH 1088 1824 1504 1824 egenSub.guideConfigProc.H
-w 1266 1899 100 0 n#243 ecad20.guideConfig.OUTG 1088 1888 1504 1888 egenSub.guideConfigProc.G
-w 1266 1963 100 0 n#242 ecad20.guideConfig.OUTF 1088 1952 1504 1952 egenSub.guideConfigProc.F
-w 1266 2027 100 0 n#241 ecad20.guideConfig.OUTE 1088 2016 1504 2016 egenSub.guideConfigProc.E
-w 1266 2091 100 0 n#240 ecad20.guideConfig.OUTD 1088 2080 1504 2080 egenSub.guideConfigProc.D
-w 1266 2155 100 0 n#239 ecad20.guideConfig.OUTC 1088 2144 1504 2144 egenSub.guideConfigProc.C
-w 1266 2219 100 0 n#238 ecad20.guideConfig.OUTB 1088 2208 1504 2208 egenSub.guideConfigProc.B
-w 1266 2283 100 0 n#237 ecad20.guideConfig.OUTA 1088 2272 1504 2272 egenSub.guideConfigProc.A
+w 3984 611 100 0 n#1 egenSub.guideSimPROC.C 4064 608 3904 608 3904 800 4224 800 4224 912 4192 912 eaos.guideSimyscale.OUT
+w 3968 675 100 0 n#2 egenSub.guideSimPROC.B 4064 672 3872 672 3872 848 3760 848 eaos.guideSimxscale.OUT
+w 3200 -621 100 0 n#3 estringouts.freeRunStr.OUT 3152 -624 3248 -624 3248 -480 3600 -480 ecad2.freeRun.A
+w 3128 -333 100 0 n#4 ebos.freeRunGuideSim.VAL 3088 -336 3168 -336 3168 -496 2784 -496 2784 -576 2896 -576 estringouts.freeRunStr.DOL
+w 3144 -301 100 0 n#5 ebos.freeRunGuideSim.FLNK 3088 -304 3200 -304 3200 -528 2752 -528 2752 -608 2896 -608 estringouts.freeRunStr.SLNK
+w 3224 611 100 0 n#6 ebos.guidesimrqst.VAL 3184 608 3264 608 3264 448 2880 448 2880 368 2992 368 estringouts.guideSimRqstStr.DOL
+w 3792 435 100 0 n#7 ecad2.guideSimCAD.OUTA 3744 432 3840 432 3840 736 4064 736 egenSub.guideSimPROC.A
+w 3296 323 100 0 n#8 estringouts.guideSimRqstStr.OUT 3248 320 3344 320 3344 464 3424 464 ecad2.guideSimCAD.A
+w 3848 179 100 0 n#9 ecad2.guideSimCAD.STLK 3744 176 3952 176 3952 32 4064 32 egenSub.guideSimPROC.SLNK
+w 3240 643 100 0 n#10 ebos.guidesimrqst.FLNK 3184 640 3296 640 3296 416 2848 416 2848 336 2992 336 estringouts.guideSimRqstStr.SLNK
+w 2440 2291 100 0 n#11 ecad2.ecad2#333.VAL 2384 2288 2496 2288 2496 1616 3216 1616 cadplus.clearGuideFocusP.STAT
+w 2504 1779 100 0 n#12 ecad2.ecad2#333.SPLK 2384 1776 2624 1776 2624 1648 3216 1648 cadplus.clearGuideFocusP.SPIN
+w 3120 2099 100 0 n#13 eseqs.clearGuideFocusSeq.LNK2 3072 2096 3168 2096 3168 1680 3216 1680 cadplus.clearGuideFocusP.STIN
+w 1811 227 100 2 n#14 hwout.hwout#378.outp 1808 224 1808 224 egenSub.guideConfResetProc.OUTE
+w 1811 291 100 2 n#15 hwout.hwout#376.outp 1808 288 1808 288 egenSub.guideConfResetProc.OUTD
+w 1811 355 100 2 n#16 hwout.hwout#374.outp 1808 352 1808 352 egenSub.guideConfResetProc.OUTC
+w 1811 419 100 2 n#17 hwout.hwout#372.outp 1808 416 1808 416 egenSub.guideConfResetProc.OUTB
+w 1811 483 100 2 n#18 hwout.hwout#370.outp 1808 480 1808 480 egenSub.guideConfResetProc.OUTA
+w 1184 -109 100 0 n#19 ecad2.ecad2#382.STLK 1056 -112 1312 -112 1312 -192 1520 -192 egenSub.guideConfResetProc.SLNK
+w 3283 1379 100 2 n#20 hwin.hwin#359.in 3280 1376 3280 1376 eseqs.clearTiltGuideSeq.DOL2
+w 3283 1411 100 2 n#21 hwin.hwin#357.in 3280 1408 3280 1408 eseqs.clearTiltGuideSeq.DOL1
+w 4131 1187 100 2 n#22 hwout.hwout#354.outp 4128 1184 4128 1184 ecars.clearTiltGuideC.FLNK
+w 3656 1379 100 0 n#23 eseqs.clearTiltGuideSeq.LNK2 3600 1376 3712 1376 3712 1408 junction
+w 3704 1411 100 0 n#23 eseqs.clearTiltGuideSeq.LNK1 3600 1408 3808 1408 ecars.clearTiltGuideC.IVAL
+w 3096 1091 100 0 n#24 ecad2.ecad2#345.STLK 2912 1088 3280 1088 eseqs.clearTiltGuideSeq.SLNK
+w 3128 2067 100 0 n#25 eseqs.clearGuideFocusSeq.LNK3 3072 2064 3184 2064 3184 2128 junction
+w 3176 2131 100 0 n#25 eseqs.clearGuideFocusSeq.LNK1 3072 2128 3280 2128 ecars.clearGuideFocusC.IVAL
+w 2568 1811 100 0 n#26 ecad2.ecad2#333.STLK 2384 1808 2752 1808 eseqs.clearGuideFocusSeq.SLNK
+w 2755 2099 100 0 n#27 eseqs.clearGuideFocusSeq.DOL2 2752 2096 2752 2096 hwin.hwin#338.in
+w 2755 2131 100 0 n#28 eseqs.clearGuideFocusSeq.DOL1 2752 2128 2752 2128 hwin.hwin#337.in
+w 3603 1907 100 0 n#29 ecars.clearGuideFocusC.FLNK 3600 1904 3600 1904 hwout.hwout#335.outp
+w 2504 2771 100 0 n#30 eseqs.guideControlSeq.LNK2 2448 2768 2560 2768 2560 2800 junction
+w 2552 2803 100 0 n#30 eseqs.guideControlSeq.LNK1 2448 2800 2656 2800 ecars.guideC.IVAL
+w 1944 2483 100 0 n#31 ecad2.control.STLK 1760 2480 2128 2480 eseqs.guideControlSeq.SLNK
+w 2131 2771 100 0 n#32 hwin.hwin#224.in 2128 2768 2128 2768 eseqs.guideControlSeq.DOL2
+w 2131 2803 100 0 n#33 hwin.hwin#222.in 2128 2800 2128 2800 eseqs.guideControlSeq.DOL1
+w 2979 2579 100 0 n#34 hwout.hwout#151.outp 2976 2576 2976 2576 ecars.guideC.FLNK
+w 560 1763 100 0 n#35 estringouts.filterStr.OUT 448 1760 672 1760 672 2176 768 2176 ecad20.guideConfig.C
+w 528 1315 100 0 n#36 estringouts.resetStr.OUT 464 1312 592 1312 592 176 736 176 ecad2.ecad2#382.A
+w 512 2275 100 0 n#37 estringouts.sourceStr.FLNK 448 2272 576 2272 576 2576 144 2576 144 2976 224 2976 lookup.lookup#202.slnk
+w 528 2243 100 0 n#38 estringouts.sourceStr.OUT 448 2240 608 2240 608 2304 768 2304 ecad20.guideConfig.A
+w 488 2387 100 0 n#39 embbos.embbos#116.VAL 448 2384 528 2384 528 2352 144 2352 144 2288 192 2288 estringouts.sourceStr.DOL
+w 496 2451 100 0 n#40 embbos.embbos#116.FLNK 448 2448 544 2448 544 2336 128 2336 128 2256 192 2256 estringouts.sourceStr.SLNK
+w 488 1955 100 0 n#41 embbos.embbos#118.VAL 448 1952 528 1952 528 1888 160 1888 160 1808 192 1808 estringouts.filterStr.DOL
+w 496 2019 100 0 n#42 embbos.embbos#118.FLNK 448 2016 544 2016 544 1872 144 1872 144 1776 192 1776 estringouts.filterStr.SLNK
+w 488 1571 100 0 n#43 ebos.guideReset.VAL 464 1568 512 1568 512 1424 160 1424 160 1360 208 1360 estringouts.resetStr.DOL
+w 496 1603 100 0 n#44 ebos.guideReset.FLNK 464 1600 528 1600 528 1408 144 1408 144 1328 208 1328 estringouts.resetStr.SLNK
+w 992 2851 100 0 n#45 ebos.guideon.FLNK 960 2848 1024 2848 1024 2784 1120 2784 estringouts.guideonStr.SLNK
+w 1040 2819 100 0 n#46 ebos.guideon.VAL 960 2816 1120 2816 estringouts.guideonStr.DOL
+w 1408 2771 100 0 n#47 estringouts.guideonStr.OUT 1376 2768 1440 2768 ecad2.control.A
+w 1424 1571 100 0 n#48 egenSub.guideConfigProc.SLNK 1504 1568 1344 1568 1344 1376 1888 1376 1888 1216 1808 1216 eseqs.eseqs#287.LNK2
+w 1864 1251 100 0 n#49 eseqs.eseqs#287.LNK1 1808 1248 1920 1248 1920 1664 junction
+w 1904 1667 100 0 n#49 egenSub.guideConfigProc.OUTJ 1792 1664 2016 1664 ecars.guideConfigC.IVAL
+w 1491 1251 100 0 n#50 eseqs.eseqs#287.DOL1 1488 1248 1488 1248 hwin.hwin#289.in
+w 1216 867 100 0 n#51 ecad20.guideConfig.STLK 1088 864 1344 864 1344 928 1488 928 eseqs.eseqs#287.SLNK
+w 2339 1443 100 0 n#52 hwout.hwout#153.outp 2336 1440 2336 1440 ecars.guideConfigC.FLNK
+w 1296 1827 100 0 n#53 ecad20.guideConfig.OUTH 1088 1824 1504 1824 egenSub.guideConfigProc.H
+w 1296 1891 100 0 n#54 ecad20.guideConfig.OUTG 1088 1888 1504 1888 egenSub.guideConfigProc.G
+w 1296 1955 100 0 n#55 ecad20.guideConfig.OUTF 1088 1952 1504 1952 egenSub.guideConfigProc.F
+w 1296 2019 100 0 n#56 ecad20.guideConfig.OUTE 1088 2016 1504 2016 egenSub.guideConfigProc.E
+w 1296 2083 100 0 n#57 ecad20.guideConfig.OUTD 1088 2080 1504 2080 egenSub.guideConfigProc.D
+w 1296 2147 100 0 n#58 ecad20.guideConfig.OUTC 1088 2144 1504 2144 egenSub.guideConfigProc.C
+w 1296 2211 100 0 n#59 ecad20.guideConfig.OUTB 1088 2208 1504 2208 egenSub.guideConfigProc.B
+w 1296 2275 100 0 n#60 ecad20.guideConfig.OUTA 1088 2272 1504 2272 egenSub.guideConfigProc.A
+w 1818 -86 -100 0 n#61 hwout.hwout#365.outp 1808 -96 1808 -96 egenSub.guideConfResetProc.OUTJ
 s 5104 -1472 100 0 Secondary Control System
 s 5104 -1536 100 0 Guide Commands
 s 5584 -1744 100 0 1
@@ -76,14 +76,14 @@ s 4688 -1728 100 0 checked: S.Prior
 s 5136 -1584 100 0 25-Jun-98
 s 5440 -1568 100 0 $Id: guide.sch,v 1.12 2008/09/30 20:53:39 mrippa Exp $
 [cell use]
+use be200tr -640 -1944 -100 0 frame
+xform 0 2800 720
 use eaos 3936 855 100 0 guideSimyscale
 xform 0 4064 944
 p 4192 912 75 768 -1 pproc(OUT):PP
 use eaos 3504 791 100 0 guideSimxscale
 xform 0 3632 880
 p 3760 848 75 768 -1 pproc(OUT):PP
-use be200tr -640 -1944 -100 0 frame
-xform 0 2800 720
 use ecad2 736 -201 100 0 ecad2#382
 xform 0 896 112
 p 800 856 100 0 0 DESC:Reset guide Config
@@ -192,6 +192,7 @@ p 1297 -763 100 0 0 FTVJ:LONG
 p 1520 -304 100 0 1 PV:$(top)
 p 1520 -336 100 0 1 SNAM:resetGuideConfig
 p 1808 -86 75 0 -1 pproc(OUTJ):PP
+p 1297 -667 100 0 1 FTVF:STRING
 use egenSub 4064 -57 100 0 guideSimPROC
 xform 0 4208 368
 p 3841 -283 100 0 0 FTVB:STRING
@@ -255,9 +256,9 @@ p 2432 1431 100 0 -1 val(outp):$(top)allCar1.VAL
 use hwout 2976 2535 100 0 hwout#151
 xform 0 3072 2576
 p 3072 2567 100 0 -1 val(outp):$(top)allCar.VAL
-use hwout 1808 -73 100 0 hwout#365
-xform 0 1904 -32
-p 2032 -32 100 0 -1 val(outp):$(top)guideReset.VAL PP NMS
+use hwout 1808 -137 100 0 hwout#365
+xform 0 1904 -96
+p 2032 -96 100 0 -1 val(outp):$(top)guideReset.VAL PP NMS
 use hwin 3088 1335 100 0 hwin#359
 xform 0 3184 1376
 p 3091 1368 100 0 -1 val(in):$(CAR_IDLE)

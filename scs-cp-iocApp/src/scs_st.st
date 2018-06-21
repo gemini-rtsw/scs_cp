@@ -132,6 +132,7 @@
    %%#define INIT_COMPLETE_TIMEOUT 400.0 /* init execution timeout in units
                                              equal to ~0.33 seconds */
    %%#define TIMEOUT                66.0 /* normal command execution timeout in units equal to ~0.33 seconds */
+   %%#define PARK_TIMEOUT                132.0 /* normal command execution timeout in units equal to ~0.33 seconds */
    %%#define CHOP_TIMEOUT                33.0 /* chop timeout */
    %%#define MOVE_TIMEOUT           265.0 /* move command execution timeout in units equal to ~0.33 seconds */
    %%#define SERVO_OFF_TIMEOUT       3.0 /* Time for sevos to switched off */
@@ -2444,7 +2445,7 @@ ss CADprocessor {
          {
             epicsMutexLock(setPointFree);
             printf("proceedWithMove - setPointFree taken\n");
-	    setPoint.xTiltA = moveAXTilt;
+	         setPoint.xTiltA = moveAXTilt;
             setPoint.yTiltA = moveAYTilt;
             setPoint.xTiltB = moveBXTilt;
             setPoint.yTiltB = moveBYTilt;
@@ -3176,7 +3177,7 @@ ss CADprocessor {
       }   state idle
 
 
-      when(delay(TIMEOUT))
+      when(delay(PARK_TIMEOUT))
       {
          cadProcessorState = TIMEOUTWAITFORPARK; 
          pvPut(cadProcessorState);
@@ -4408,7 +4409,7 @@ ss rebootScs {
 
 	 /* turning off RM interrupts */
 	 	    
-	 vmi5588_reboot(NULL);
+     /*vmi5588_reboot(NULL);*/
 
          /* %%reboot(BOOT_QUICK_AUTOBOOT); */
 	 rebootIocStat = REBOOT_VALUE;
