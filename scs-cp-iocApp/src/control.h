@@ -60,7 +60,7 @@
 
 #define STATUS_BLOCK_SIZE       23      /* number of longs for checksum 
                                            to consider                  */
-#define COMMAND_BLOCK_SIZE      62      /* number of longs for checksum 
+#define COMMAND_BLOCK_SIZE      61      /* number of longs for checksum 
                                            to consider                  */
 
 #define MAX_FAULTS              30  /* first 30 faults in diag block */

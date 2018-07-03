@@ -1747,22 +1747,20 @@ void processGuides (void)
 
          /* flag availability of new data */
          /* The original ideal of sending only everyother pulse has bee removed */
-         mutex7++;
-         rmIntSend (INT2, M2_NODE);
-          /*if (!sendpulse) {*/
-             /*indx++; */
+          if (!sendpulse) {
+             indx++;
 
              /*Toggle sendpulse back to off for value 1.
               * Greater than 1 is continuous mode*/
-             /*if (command > FAST_ONLY || indx > 1){*/
-                 /*mutex7++;*/
-                 /*rmIntSend (INT2, M2_NODE);*/
-                 /*indx = 0;*/
-             /*}*/
-         /*}*/
-         /*else{*/
-             /*rmIntSend (INT2, M2_NODE);*/
-         /*} */
+             if (command > FAST_ONLY || indx > 1){
+                 mutex7++;
+                 rmIntSend (INT2, M2_NODE);
+                 indx = 0;
+             }
+         }
+         else{
+             rmIntSend (INT2, M2_NODE);
+         } 
        }
        else /* simulation active, write to m2 buffer */
       {
