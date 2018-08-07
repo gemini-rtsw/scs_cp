@@ -71,10 +71,14 @@ seq &scs_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
 ###dbpr "m2:interlock"
 ##### Comment out during testing signal from GIS:
 ####
-#dbpf "m2:guideConfigReset.DIR","3"
+dbpf "m2:guideConfigReset.DIR","3"
 #####taskDelay(200)
-####dbpf "m2:guideConfigReset.DIR","3"
+dbpf "m2:guideConfigReset.DIR","3"
 ####
+dbpf "m2:setController.DIR","3"
+#####taskDelay(200)
+dbpf "m2:setController.DIR","3"
+
 ####dbpf "m2:byte3:b6","OFF"
 ####dbpf "m2:byte3:b7","OFF"
 ####dbpf "m2:byte0:b7","OFF"
