@@ -2,12 +2,12 @@
 uniq 9
 [tools]
 [detail]
-w 378 2075 100 0 n#1 ebos.centralPeriscope.FLNK 368 2064 448 2064 448 2048 528 2048 528 2032 576 2032 estringouts.centralStrPeriscope.SLNK
+w 378 2075 100 0 n#1 ebos.central.FLNK 368 2064 448 2064 448 2048 528 2048 528 2032 576 2032 estringouts.centralStrPeriscope.SLNK
 w 2226 2091 100 0 n#2 eseqs.periscopeSeq.LNK2 2176 2080 2336 2080 2336 2112 junction
 w 2362 2123 100 0 n#2 eseqs.periscopeSeq.LNK1 2176 2112 2608 2112 ecars.movePeriscopeC.IVAL
 w 1860 2075 100 2 n#3 hwin.hwin#207.in 1856 2080 1856 2080 eseqs.periscopeSeq.DOL2
 w 986 2027 100 0 n#4 estringouts.centralStrPeriscope.OUT 832 2016 1200 2016 ecad2.move.A
-w 394 2034 100 0 n#5 ebos.centralPeriscope.VAL 368 2032 480 2032 480 2064 576 2064 estringouts.centralStrPeriscope.DOL
+w 394 2034 100 0 n#5 ebos.central.VAL 368 2032 480 2032 480 2064 576 2064 estringouts.centralStrPeriscope.DOL
 w 1826 2123 100 0 n#6 hwin.hwin#197.in 1856 2112 1856 2112 eseqs.periscopeSeq.DOL1
 w 1586 1739 100 0 n#7 ecad2.move.STLK 1520 1728 1712 1728 1712 1792 1856 1792 eseqs.periscopeSeq.SLNK
 w 2898 1899 100 0 n#8 hwout.hwout#178.outp 2928 1888 2928 1888 ecars.movePeriscopeC.FLNK
@@ -53,7 +53,7 @@ use ecars 2608 1831 100 0 movePeriscopeC
 xform 0 2768 2000
 p 2608 1792 100 0 1 PV:$(top)
 p 2656 2176 100 0 0 name:$(top)$(I)
-use ebos 249 1942 100 0 centralPeriscope
+use ebos 249 1942 100 0 central
 xform 0 240 2032
 p -120 2188 100 0 0 DESC:persicope demand
 p -208 1886 100 0 0 ONAM:OPEN
