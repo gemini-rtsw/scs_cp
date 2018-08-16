@@ -6,14 +6,14 @@ w 2362 2123 100 0 n#1 eseqs.baffleSeq.LNK1 2176 2112 2608 2112 ecars.moveBaffleC
 w 1860 2075 100 2 n#2 hwin.hwin#207.in 1856 2080 1856 2080 eseqs.baffleSeq.DOL2
 w 994 1826 100 0 n#3 estringouts.centralStrBaffle.OUT 960 1824 1088 1824 1088 1952 1200 1952 ecad2.moveBaffle.B
 w 802 1922 100 0 n#4 estringouts.deployStr.FLNK 960 2048 1024 2048 1024 1920 640 1920 640 1840 704 1840 estringouts.centralStrBaffle.SLNK
-w 522 1842 100 0 n#5 ebos.centralBaffle.VAL 496 1840 608 1840 608 1872 704 1872 estringouts.centralStrBaffle.DOL
+w 522 1842 100 0 n#5 ebos.central.VAL 496 1840 608 1840 608 1872 704 1872 estringouts.centralStrBaffle.DOL
 w 610 2034 100 0 n#6 embbos.deployable.FLNK 496 2064 576 2064 576 2032 704 2032 estringouts.deployStr.SLNK
 w 1050 2018 100 0 n#7 estringouts.deployStr.OUT 960 2016 1200 2016 ecad2.moveBaffle.A
 w 522 2002 100 0 n#8 embbos.deployable.VAL 496 2000 608 2000 608 2064 704 2064 estringouts.deployStr.DOL
 w 1826 2123 100 0 n#9 hwin.hwin#197.in 1856 2112 1856 2112 eseqs.baffleSeq.DOL1
 w 1586 1739 100 0 n#10 ecad2.moveBaffle.STLK 1520 1728 1712 1728 1712 1792 1856 1792 eseqs.baffleSeq.SLNK
 w 2898 1899 100 0 n#11 hwout.hwout#178.outp 2928 1888 2928 1888 ecars.moveBaffleC.FLNK
-w 290 1931 100 0 n#12 ebos.centralBaffle.FLNK 496 1872 496 1920 144 1920 144 2032 240 2032 embbos.deployable.SLNK
+w 290 1931 100 0 n#12 ebos.central.FLNK 496 1872 496 1920 144 1920 144 2032 240 2032 embbos.deployable.SLNK
 s 2816 752 100 0 25-Jun-98
 s 2544 720 100 0 checked: S.Prior
 s 2544 752 100 0 author: S.Prior
@@ -74,7 +74,7 @@ p 208 2062 100 0 0 TWVL:2
 p 400 2126 100 0 0 ZRST:RETRACTED
 p 288 2112 100 0 0 name:$(top)$(I)
 p 301 1949 100 0 -1 PV:$(top)
-use ebos 376 1757 100 0 centralBaffle
+use ebos 376 1757 100 0 central
 xform 0 368 1840
 p 8 1996 100 0 0 DESC:central demand
 p -80 1694 100 0 0 ONAM:OPEN
