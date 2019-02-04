@@ -77,7 +77,8 @@ dbpf "m2:guideConfigReset.DIR","3"
 ####
 dbpf "m2:setController.DIR","3"
 #####taskDelay(200)
-dbpf "m2:setController.DIR","3"
+#dbpf "m2:setController.DIR","0"
+#dbpf "m2:setController.DIR","3"
 
 ####dbpf "m2:byte3:b6","OFF"
 ####dbpf "m2:byte3:b7","OFF"

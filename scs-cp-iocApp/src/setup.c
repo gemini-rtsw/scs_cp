@@ -59,12 +59,6 @@
                            scsReceiveNow, commandQId, receiveQId 
                            SYSTEM_CLOCK_RATE */
 
-/* #define TRUESCSBASE     0xf0A00040      / * Base address of node 0 */
-#define TRUESCSBASE     0xfAA00040      /* Base address of node 0 
-                                           reflective memory card (scs)  */
-/* #define TRUEM2BASE      0xf0600040      / * Base address of node 1 */
-#define TRUEM2BASE      0xfA600040      /* Base address of node 1 
-                                           reflective memory card (m2 )  */
 extern void rmISR2(int);
 extern void rmISR3(int);
 
@@ -228,7 +222,13 @@ int scsInit (void)
       }
    }
 
-   printf ("initRefMem, scsPtr = 0x%p, scsBase = 0x%p\n",  scsPtr, scsBase); 
+   printf ("initRefMem, scsPtr = %p, scsBase = %p\n",  scsPtr, scsBase); 
+
+   if ((sbStatus = (SynchroStatus *) malloc (sizeof (SynchroStatus))) ==NULL )
+   {
+      printf ("malloc fail on creation of sbStatus buffer\n");
+      return (ERROR);
+   }
 
    /* create command message queue */
    if ((commandQId = epicsMessageQueueCreate(100, sizeof (long))) == NULL)
@@ -270,6 +270,7 @@ int scsInit (void)
    epicsMutexUnlock(m2MemFree);
    mutex16++;
    memset ((void *) scsBase, 0, sizeof (memMap));
+   memset ((void *) sbStatus, 0, sizeof (SynchroStatus));
 
    /* Do in startup in order that xycom has already been inited.
     * Then, if TIME_LATENCY needed, everything w.r.t. port addresses will
@@ -281,15 +282,16 @@ int scsInit (void)
 
    /* spawn communication tasks */  
    /* these had been medium priority for GS */
-   epicsThreadMustCreate("tscsRx", epicsThreadPriorityMedium,
+   epicsThreadMustCreate("tscsRx", epicsThreadPriorityHigh,
                   epicsThreadGetStackSize(epicsThreadStackBig),
                   (EPICSTHREADFUNC)scsReceive, (void *)NULL);
 
    /*
+    * Tilt Receive is a simulation thread.... MRIPPA
    epicsThreadMustCreate("ttiltRx", epicsThreadPriorityMedium,
                   epicsThreadGetStackSize(epicsThreadStackBig),
                   (EPICSTHREADFUNC)tiltReceive, (void *)NULL);
-*/
+   */
 
    epicsThreadMustCreate("tfireLoops", epicsThreadPriorityLow,
                    epicsThreadGetStackSize(epicsThreadStackSmall),

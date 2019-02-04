@@ -2112,6 +2112,54 @@ long highSpeed (struct genSubRecord *pgsub) {
      return (OK);
 }
 
+
+long initHighSpeed2 (struct genSubRecord *pgsub) {
+    printf("HighSpeed2 set to %p\n",sbStatus);
+
+    return (OK);
+}
+
+
+/**
+ *
+ *
+ */
+long highSpeed2 (struct genSubRecord *pgsub) {
+    static long hs2count = 0;
+    static long hs2subcount = HS_RECORD_LENGTH-1;
+
+    static double sbRttHS[HS_RECORD_LENGTH];
+
+    sbRttHS[hs2count] = sbStatus->rtt;              /* next value on array*/
+    *(double *) pgsub->valb = sbStatus->rtt;        /* scalar of same rtt*/
+    *(double *) pgsub->valc = sbStatus->nsnrDiff;   /* num sent - num received*/
+
+
+    if (hs2subcount == 0 ) {
+        int numOldSamples = HS_RECORD_LENGTH - (hs2count+1);
+        int numNewSamples = HS_RECORD_LENGTH - numOldSamples;
+
+        /*Input pointers */
+        double *sbRttIn = sbRttHS; /*pointer to array for sbRttHS[length] */
+
+         /*Output pointers */
+        double *sbRttOut         = (double *)pgsub->vala;  /* pointer to write the entire array (waveform) to*/
+
+        memcpy (sbRttOut, (double *)(sbRttIn+hs2count+1),  numOldSamples*sizeof (double));
+        memcpy ((double *)(sbRttOut+numOldSamples), (double *)(sbRttIn),  numNewSamples*sizeof (double));
+    } else {
+        hs2subcount--;
+    }
+    
+     if (hs2count == HS_RECORD_LENGTH-1)
+         hs2count=0;
+     else
+         hs2count++;
+
+     return (OK);
+}
+
+
 /* ===================================================================== */
 /* INDENT OFF */
 /*
@@ -2651,7 +2699,9 @@ epicsRegisterFunction(initDecimate);
 epicsRegisterFunction(decimate);
 epicsRegisterFunction(lookupGuide);
 epicsRegisterFunction(highSpeed);
+epicsRegisterFunction(highSpeed2);
 epicsRegisterFunction(initHighSpeed);
+epicsRegisterFunction(initHighSpeed2);
 
 epicsRegisterFunction(CADclearGuideFocus);
 epicsRegisterFunction(CADclearTiltGuide);

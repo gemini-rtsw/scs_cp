@@ -439,6 +439,12 @@ typedef struct {
 
 } HighSpeed;
 
+typedef struct {
+
+    long nsnrDiff;  /* Difference of Page0.NumberSent and Page1.NumberReceived*/
+    double rtt;     /*Round Trip Time for SCS->CEM->SCS in seconds*/
+} SynchroStatus;
+
 enum
 {
     INT1 = 1,
@@ -556,6 +562,7 @@ extern int guideType;
 extern PID controller[MAX_AXES];
 
 extern HighSpeed *highSpeedData;
+extern SynchroStatus *sbStatus;
 
 /* not used extern wfs raw[MAX_SOURCES];*/
 extern wfs filtered[MAX_SOURCES];

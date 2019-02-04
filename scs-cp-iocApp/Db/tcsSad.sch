@@ -1,60 +1,63 @@
 [schematic2]
-uniq 53
+uniq 56
 [tools]
 [detail]
-w 2594 1291 100 0 n#1 egenSubE.highSpeed.VALO 1344 1728 1760 1728 1760 1664 2080 1664 2080 1280 3168 1280 3168 1568 3232 1568 ewaves.zRawGuideHS.INP
-w 2370 1323 100 0 n#2 egenSubE.highSpeed.VALN 1344 1760 1792 1760 1792 1696 2112 1696 2112 1312 2688 1312 2688 1568 2752 1568 ewaves.yRawGuideHS.INP
-w 3042 1579 100 0 n#3 ewaves.yRawGuideHS.FLNK 3008 1568 3136 1568 3136 1536 3232 1536 ewaves.zRawGuideHS.SLNK
-w 2658 1547 100 0 n#4 ewaves.xRawGuideHS.FLNK 2528 1568 2624 1568 2624 1536 2752 1536 ewaves.yRawGuideHS.SLNK
-w 1554 1803 100 0 n#5 egenSubE.highSpeed.VALM 1344 1792 1824 1792 1824 1728 2144 1728 2144 1568 2272 1568 ewaves.xRawGuideHS.INP
-w 2850 3211 100 0 n#6 ewaves.vtkYPhase.FLNK 3488 1920 3840 1920 3840 3200 1920 3200 1920 1536 2272 1536 ewaves.xRawGuideHS.SLNK
-w 2658 1675 100 0 n#7 egenSubE.highSpeed.VALL 1344 1824 1856 1824 1856 1760 2192 1760 2192 1664 3184 1664 3184 1920 3232 1920 ewaves.vtkYPhase.INP
-w 1586 1867 100 0 n#8 egenSubE.highSpeed.VALK 1344 1856 1888 1856 1888 1792 2224 1792 2224 1680 2704 1680 2704 1920 2752 1920 ewaves.vtkYFrequency.INP
-w 1602 1899 100 0 n#9 egenSubE.highSpeed.VALJ 1344 1888 1920 1888 1920 1824 2224 1824 2224 1920 2272 1920 ewaves.vtkYCommand.INP
-w 1738 1931 100 0 n#10 egenSubE.highSpeed.VALI 1344 1920 2192 1920 2192 1984 2752 1984 2752 2048 3216 2048 3216 2368 3232 2368 ewaves.vtkXPhase.INP
-w 1730 1963 100 0 n#11 egenSubE.highSpeed.VALH 1344 1952 2176 1952 2176 2016 2736 2016 2736 2368 2752 2368 ewaves.vtkXFrequency.INP
-w 1722 1995 100 0 n#12 egenSubE.highSpeed.VALG 1344 1984 2160 1984 2160 2368 2272 2368 ewaves.vtkXCommand.INP
-w 1714 2027 100 0 n#13 egenSubE.highSpeed.VALF 1344 2016 2144 2016 2144 2048 2720 2048 2720 2080 3184 2080 3184 2688 3232 2688 ewaves.zNetGuideHS.INP
-w 1698 2059 100 0 n#14 egenSubE.highSpeed.VALE 1344 2048 2112 2048 2112 2080 2704 2080 2704 2688 2752 2688 ewaves.yTiltNetGuideHS.INP
-w 1690 2091 100 0 n#15 egenSubE.highSpeed.VALD 1344 2080 2096 2080 2096 2688 2272 2688 ewaves.xTipNetGuideHS.INP
-w 2226 2123 100 0 n#16 egenSubE.highSpeed.VALC 1344 2112 3168 2112 3168 2944 3232 2944 ewaves.zPosHS.INP
-w 1986 2155 100 0 n#17 egenSubE.highSpeed.VALB 1344 2144 2688 2144 2688 2944 2752 2944 ewaves.yTiltPosHS.INP
-w 1674 2187 100 0 n#18 egenSubE.highSpeed.VALA 1344 2176 2064 2176 2064 2944 2272 2944 ewaves.xTipPosHS.INP
-w 3138 1899 100 0 n#19 ewaves.vtkYFrequency.FLNK 3008 1920 3104 1920 3104 1888 3232 1888 ewaves.vtkYPhase.SLNK
-w 2658 1899 100 0 n#20 ewaves.vtkYCommand.FLNK 2528 1920 2624 1920 2624 1888 2752 1888 ewaves.vtkYFrequency.SLNK
-w 2858 3163 100 0 n#21 ewaves.vtkXPhase.FLNK 3488 2368 3808 2368 3808 3152 1968 3152 1968 1888 2272 1888 ewaves.vtkYCommand.SLNK
-w 3138 2347 100 0 n#22 ewaves.vtkXFrequency.FLNK 3008 2368 3104 2368 3104 2336 3232 2336 ewaves.vtkXPhase.SLNK
-w 2658 2347 100 0 n#23 ewaves.vtkXCommand.FLNK 2528 2368 2624 2368 2624 2336 2752 2336 ewaves.vtkXFrequency.SLNK
-w 2858 3131 100 0 n#24 ewaves.zNetGuideHS.FLNK 3488 2688 3776 2688 3776 3120 2000 3120 2000 2336 2272 2336 ewaves.vtkXCommand.SLNK
-w 2858 3099 100 0 n#25 ewaves.zPosHS.FLNK 3488 2944 3744 2944 3744 3088 2032 3088 2032 2656 2272 2656 ewaves.xTipNetGuideHS.SLNK
-w 3138 2667 100 0 n#26 ewaves.yTiltNetGuideHS.FLNK 3008 2688 3104 2688 3104 2656 3232 2656 ewaves.zNetGuideHS.SLNK
-w 2658 2667 100 0 n#27 ewaves.xTipNetGuideHS.FLNK 2528 2688 2624 2688 2624 2656 2752 2656 ewaves.yTiltNetGuideHS.SLNK
-w 3138 2923 100 0 n#28 ewaves.yTiltPosHS.FLNK 3008 2944 3104 2944 3104 2912 3232 2912 ewaves.zPosHS.SLNK
-w 2658 2923 100 0 n#29 ewaves.xTipPosHS.FLNK 2528 2944 2624 2944 2624 2912 2752 2912 ewaves.yTiltPosHS.SLNK
-w 2850 1019 100 0 n#30 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.FLNK 2048 1008 3712 1008 3712 3056 2112 3056 2112 2912 2272 2912 ewaves.xTipPosHS.SLNK
-w 2834 955 100 0 n#31 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.VAL 2048 944 3680 944 3680 3008 2144 3008 2144 2880 2272 2880 ewaves.xTipPosHS.SDIS
-w 1362 1547 100 0 n#32 egenSubE.highSpeed.VALU 1344 1536 1440 1536 1440 1008 1504 1008 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.SRATE
-w 1426 891 100 0 n#33 egenSubE.highSpeed.FLNK 1344 1440 1408 1440 1408 880 1504 880 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.SLNK
-w 842 1483 100 0 n#34 egenSubC.decimator.FLNK 608 2016 688 2016 688 1472 1056 1472 egenSubE.highSpeed.SLNK
-w 578 2571 100 0 n#35 hwout.hwout#168.outp 608 2560 608 2560 egenSubC.decimator.VALG
-w 578 2539 100 0 n#36 hwout.hwout#170.outp 608 2528 608 2528 egenSubC.decimator.VALH
-w 578 2507 100 0 n#37 hwout.hwout#172.outp 608 2496 608 2496 egenSubC.decimator.VALI
-w 578 2667 100 0 n#38 egenSubC.decimator.VALD 608 2656 608 2656 hwout.hwout#179.outp
-w 578 2603 100 0 n#39 hwout.hwout#175.outp 608 2592 608 2592 egenSubC.decimator.VALF
-w 578 2635 100 0 n#40 egenSubC.decimator.VALE 608 2624 608 2624 hwout.hwout#177.outp
-w 578 2219 100 0 n#41 hwout.hwout#196.outp 608 2208 608 2208 egenSubC.decimator.VALR
-w 578 2251 100 0 n#42 hwout.hwout#194.outp 608 2240 608 2240 egenSubC.decimator.VALQ
-w 578 2283 100 0 n#43 hwout.hwout#186.outp 608 2272 608 2272 egenSubC.decimator.VALP
-w 578 2315 100 0 n#44 hwout.hwout#187.outp 608 2304 608 2304 egenSubC.decimator.VALO
-w 578 2347 100 0 n#45 hwout.hwout#188.outp 608 2336 608 2336 egenSubC.decimator.VALN
-w 578 2379 100 0 n#46 hwout.hwout#189.outp 608 2368 608 2368 egenSubC.decimator.VALM
-w 578 2411 100 0 n#47 egenSubC.decimator.VALL 608 2400 608 2400 hwout.hwout#184.outp
-w 578 2443 100 0 n#48 egenSubC.decimator.VALK 608 2432 608 2432 hwout.hwout#182.outp
-w 578 2475 100 0 n#49 egenSubC.decimator.VALJ 608 2464 608 2464 hwout.hwout#180.outp
-w 578 2699 100 0 n#50 hwout.hwout#166.outp 608 2688 608 2688 egenSubC.decimator.VALC
-w 578 2731 100 0 n#51 hwout.hwout#164.outp 608 2720 608 2720 egenSubC.decimator.VALB
-w 578 2763 100 0 n#52 hwout.hwout#162.outp 608 2752 608 2752 egenSubC.decimator.VALA
-s 624 2176 100 0 measuredGuideRate
+w 1552 1731 100 0 n#1 egenSubE.highSpeed.VALO 1344 1728 1760 1728 1760 1664 2080 1664 2080 1280 3168 1280 3168 1568 3232 1568 ewaves.zRawGuideHS.INP
+w 1568 1763 100 0 n#2 egenSubE.highSpeed.VALN 1344 1760 1792 1760 1792 1696 2112 1696 2112 1312 2688 1312 2688 1568 2752 1568 ewaves.yRawGuideHS.INP
+w 3072 1571 100 0 n#3 ewaves.yRawGuideHS.FLNK 3008 1568 3136 1568 3136 1536 3232 1536 ewaves.zRawGuideHS.SLNK
+w 2576 1571 100 0 n#4 ewaves.xRawGuideHS.FLNK 2528 1568 2624 1568 2624 1536 2752 1536 ewaves.yRawGuideHS.SLNK
+w 1584 1795 100 0 n#5 egenSubE.highSpeed.VALM 1344 1792 1824 1792 1824 1728 2144 1728 2144 1568 2272 1568 ewaves.xRawGuideHS.INP
+w 3664 1923 100 0 n#6 ewaves.vtkYPhase.FLNK 3488 1920 3840 1920 3840 3200 1920 3200 1920 1536 2272 1536 ewaves.xRawGuideHS.SLNK
+w 1600 1827 100 0 n#7 egenSubE.highSpeed.VALL 1344 1824 1856 1824 1856 1760 2192 1760 2192 1664 3184 1664 3184 1920 3232 1920 ewaves.vtkYPhase.INP
+w 1616 1859 100 0 n#8 egenSubE.highSpeed.VALK 1344 1856 1888 1856 1888 1792 2224 1792 2224 1680 2704 1680 2704 1920 2752 1920 ewaves.vtkYFrequency.INP
+w 1632 1891 100 0 n#9 egenSubE.highSpeed.VALJ 1344 1888 1920 1888 1920 1824 2224 1824 2224 1920 2272 1920 ewaves.vtkYCommand.INP
+w 1768 1923 100 0 n#10 egenSubE.highSpeed.VALI 1344 1920 2192 1920 2192 1984 2752 1984 2752 2048 3216 2048 3216 2368 3232 2368 ewaves.vtkXPhase.INP
+w 1760 1955 100 0 n#11 egenSubE.highSpeed.VALH 1344 1952 2176 1952 2176 2016 2736 2016 2736 2368 2752 2368 ewaves.vtkXFrequency.INP
+w 1752 1987 100 0 n#12 egenSubE.highSpeed.VALG 1344 1984 2160 1984 2160 2368 2272 2368 ewaves.vtkXCommand.INP
+w 1744 2019 100 0 n#13 egenSubE.highSpeed.VALF 1344 2016 2144 2016 2144 2048 2720 2048 2720 2080 3184 2080 3184 2688 3232 2688 ewaves.zNetGuideHS.INP
+w 1728 2051 100 0 n#14 egenSubE.highSpeed.VALE 1344 2048 2112 2048 2112 2080 2704 2080 2704 2688 2752 2688 ewaves.yTiltNetGuideHS.INP
+w 1720 2083 100 0 n#15 egenSubE.highSpeed.VALD 1344 2080 2096 2080 2096 2688 2272 2688 ewaves.xTipNetGuideHS.INP
+w 2256 2115 100 0 n#16 egenSubE.highSpeed.VALC 1344 2112 3168 2112 3168 2944 3232 2944 ewaves.zPosHS.INP
+w 2016 2147 100 0 n#17 egenSubE.highSpeed.VALB 1344 2144 2688 2144 2688 2944 2752 2944 ewaves.yTiltPosHS.INP
+w 1704 2179 100 0 n#18 egenSubE.highSpeed.VALA 1344 2176 2064 2176 2064 2944 2272 2944 ewaves.xTipPosHS.INP
+w 3056 1923 100 0 n#19 ewaves.vtkYFrequency.FLNK 3008 1920 3104 1920 3104 1888 3232 1888 ewaves.vtkYPhase.SLNK
+w 2576 1923 100 0 n#20 ewaves.vtkYCommand.FLNK 2528 1920 2624 1920 2624 1888 2752 1888 ewaves.vtkYFrequency.SLNK
+w 3648 2371 100 0 n#21 ewaves.vtkXPhase.FLNK 3488 2368 3808 2368 3808 3152 1968 3152 1968 1888 2272 1888 ewaves.vtkYCommand.SLNK
+w 3056 2371 100 0 n#22 ewaves.vtkXFrequency.FLNK 3008 2368 3104 2368 3104 2336 3232 2336 ewaves.vtkXPhase.SLNK
+w 2576 2371 100 0 n#23 ewaves.vtkXCommand.FLNK 2528 2368 2624 2368 2624 2336 2752 2336 ewaves.vtkXFrequency.SLNK
+w 3632 2691 100 0 n#24 ewaves.zNetGuideHS.FLNK 3488 2688 3776 2688 3776 3120 2000 3120 2000 2336 2272 2336 ewaves.vtkXCommand.SLNK
+w 3616 2947 100 0 n#25 ewaves.zPosHS.FLNK 3488 2944 3744 2944 3744 3088 2032 3088 2032 2656 2272 2656 ewaves.xTipNetGuideHS.SLNK
+w 3056 2691 100 0 n#26 ewaves.yTiltNetGuideHS.FLNK 3008 2688 3104 2688 3104 2656 3232 2656 ewaves.zNetGuideHS.SLNK
+w 2576 2691 100 0 n#27 ewaves.xTipNetGuideHS.FLNK 2528 2688 2624 2688 2624 2656 2752 2656 ewaves.yTiltNetGuideHS.SLNK
+w 3056 2947 100 0 n#28 ewaves.yTiltPosHS.FLNK 3008 2944 3104 2944 3104 2912 3232 2912 ewaves.zPosHS.SLNK
+w 2576 2947 100 0 n#29 ewaves.xTipPosHS.FLNK 2528 2944 2624 2944 2624 2912 2752 2912 ewaves.yTiltPosHS.SLNK
+w 2880 1011 100 0 n#30 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.FLNK 2048 1008 3712 1008 3712 3056 2112 3056 2112 2912 2272 2912 ewaves.xTipPosHS.SLNK
+w 2864 947 100 0 n#31 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.VAL 2048 944 3680 944 3680 3008 2144 3008 2144 2880 2272 2880 ewaves.xTipPosHS.SDIS
+w 1392 1539 100 0 n#32 egenSubE.highSpeed.VALU 1344 1536 1440 1536 1440 1008 1504 1008 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.SRATE
+w 1376 1443 100 0 n#33 egenSubE.highSpeed.FLNK 1344 1440 1408 1440 1408 880 1504 880 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.SLNK
+w 3700 1571 100 0 n#34 ewaves.zRawGuideHS.FLNK 3488 1568 3912 1568 3912 1536 4072 1536 ewaves.sbRtt.SLNK
+w 528 2019 100 0 n#35 egenSubC.decimator.FLNK 408 2016 648 2016 648 1776 104 1776 104 960 272 960 egenSubE.highSpeed2.SLNK
+w 708 931 100 0 n#36 egenSubE.highSpeed2.FLNK 560 928 856 928 856 1472 1056 1472 egenSubE.highSpeed.SLNK
+w 411 2211 100 0 n#37 hwout.hwout#196.outp 408 2208 408 2208 egenSubC.decimator.VALR
+w 411 2243 100 0 n#38 hwout.hwout#194.outp 408 2240 408 2240 egenSubC.decimator.VALQ
+w 411 2371 100 0 n#39 hwout.hwout#189.outp 408 2368 408 2368 egenSubC.decimator.VALM
+w 411 2339 100 0 n#40 hwout.hwout#188.outp 408 2336 408 2336 egenSubC.decimator.VALN
+w 411 2307 100 0 n#41 hwout.hwout#187.outp 408 2304 408 2304 egenSubC.decimator.VALO
+w 411 2275 100 0 n#42 hwout.hwout#186.outp 408 2272 408 2272 egenSubC.decimator.VALP
+w 411 2723 100 0 n#43 hwout.hwout#164.outp 408 2720 408 2720 egenSubC.decimator.VALB
+w 411 2691 100 0 n#44 hwout.hwout#166.outp 408 2688 408 2688 egenSubC.decimator.VALC
+w 411 2563 100 0 n#45 hwout.hwout#168.outp 408 2560 408 2560 egenSubC.decimator.VALG
+w 411 2531 100 0 n#46 hwout.hwout#170.outp 408 2528 408 2528 egenSubC.decimator.VALH
+w 411 2499 100 0 n#47 hwout.hwout#172.outp 408 2496 408 2496 egenSubC.decimator.VALI
+w 411 2595 100 0 n#48 hwout.hwout#175.outp 408 2592 408 2592 egenSubC.decimator.VALF
+w 411 2627 100 0 n#49 hwout.hwout#177.outp 408 2624 408 2624 egenSubC.decimator.VALE
+w 411 2659 100 0 n#50 hwout.hwout#179.outp 408 2656 408 2656 egenSubC.decimator.VALD
+w 411 2467 100 0 n#51 hwout.hwout#180.outp 408 2464 408 2464 egenSubC.decimator.VALJ
+w 411 2435 100 0 n#52 hwout.hwout#182.outp 408 2432 408 2432 egenSubC.decimator.VALK
+w 411 2403 100 0 n#53 hwout.hwout#184.outp 408 2400 408 2400 egenSubC.decimator.VALL
+w 411 2755 100 0 n#54 hwout.hwout#162.outp 408 2752 408 2752 egenSubC.decimator.VALA
+w 4020 1571 100 0 n#55 ewaves.sbRtt.INP 4072 1568 3968 1568 3968 1224 920 1224 920 1664 560 1664 egenSubE.highSpeed2.VALA
+s 432 2168 100 0 measuredGuideRate
 s 2784 864 100 0 Secondary Control System
 s 2768 800 100 0 TCS status records
 s 3056 736 100 0 1
@@ -63,8 +66,8 @@ s 2544 752 100 0 author: S.Prior
 s 2544 720 100 0 checked: S.Prior
 s 2816 752 100 0 02-Mar-99
 s 3584 3440 100 0 tcsSad.sch
-s 624 2144 100 0 vtkXCorrectionArray[scale,angle]
-s 624 2112 100 0 vtkYCorrectionArray[scale,angle]
+s 432 2136 100 0 vtkXCorrectionArray[scale,angle]
+s 432 2104 100 0 vtkYCorrectionArray[scale,angle]
 [cell use]
 use bd200tr -64 200 -100 0 frame
 xform 0 2576 1904
@@ -200,71 +203,113 @@ p 1168 1760 100 0 1 NOVM:4000
 p 1168 1728 100 0 1 NOVN:4000
 p 1168 1696 100 0 1 NOVO:4000
 p 1056 1344 100 0 1 SNAM:highSpeed
-use hwout 608 2167 100 0 hwout#196
-xform 0 704 2208
-p 704 2199 100 0 -1 val(outp):$(top)yPosErr
-use hwout 608 2199 100 0 hwout#194
-xform 0 704 2240
-p 704 2231 100 0 -1 val(outp):$(top)xPosErr
-use hwout 608 2327 100 0 hwout#189
-xform 0 704 2368
-p 704 2359 100 0 -1 val(outp):$(top)xPosDmd
-use hwout 608 2295 100 0 hwout#188
-xform 0 704 2336
-p 704 2327 100 0 -1 val(outp):$(top)yPosDmd
-use hwout 608 2263 100 0 hwout#187
-xform 0 704 2304
-p 704 2295 100 0 -1 val(outp):$(top)xPos
-use hwout 608 2231 100 0 hwout#186
-xform 0 704 2272
-p 704 2263 100 0 -1 val(outp):$(top)yPos
-use hwout 608 2711 100 0 hwout#162
-xform 0 704 2752
-p 704 2743 100 0 -1 val(outp):$(top)xTiltPos
-use hwout 608 2679 100 0 hwout#164
-xform 0 704 2720
-p 704 2711 100 0 -1 val(outp):$(top)yTiltPos
-use hwout 608 2647 100 0 hwout#166
-xform 0 704 2688
-p 704 2679 100 0 -1 val(outp):$(top)zPos
-use hwout 608 2519 100 0 hwout#168
-xform 0 704 2560
-p 704 2551 100 0 -1 val(outp):$(top)xNetTiltDmd
-use hwout 608 2487 100 0 hwout#170
-xform 0 704 2528
-p 704 2519 100 0 -1 val(outp):$(top)yNetTiltDmd
-use hwout 608 2455 100 0 hwout#172
-xform 0 704 2496
-p 704 2487 100 0 -1 val(outp):$(top)zNetDmd
-use hwout 608 2551 100 0 hwout#175
-xform 0 704 2592
-p 704 2583 100 0 -1 val(outp):$(top)zGuide
-use hwout 608 2583 100 0 hwout#177
-xform 0 704 2624
-p 704 2615 100 0 -1 val(outp):$(top)yTiltGuide
-use hwout 608 2615 100 0 hwout#179
-xform 0 704 2656
-p 704 2647 100 0 -1 val(outp):$(top)xTiltGuide
-use hwout 608 2423 100 0 hwout#180
-xform 0 704 2464
-p 704 2455 100 0 -1 val(outp):$(top)xTiltErr
-use hwout 608 2391 100 0 hwout#182
-xform 0 704 2432
-p 704 2423 100 0 -1 val(outp):$(top)yTiltErr
-use hwout 608 2359 100 0 hwout#184
-xform 0 704 2400
-p 704 2391 100 0 -1 val(outp):$(top)zErr
-use egenSubC 320 1959 100 0 decimator
-xform 0 464 2384
-p 192 2816 100 0 1 DESC:decimate from 100 to 10 Hz
-p 400 2176 100 0 1 FTVS:LONG
-p 400 2144 100 0 1 FTVT:DOUBLE
-p 320 1856 100 0 1 INAM:initDecimate
-p 97 1093 100 0 0 NOVS:1
-p 448 2112 100 0 1 NOVT:3
-p 448 2080 100 0 1 NOVU:3
-p 32 2510 100 0 0 PREC:6
-p 320 1920 100 0 1 PV:$(top)
-p 528 1952 100 0 1 SCAN:.005 second
-p 320 1824 100 0 1 SNAM:decimate
+use hwout 408 2167 100 0 hwout#196
+xform 0 504 2208
+p 504 2199 100 0 -1 val(outp):$(top)yPosErr
+use hwout 408 2199 100 0 hwout#194
+xform 0 504 2240
+p 504 2231 100 0 -1 val(outp):$(top)xPosErr
+use hwout 408 2327 100 0 hwout#189
+xform 0 504 2368
+p 504 2359 100 0 -1 val(outp):$(top)xPosDmd
+use hwout 408 2295 100 0 hwout#188
+xform 0 504 2336
+p 504 2327 100 0 -1 val(outp):$(top)yPosDmd
+use hwout 408 2263 100 0 hwout#187
+xform 0 504 2304
+p 504 2295 100 0 -1 val(outp):$(top)xPos
+use hwout 408 2231 100 0 hwout#186
+xform 0 504 2272
+p 504 2263 100 0 -1 val(outp):$(top)yPos
+use hwout 408 2711 100 0 hwout#162
+xform 0 504 2752
+p 504 2743 100 0 -1 val(outp):$(top)xTiltPos
+use hwout 408 2679 100 0 hwout#164
+xform 0 504 2720
+p 504 2711 100 0 -1 val(outp):$(top)yTiltPos
+use hwout 408 2647 100 0 hwout#166
+xform 0 504 2688
+p 504 2679 100 0 -1 val(outp):$(top)zPos
+use hwout 408 2519 100 0 hwout#168
+xform 0 504 2560
+p 504 2551 100 0 -1 val(outp):$(top)xNetTiltDmd
+use hwout 408 2487 100 0 hwout#170
+xform 0 504 2528
+p 504 2519 100 0 -1 val(outp):$(top)yNetTiltDmd
+use hwout 408 2455 100 0 hwout#172
+xform 0 504 2496
+p 504 2487 100 0 -1 val(outp):$(top)zNetDmd
+use hwout 408 2551 100 0 hwout#175
+xform 0 504 2592
+p 504 2583 100 0 -1 val(outp):$(top)zGuide
+use hwout 408 2583 100 0 hwout#177
+xform 0 504 2624
+p 504 2615 100 0 -1 val(outp):$(top)yTiltGuide
+use hwout 408 2615 100 0 hwout#179
+xform 0 504 2656
+p 504 2647 100 0 -1 val(outp):$(top)xTiltGuide
+use hwout 408 2423 100 0 hwout#180
+xform 0 504 2464
+p 504 2455 100 0 -1 val(outp):$(top)xTiltErr
+use hwout 408 2391 100 0 hwout#182
+xform 0 504 2432
+p 504 2423 100 0 -1 val(outp):$(top)yTiltErr
+use hwout 408 2359 100 0 hwout#184
+xform 0 504 2400
+p 504 2391 100 0 -1 val(outp):$(top)zErr
+use egenSubC 120 1959 100 0 decimator
+xform 0 264 2384
+p -8 2816 100 0 1 DESC:decimate from 100 to 10 Hz
+p 200 2176 100 0 1 FTVS:LONG
+p 200 2144 100 0 1 FTVT:DOUBLE
+p 120 1856 100 0 1 INAM:initDecimate
+p -103 1093 100 0 0 NOVS:1
+p 248 2112 100 0 1 NOVT:3
+p 248 2080 100 0 1 NOVU:3
+p -168 2510 100 0 0 PREC:6
+p 36 1959 100 0 -1 PV:$(top)
+p 328 1952 100 0 1 SCAN:.005 second
+p 120 1824 100 0 1 SNAM:decimate
+use ewaves 4152 1438 100 0 sbRtt
+xform 0 4200 1536
+p 4155 1402 100 0 1 NELM:4000
+p 4146 1347 100 0 1 FTVL:DOUBLE
+p 4162 1377 100 0 1 PREC:7
+use egenSubE 272 871 100 0 highSpeed2
+xform 0 416 1296
+p 115 1611 100 0 0 DESC:HighSpeed Capture of Reflective Memory
+p 629 1666 100 0 1 FTVA:DOUBLE
+p 583 1636 100 0 1 FTVB:DOUBLE
+p 576 1600 100 0 1 FTVC:LONG
+p 576 1568 100 0 1 FTVD:FLOAT
+p 576 1536 100 0 1 FTVE:FLOAT
+p 576 1504 100 0 1 FTVF:FLOAT
+p 576 1472 100 0 1 FTVG:FLOAT
+p 576 1440 100 0 1 FTVH:FLOAT
+p 576 1408 100 0 1 FTVI:FLOAT
+p 576 1376 100 0 1 FTVJ:FLOAT
+p 576 1344 100 0 1 FTVK:FLOAT
+p 576 1312 100 0 1 FTVL:FLOAT
+p 576 1280 100 0 1 FTVM:FLOAT
+p 576 1248 100 0 1 FTVN:FLOAT
+p 576 1216 100 0 1 FTVO:FLOAT
+p 592 1088 100 0 1 FTVT:LONG
+p 592 1040 100 0 1 FTVU:LONG
+p 272 784 100 0 1 INAM:initHighSpeed2
+p 384 1664 100 0 1 NOVA:4000
+p 384 1632 100 0 1 NOVB:1
+p 384 1600 100 0 1 NOVC:1
+p 384 1568 100 0 1 NOVD:4000
+p 384 1536 100 0 1 NOVE:4000
+p 384 1504 100 0 1 NOVF:4000
+p 384 1472 100 0 1 NOVG:4000
+p 384 1440 100 0 1 NOVH:4000
+p 384 1408 100 0 1 NOVI:4000
+p 384 1376 100 0 1 NOVJ:4000
+p 384 1344 100 0 1 NOVK:4000
+p 384 1280 100 0 1 NOVL:4000
+p 384 1248 100 0 1 NOVM:4000
+p 384 1216 100 0 1 NOVN:4000
+p 384 1184 100 0 1 NOVO:4000
+p 272 832 100 0 1 SNAM:highSpeed2
 [comments]

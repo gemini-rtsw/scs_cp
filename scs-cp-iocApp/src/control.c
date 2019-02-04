@@ -330,6 +330,7 @@ int refmem_mon1 = 0;
 memMap *scsPtr = NULL;
 memMap *scsBase = NULL;
 memMap *m2Ptr = NULL;
+SynchroStatus *sbStatus = NULL;
 epicsMutexId refMemFree = NULL;
 epicsMutexId m2MemFree = NULL;
 epicsEventId slowUpdate = NULL;
@@ -964,7 +965,7 @@ static double yTiltGuidePg0 = 0.000001;
 static double zFocusGuidePg0 = 0.000001;
 static int NSPg0 = 1;   
 static int fixVal = 0;   
-*/
+"%Y-%m-%d %H:%M:%S.%06f"*/
 
 static int procGuideCount1 = 0;
 static int procGuideCount2 = 0;
@@ -976,6 +977,12 @@ static int procGuideCount7 = 0;
 static int procGuideCount8 = 0;
 static int procGuideCount9 = 0;
 static int procGuideCount10 = 0;
+static int showTimeProfile = 0;
+const static char* TIMEFMT = "%H:%M:%S.%06f";
+
+epicsTimeStamp tnowTx, tnowRx;
+char timebuf[32];
+
 void processGuides (void) 
 {
    long command = FAST_ONLY;
@@ -1747,7 +1754,11 @@ void processGuides (void)
 
          /* flag availability of new data */
          /* The original ideal of sending only everyother pulse has bee removed */
-          if (!sendpulse) {
+         epicsTimeGetCurrent(&tnowTx);
+         //epicsTimeToStrftime(timebuf, sizeof(timebuf), TIMEFMT, &tnowTx);
+         //if(showTimeProfile)
+         //    errlogPrintf("Tx->m2:%ld:%s\n",scsBase->page0.NS,timebuf );
+         if (!sendpulse) {
              indx++;
 
              /*Toggle sendpulse back to off for value 1.
@@ -2421,7 +2432,7 @@ static int scsrx3a= 0;
 static int scsrx3b= 0;
 static int scsrx4= 0;
 static int scsrx5= 0;
-
+static int NsNrTolerance = 1;
 void scsReceive (void)
 {
    long simCheck = 0xabcd;
@@ -2472,8 +2483,6 @@ void scsReceive (void)
             // m2LoggerTask (m2Ptr);
          }
 
-         /* check the received block */
-
          simCheck = 
             checkSum ((void *) &localStatusBlock.NR, STATUS_BLOCK_SIZE);
 
@@ -2501,20 +2510,30 @@ void scsReceive (void)
                          /*local.m2Heartbeat, localStatusBlock.heartbeat);*/
                  local.m2Heartbeat = localStatusBlock.heartbeat;
 
-		         if (refMemFree) {
+                 if (refMemFree) {
                     epicsMutexLock(refMemFree);
                     *(statusBlock *) & scsPtr->page1 = localStatusBlock;
                     epicsMutexUnlock(refMemFree); 
-		            scsrx3b++; 
+                    scsrx3b++; 
                  } else {
                    errorLog ("scsReceive - couldn't obtain refMemFree mutex", 1, ON);
                  }
 
+                 /* check the received block */
+                 sbStatus->nsnrDiff = local.NS - localStatusBlock.NR;
+                 epicsTimeGetCurrent(&tnowRx);
+                 sbStatus->rtt = epicsTimeDiffInSeconds(&tnowRx, &tnowTx);
+                 if(showTimeProfile)
+                     errlogPrintf(" SCSRx:nsnrDiff=%ld. rtt=%f seconds\n", sbStatus->nsnrDiff, sbStatus->rtt );
+
                  if (local.NS != localStatusBlock.NR)
                  {
-                      scsrx5++;
-                     /*errlogPrintf  ("scsReceive - frame unacknowledged localNS=%ld, statblkNR=%ld\n",
-                             local.NS, localStatusBlock.NR); */
+                     scsrx5++;
+                     if (sbStatus->nsnrDiff > NsNrTolerance ) {
+                         
+                         errlogPrintf  ("scsReceive - last frame unacknowledged: NsNrDiff=%ld, NS=%ld, NR=%ld\n",
+                                        sbStatus->nsnrDiff, local.NS, localStatusBlock.NR);
+                     }
                  }
 
                  if (local.testRequest == 0 && 
@@ -3043,7 +3062,7 @@ int saveCb ()
       return (ERROR);
    }
 
-   sprintf(fileName, "./chop-guide-%d.log", (int)fileTime);
+   sprintf(fileName, "/gem_sw/work/data/M2/chop-guide-%d.log", (int)fileTime);
    pFile = fopen ( fileName, "w" );
 
    if ( pFile == (FILE *) NULL )
@@ -3398,6 +3417,7 @@ epicsExportAddress(int, procGuideCount7 );
 epicsExportAddress(int, procGuideCount8 );
 epicsExportAddress(int, procGuideCount9 );
 epicsExportAddress(int, procGuideCount10 );
+epicsExportAddress(int, showTimeProfile );
 epicsExportAddress(int, scsrx1 );
 epicsExportAddress(int, scsrx2 );
 epicsExportAddress(int, scsrx3 );
@@ -3405,6 +3425,7 @@ epicsExportAddress(int, scsrx3a );
 epicsExportAddress(int, scsrx3b );
 epicsExportAddress(int, scsrx4 );
 epicsExportAddress(int, scsrx5 );
+epicsExportAddress(int, NsNrTolerance );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
 epicsExportAddress(int, showcs );
