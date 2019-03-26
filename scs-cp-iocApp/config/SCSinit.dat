@@ -118,14 +118,14 @@ long	$(top)deployable.VAL	= 0;	# retracted
 double	$(top)servoBandwidth.A	= 25;	# default to 25 Hz
 
 # init values for move command
-double	$(top)move.A		=  -30.0;  # x-tilt in arcsec (BEAM A)
-double	$(top)move.B		=  160.0;  # y-tilt in arcsec (BEAM A)
+double	$(top)move.A		=  -10.0;  # x-tilt in arcsec (BEAM A)
+double	$(top)move.B		=  330.0;  # y-tilt in arcsec (BEAM A)
 double	$(top)move.C		=    0.0;  # x-tilt in arcsec (BEAM B)
 double	$(top)move.D		=    0.0;  # y-tilt in arcsec (BEAM B)
 double	$(top)move.E		=    0.0;  # x-tilt in arcsec (BEAM C)
 double	$(top)move.F		=    0.0;  # y-tilt in arcsec (BEAM C)
-double	$(top)move.G		= 4400.0; # x positioner in microns TCS-space
-double	$(top)move.H		=  800.0; # y positioner in microns TCS-space
+double	$(top)move.G		= 1930.0; # x positioner in microns TCS-space
+double	$(top)move.H		=  339.0; # y positioner in microns TCS-space
 double	$(top)move.I		=    0.0; # focus in microns
 
 # zero actuator demands

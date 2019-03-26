@@ -118,6 +118,7 @@
 
 int sendpulse = 0;    
 int showcs = 0;   
+int showLF = 0;   
 static void reportTimes();
 struct timespec timeStart, timeEnd;
 int mytimeshow = 0;
@@ -2529,7 +2530,7 @@ void scsReceive (void)
                  if (local.NS != localStatusBlock.NR)
                  {
                      scsrx5++;
-                     if (sbStatus->nsnrDiff > NsNrTolerance ) {
+                     if ((sbStatus->nsnrDiff > NsNrTolerance) && showLF) {
                          
                          errlogPrintf  ("scsReceive - last frame unacknowledged: NsNrDiff=%ld, NS=%ld, NR=%ld\n",
                                         sbStatus->nsnrDiff, local.NS, localStatusBlock.NR);
@@ -3429,6 +3430,7 @@ epicsExportAddress(int, NsNrTolerance );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
 epicsExportAddress(int, showcs );
+epicsExportAddress(int, showLF );
 epicsExportAddress(int, sendpulse );
 epicsExportAddress(int, simLevel );
 epicsExportAddress(int, interlockFlag );
