@@ -124,8 +124,8 @@ double	$(top)move.C		=    0.0;  # x-tilt in arcsec (BEAM B)
 double	$(top)move.D		=    0.0;  # y-tilt in arcsec (BEAM B)
 double	$(top)move.E		=    0.0;  # x-tilt in arcsec (BEAM C)
 double	$(top)move.F		=    0.0;  # y-tilt in arcsec (BEAM C)
-double	$(top)move.G		= 1930.0; # x positioner in microns TCS-space
-double	$(top)move.H		=  339.0; # y positioner in microns TCS-space
+double	$(top)move.G		= 2000.0; # x positioner in microns TCS-space
+double	$(top)move.H		=  300.0; # y positioner in microns TCS-space
 double	$(top)move.I		=    0.0; # focus in microns
 
 # zero actuator demands
