@@ -23,16 +23,22 @@ bc635TimeSetTpPrio (60)
 # - Master ? Simulate ? intPerSecond, intPerTick, timeOffset (microsec)
 BCconfigure (0, 0, 200, 1, 0)
 
-# initialise the xycom 240
+# initialize the xycom 240
 #drvXy240Config(1, 32, 0xd000)
 drvXy240ConfigOutputInit(1, 32, 0xd000, 0x0000, 0x0003)
 
-# initialise reflective memory
+# initialize reflective memory
 drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 
 # connect rm interrupts to handler routines
 #rmIntConnect(2, rmISR2)
 #rmIntConnect(3, rmISR3)
+
+
+# This sets the path to the dynamic configuration director where the pvload files reside.
+# It must be called before scsInit()
+setDataFilePath("/gem_sw/etc/rtconfig/scs");
+showDataFilePath
 
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled

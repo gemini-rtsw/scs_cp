@@ -967,31 +967,40 @@ long readHealth(struct genSubRecord *pgsub)
 /* why aren't these being loaded in the startup script? */
 int loadInitFiles(void*p)
 {
+   char filedir[128];
+   char filepath[255];
+   
+   getDataFileDir(filedir);
+
    for(;;)
    {
       epicsEventMustWait(doPvLoad);
 
-      errlogPrintf("pvload initialisation data\n");
+      errlogPrintf("pvload initialization data\n");
 
-      if(pvload("./data/SCSinit.dat", SCSTOP, 0, 0) != OK)
-         errlogPrintf("pvload error SCSinit.dat\n");
+      snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
+      if(pvload(filepath, SCSTOP, 0, 0) != OK)
+         errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload SCSinit.dat\n");
+         errlogPrintf("pvload SCSinit.pv\n");
                 
-      if(pvload("./data/xforms.dat", SCSTOP, 0, 0) != OK)
-         errlogPrintf("pvload error xforms.dat\n");
+      snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
+      if(pvload(filepath, SCSTOP, 0, 0) != OK)
+         errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload xforms.dat\n");
+         errlogPrintf("pvload xforms.pv\n");
 
-      if(pvload("./data/limits.dat", SCSTOP, 0, 0) != OK)
-         errlogPrintf("pvload error limits.dat\n");
+      snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
+      if(pvload(filepath, SCSTOP, 0, 0) != OK)
+         errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload limits.dat\n");
+         errlogPrintf("pvload limits.pv\n");
 
-      if(pvload("./data/instConfig.dat", INSTTOP, 0, 0) != OK)
-         errlogPrintf("pvload error instConfig.dat\n");
+      snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
+      if(pvload(filepath, INSTTOP, 0, 0) != OK)
+         errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload instConfig.dat\n");
+         errlogPrintf("pvload instConfig.pv\n");
 
       //epicsEventSignal(pvLoadComplete);
       loadComplete = 1;

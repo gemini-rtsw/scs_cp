@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <iocsh.h>
 #include <epicsExport.h>
+#include <epicsPrint.h>
 
 #include <dbAccess.h>   /* For dbNameToAddr */
 #include <devSup.h>     /* for S_dev_???   */
@@ -298,6 +299,37 @@ int scsInit (void)
                    (EPICSTHREADFUNC)fireLoops, (void *)NULL);
 
    return (OK);
+}
+
+static char dataFileDir[128]; /* path to dynamic config data */
+
+void setDataFileDir(char *dir)
+{
+   strncpy(dataFileDir, dir, 127);
+}
+
+void getDataFileDir(char *dir){
+   strncpy(dir, dataFileDir, 127);
+}
+
+void showDataFileDir()
+{
+   epicsPrintf("data file directory: %s\n", dataFileDir);
+}
+
+static const iocshArg getDataFileDirArg0 = {"data directory", iocshArgString};
+static const iocshArg *getDataFileDirArgs[] = {&getDataFileDirArg0};
+static const iocshFuncDef getDataFileDirFuncDef =
+        {"getDataFileDir", 1, getDataFileDirArgs};
+static void gwtDataFileDirCallFunc(const iocshArgBuf *args)
+{
+    getDataFileDir(args[0].sval);
+}
+
+static const iocshFuncDef showDataFileDirFuncDef = {"showDataFileDir", 0, NULL};
+static void showDataFileDirCallFunc(const iocshArgBuf *args)
+{
+   showDataFileDir();
 }
 
 

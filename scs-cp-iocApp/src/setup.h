@@ -41,7 +41,9 @@
 /* Public functions */
 int scsInit(void);
 int scsConfigureISR(void);
-
+void setDataFileDir(char *);
+void getDataFileDir(char *);
+void showDataFileDir();
 /* Global variables */
 
 #endif

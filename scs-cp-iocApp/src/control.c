@@ -3052,10 +3052,13 @@ double iir_filter (const double input, MATLAB * iir)
 int saveCb ()
 {
    char fileName[80];
+   char fileDir[80];
+   char filePath[160];
    double fileTime;
    int i;
    FILE *pFile;
 
+   
 
    if (timeNow(&fileTime) != OK)
    {
@@ -3063,8 +3066,14 @@ int saveCb ()
       return (ERROR);
    }
 
-   sprintf(fileName, "/gem_sw/work/data/M2/chop-guide-%d.log", (int)fileTime);
-   pFile = fopen ( fileName, "w" );
+   getDataFileDir(fileDir);
+   //sprintf(fileName, "/gem_sw/work/data/M2/chop-guide-%d.log", (int)fileTime);
+   sprintf(fileName, "chop-guide-%d.log", (int)fileTime);
+
+   sprintf(filePath, "%s/%s", fileDir, fileName);
+
+   //pFile = fopen ( fileName, "w" );
+   pFile = fopen ( filePath, "w" );
 
    if ( pFile == (FILE *) NULL )
    {
