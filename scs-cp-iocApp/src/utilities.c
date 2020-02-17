@@ -86,15 +86,7 @@ int debugLevel = DEBUG_NONE;
 long inPosition = 0;
 frameChange *ag2m2[MAX_SOURCES];
 
-/* not used anywhere. 20171019 MDW */
-//SEM_ID compileStatus = NULL; 
-//SEM_ID statusCompiled = NULL;
-
-
-// SEM_ID doPvLoad = NULL;
-// SEM_ID pvLoadComplete = NULL;
 epicsEventId doPvLoad;
-//epicsEventId pvLoadComplete;
 
 
 extern epicsMessageQueueId healthQId;
@@ -1003,7 +995,6 @@ int loadInitFiles(void*p)
       else
          errlogPrintf("pvload %s\n", filepath);
 
-      //epicsEventSignal(pvLoadComplete);
       loadComplete = 1;
     }
 }
