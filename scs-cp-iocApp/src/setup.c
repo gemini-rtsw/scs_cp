@@ -317,11 +317,20 @@ void showDataFileDir()
    epicsPrintf("data file directory: %s\n", dataFileDir);
 }
 
+static const iocshArg setDataFileDirArg0 = {"data directory", iocshArgString};
+static const iocshArg *setDataFileDirArgs[] = {&setDataFileDirArg0};
+static const iocshFuncDef setDataFileDirFuncDef =
+        {"setDataFileDir", 1, setDataFileDirArgs};
+static void setDataFileDirCallFunc(const iocshArgBuf *args)
+{
+    setDataFileDir(args[0].sval);
+}
+
 static const iocshArg getDataFileDirArg0 = {"data directory", iocshArgString};
 static const iocshArg *getDataFileDirArgs[] = {&getDataFileDirArg0};
 static const iocshFuncDef getDataFileDirFuncDef =
         {"getDataFileDir", 1, getDataFileDirArgs};
-static void gwtDataFileDirCallFunc(const iocshArgBuf *args)
+static void getDataFileDirCallFunc(const iocshArgBuf *args)
 {
     getDataFileDir(args[0].sval);
 }
@@ -342,6 +351,9 @@ static void scsInitCallFunc(const iocshArgBuf *args)
 static void scsRegisterCommands(void)
 {
     iocshRegister(&scsInitFuncDef, scsInitCallFunc);
+    iocshRegister(&setDataFileDirFuncDef, setDataFileDirCallFunc);
+    iocshRegister(&getDataFileDirFuncDef, getDataFileDirCallFunc);
+    iocshRegister(&showDataFileDirFuncDef, showDataFileDirCallFunc);
 }
 
 epicsExportRegistrar(scsRegisterCommands);

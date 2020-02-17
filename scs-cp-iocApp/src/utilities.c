@@ -73,8 +73,8 @@
 #include <subRecord.h>
 #endif
 
-#define SCSTOP "top = m2:"
-#define INSTTOP "I = m2:inst:"
+#define SCSTOP "top=m2:"
+#define INSTTOP "I=m2:inst:"
 
 static int loggingEnable = ON;
 
@@ -977,30 +977,31 @@ int loadInitFiles(void*p)
       epicsEventMustWait(doPvLoad);
 
       errlogPrintf("pvload initialization data\n");
+      errlogPrintf("SCSTOP:%s, INSTTOP:%s\n", SCSTOP, INSTTOP);
 
       snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
       if(pvload(filepath, SCSTOP, 0, 0) != OK)
          errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload SCSinit.pv\n");
+         errlogPrintf("pvload %s\n", filepath);
                 
-      snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
+      snprintf(filepath, 255, "%s/%s", filedir, "xforms.pv");
       if(pvload(filepath, SCSTOP, 0, 0) != OK)
          errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload xforms.pv\n");
+         errlogPrintf("pvload %s\n", filepath);
 
-      snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
+      snprintf(filepath, 255, "%s/%s", filedir, "limits.pv");
       if(pvload(filepath, SCSTOP, 0, 0) != OK)
          errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload limits.pv\n");
+         errlogPrintf("pvload %s\n", filepath);
 
-      snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
+      snprintf(filepath, 255, "%s/%s", filedir, "instConfig.pv");
       if(pvload(filepath, INSTTOP, 0, 0) != OK)
          errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload instConfig.pv\n");
+         errlogPrintf("pvload %s\n", filepath);
 
       //epicsEventSignal(pvLoadComplete);
       loadComplete = 1;
