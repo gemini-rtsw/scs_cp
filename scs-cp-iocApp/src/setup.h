@@ -45,7 +45,7 @@ void setDataFileDir(char *);
 void getDataFileDir(char *);
 void showDataFileDir();
 void setPvloadMacros(char *);
-void getPvloadMAcros(char *);
+void getPvloadMacros(char *);
 void showPvloadMacros();
 /* Global variables */
 

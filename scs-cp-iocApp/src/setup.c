@@ -329,7 +329,7 @@ void getPvloadMacros(char *str){
 
 void showPvloadMacros()
 {
-   epicsPrintf("Pvload Macros: %s\n", pvloadMacros);
+   epicsPrintf("pvload Macros: %s\n", pvloadMacros);
 }
 
 
@@ -341,15 +341,6 @@ static const iocshFuncDef setDataFileDirFuncDef =
 static void setDataFileDirCallFunc(const iocshArgBuf *args)
 {
     setDataFileDir(args[0].sval);
-}
-
-static const iocshArg getDataFileDirArg0 = {"data directory", iocshArgString};
-static const iocshArg *getDataFileDirArgs[] = {&getDataFileDirArg0};
-static const iocshFuncDef getDataFileDirFuncDef =
-        {"getDataFileDir", 1, getDataFileDirArgs};
-static void getDataFileDirCallFunc(const iocshArgBuf *args)
-{
-    getDataFileDir(args[0].sval);
 }
 
 static const iocshFuncDef showDataFileDirFuncDef = {"showDataFileDir", 0, NULL};
@@ -366,15 +357,6 @@ static const iocshFuncDef setPvloadMacrosFuncDef =
 static void setPvloadMacrosCallFunc(const iocshArgBuf *args)
 {
     setPvloadMacros(args[0].sval);
-}
-
-static const iocshArg getPvloadMacrosArg0 = {"pvloadMacros", iocshArgString};
-static const iocshArg *getPvloadMacrosArgs[] = {&getPvloadMacrosArg0};
-static const iocshFuncDef getPvloadMacrosFuncDef =
-        {"getPvloadMacros", 1, getPvloadMacrosArgs};
-static void getPvloadMacrosCallFunc(const iocshArgBuf *args)
-{
-    getPvloadMacros(args[0].sval);
 }
 
 static const iocshFuncDef showPvloadMacrosFuncDef = {"showPvloadMacros", 0, NULL};
@@ -394,10 +376,8 @@ static void scsRegisterCommands(void)
 {
     iocshRegister(&scsInitFuncDef, scsInitCallFunc);
     iocshRegister(&setDataFileDirFuncDef, setDataFileDirCallFunc);
-    iocshRegister(&getDataFileDirFuncDef, getDataFileDirCallFunc);
     iocshRegister(&showDataFileDirFuncDef, showDataFileDirCallFunc);
     iocshRegister(&setPvloadMacrosFuncDef, setPvloadMacrosCallFunc);
-    iocshRegister(&getPvloadMacrosFuncDef, getPvloadMacrosCallFunc);
     iocshRegister(&showPvloadMacrosFuncDef, showPvloadMacrosCallFunc);
 }
 

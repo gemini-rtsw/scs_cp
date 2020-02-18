@@ -12,8 +12,9 @@ scs_cp_ioc_registerRecordDeviceDriver(pdbbase)
 ## Load record instances
 dbLoadRecords("db/m2.db")
 dbLoadRecords("db/m2sad.db")
-dbLoadRecords("db/iocAdminRTEMS.db"," IOC=m2:iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
-dbLoadRecords("db/timeProbe.db","top=m2:")
+# SCSTOP is set in $(top)/configure/CONFIG_SITE
+dbLoadRecords("db/iocAdminRTEMS.db","IOC=$(SCSTOP):iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
+dbLoadRecords("db/timeProbe.db","top=$(SCSTOP):")
 
 # Configure BANCOMM card
 # - set the bc635 Time Provider priority to something other than the default
@@ -24,8 +25,8 @@ bc635TimeSetTpPrio (60)
 BCconfigure (0, 0, 200, 1, 0)
 
 # initialize the xycom 240
-#drvXy240Config(1, 32, 0xd000)
-drvXy240ConfigOutputInit(1, 32, 0xd000, 0x0000, 0x0003)
+drvXy240Config(1, 32, 0xd000)
+#drvXy240ConfigOutputInit(1, 32, 0xd000, 0x0000, 0x0003)
 
 # initialize reflective memory
 drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
@@ -35,10 +36,14 @@ drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 #rmIntConnect(3, rmISR3)
 
 
-# This sets the path to the dynamic configuration director where the pvload files reside.
+# This sets the path to the dynamic configuration files directory where the pvload files reside.
 # It must be called before scsInit()
-setDataFileDir("/gem_sw/etc/rtconfig/scs");
-showDataFileDir
+# CNFGDIR is set in $(top)configure/CONFIG_SITE
+setDataFileDir("$(CNFGDIR)");
+# SCSTOP is set in $(top)/configure/CONFIG_SITE
+setPvloadMacros("top=$(SCSTOP):, I=$(SCSTOP):inst:")
+#showDataFileDir
+#showPvloadMacros
 
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled

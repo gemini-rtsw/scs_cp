@@ -979,7 +979,7 @@ static int procGuideCount8 = 0;
 static int procGuideCount9 = 0;
 static int procGuideCount10 = 0;
 static int showTimeProfile = 0;
-const static char* TIMEFMT = "%H:%M:%S.%06f";
+//const static char* TIMEFMT = "%H:%M:%S.%06f";
 
 epicsTimeStamp tnowTx, tnowRx;
 char timebuf[32];
