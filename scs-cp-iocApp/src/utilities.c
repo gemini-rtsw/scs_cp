@@ -961,36 +961,37 @@ int loadInitFiles(void*p)
 {
    char filedir[128];
    char filepath[255];
+   char macros[40];
    
    getDataFileDir(filedir);
+   getPvloadMacros(macros);
 
    for(;;)
    {
       epicsEventMustWait(doPvLoad);
 
-      errlogPrintf("pvload initialization data\n");
-      errlogPrintf("SCSTOP:%s, INSTTOP:%s\n", SCSTOP, INSTTOP);
+      errlogPrintf("pvload macros: \"%s\"\n", macros);
 
       snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
-      if(pvload(filepath, SCSTOP, 0, 0) != OK)
+      if(pvload(filepath, macros, 0, 0) != OK)
          errlogPrintf("pvload error %s\n", filepath);
       else
          errlogPrintf("pvload %s\n", filepath);
                 
       snprintf(filepath, 255, "%s/%s", filedir, "xforms.pv");
-      if(pvload(filepath, SCSTOP, 0, 0) != OK)
+      if(pvload(filepath, macros, 0, 0) != OK)
          errlogPrintf("pvload error %s\n", filepath);
       else
          errlogPrintf("pvload %s\n", filepath);
 
       snprintf(filepath, 255, "%s/%s", filedir, "limits.pv");
-      if(pvload(filepath, SCSTOP, 0, 0) != OK)
+      if(pvload(filepath, macros, 0, 0) != OK)
          errlogPrintf("pvload error %s\n", filepath);
       else
          errlogPrintf("pvload %s\n", filepath);
 
       snprintf(filepath, 255, "%s/%s", filedir, "instConfig.pv");
-      if(pvload(filepath, INSTTOP, 0, 0) != OK)
+      if(pvload(filepath, macros, 0, 0) != OK)
          errlogPrintf("pvload error %s\n", filepath);
       else
          errlogPrintf("pvload %s\n", filepath);

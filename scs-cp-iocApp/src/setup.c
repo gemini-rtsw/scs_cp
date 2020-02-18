@@ -302,6 +302,7 @@ int scsInit (void)
 }
 
 static char dataFileDir[128]; /* path to dynamic config data */
+static char pvloadMacros[40]; /* macros to pass to pvload  */
 
 void setDataFileDir(char *dir)
 {
@@ -316,6 +317,22 @@ void showDataFileDir()
 {
    epicsPrintf("data file directory: %s\n", dataFileDir);
 }
+
+void setPvloadMacros(char *str)
+{
+   strncpy(pvloadMacros, str, 39);
+}
+
+void getPvloadMacros(char *str){
+   strncpy(str, pvloadMacros, 39);
+}
+
+void showPvloadMacros()
+{
+   epicsPrintf("Pvload Macros: %s\n", pvloadMacros);
+}
+
+
 
 static const iocshArg setDataFileDirArg0 = {"data directory", iocshArgString};
 static const iocshArg *setDataFileDirArgs[] = {&setDataFileDirArg0};
@@ -342,6 +359,31 @@ static void showDataFileDirCallFunc(const iocshArgBuf *args)
 }
 
 
+static const iocshArg setPvloadMacrosArg0 = {"pvloadMacros", iocshArgString};
+static const iocshArg *setPvloadMacrosArgs[] = {&setPvloadMacrosArg0};
+static const iocshFuncDef setPvloadMacrosFuncDef =
+        {"setPvloadMacros", 1, setPvloadMacrosArgs};
+static void setPvloadMacrosCallFunc(const iocshArgBuf *args)
+{
+    setPvloadMacros(args[0].sval);
+}
+
+static const iocshArg getPvloadMacrosArg0 = {"pvloadMacros", iocshArgString};
+static const iocshArg *getPvloadMacrosArgs[] = {&getPvloadMacrosArg0};
+static const iocshFuncDef getPvloadMacrosFuncDef =
+        {"getPvloadMacros", 1, getPvloadMacrosArgs};
+static void getPvloadMacrosCallFunc(const iocshArgBuf *args)
+{
+    getPvloadMacros(args[0].sval);
+}
+
+static const iocshFuncDef showPvloadMacrosFuncDef = {"showPvloadMacros", 0, NULL};
+static void showPvloadMacrosCallFunc(const iocshArgBuf *args)
+{
+   showPvloadMacros();
+}
+
+
 static const iocshFuncDef scsInitFuncDef ={"scsInit", 0, NULL};
 static void scsInitCallFunc(const iocshArgBuf *args)
 {
@@ -354,6 +396,9 @@ static void scsRegisterCommands(void)
     iocshRegister(&setDataFileDirFuncDef, setDataFileDirCallFunc);
     iocshRegister(&getDataFileDirFuncDef, getDataFileDirCallFunc);
     iocshRegister(&showDataFileDirFuncDef, showDataFileDirCallFunc);
+    iocshRegister(&setPvloadMacrosFuncDef, setPvloadMacrosCallFunc);
+    iocshRegister(&getPvloadMacrosFuncDef, getPvloadMacrosCallFunc);
+    iocshRegister(&showPvloadMacrosFuncDef, showPvloadMacrosCallFunc);
 }
 
 epicsExportRegistrar(scsRegisterCommands);
