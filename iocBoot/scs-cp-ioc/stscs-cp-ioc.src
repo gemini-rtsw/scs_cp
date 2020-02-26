@@ -25,8 +25,8 @@ bc635TimeSetTpPrio (60)
 BCconfigure (0, 0, 200, 1, 0)
 
 # initialize the xycom 240
-drvXy240Config(1, 32, 0xd000)
-#drvXy240ConfigOutputInit(1, 32, 0xd000, 0x0000, 0x0003)
+#drvXy240Config(1, 32, 0xd000)
+drvXy240ConfigOutputInit(1, 32, 0xd000, 0x0000, 0x0003)
 
 # initialize reflective memory
 drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
@@ -42,8 +42,8 @@ drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 setDataFileDir("$(CNFGDIR)");
 # SCSTOP is set in $(top)/configure/CONFIG_SITE
 setPvloadMacros("top=$(SCSTOP):, I=$(SCSTOP):inst:")
-#showDataFileDir
-#showPvloadMacros
+showDataFileDir
+showPvloadMacros
 
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled
