@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <iocsh.h>
 #include <epicsExport.h>
+#include <epicsPrint.h>
 
 #include <dbAccess.h>   /* For dbNameToAddr */
 #include <devSup.h>     /* for S_dev_???   */
@@ -300,6 +301,70 @@ int scsInit (void)
    return (OK);
 }
 
+static char dataFileDir[128]; /* path to dynamic config data */
+static char pvloadMacros[40]; /* macros to pass to pvload  */
+
+void setDataFileDir(char *dir)
+{
+   strncpy(dataFileDir, dir, 127);
+}
+
+void getDataFileDir(char *dir){
+   strncpy(dir, dataFileDir, 127);
+}
+
+void showDataFileDir()
+{
+   epicsPrintf("data file directory: %s\n", dataFileDir);
+}
+
+void setPvloadMacros(char *str)
+{
+   strncpy(pvloadMacros, str, 39);
+}
+
+void getPvloadMacros(char *str){
+   strncpy(str, pvloadMacros, 39);
+}
+
+void showPvloadMacros()
+{
+   epicsPrintf("pvload Macros: %s\n", pvloadMacros);
+}
+
+
+
+static const iocshArg setDataFileDirArg0 = {"data directory", iocshArgString};
+static const iocshArg *setDataFileDirArgs[] = {&setDataFileDirArg0};
+static const iocshFuncDef setDataFileDirFuncDef =
+        {"setDataFileDir", 1, setDataFileDirArgs};
+static void setDataFileDirCallFunc(const iocshArgBuf *args)
+{
+    setDataFileDir(args[0].sval);
+}
+
+static const iocshFuncDef showDataFileDirFuncDef = {"showDataFileDir", 0, NULL};
+static void showDataFileDirCallFunc(const iocshArgBuf *args)
+{
+   showDataFileDir();
+}
+
+
+static const iocshArg setPvloadMacrosArg0 = {"pvloadMacros", iocshArgString};
+static const iocshArg *setPvloadMacrosArgs[] = {&setPvloadMacrosArg0};
+static const iocshFuncDef setPvloadMacrosFuncDef =
+        {"setPvloadMacros", 1, setPvloadMacrosArgs};
+static void setPvloadMacrosCallFunc(const iocshArgBuf *args)
+{
+    setPvloadMacros(args[0].sval);
+}
+
+static const iocshFuncDef showPvloadMacrosFuncDef = {"showPvloadMacros", 0, NULL};
+static void showPvloadMacrosCallFunc(const iocshArgBuf *args)
+{
+   showPvloadMacros();
+}
+
 
 static const iocshFuncDef scsInitFuncDef ={"scsInit", 0, NULL};
 static void scsInitCallFunc(const iocshArgBuf *args)
@@ -310,6 +375,10 @@ static void scsInitCallFunc(const iocshArgBuf *args)
 static void scsRegisterCommands(void)
 {
     iocshRegister(&scsInitFuncDef, scsInitCallFunc);
+    iocshRegister(&setDataFileDirFuncDef, setDataFileDirCallFunc);
+    iocshRegister(&showDataFileDirFuncDef, showDataFileDirCallFunc);
+    iocshRegister(&setPvloadMacrosFuncDef, setPvloadMacrosCallFunc);
+    iocshRegister(&showPvloadMacrosFuncDef, showPvloadMacrosCallFunc);
 }
 
 epicsExportRegistrar(scsRegisterCommands);

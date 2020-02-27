@@ -41,7 +41,12 @@
 /* Public functions */
 int scsInit(void);
 int scsConfigureISR(void);
-
+void setDataFileDir(char *);
+void getDataFileDir(char *);
+void showDataFileDir();
+void setPvloadMacros(char *);
+void getPvloadMacros(char *);
+void showPvloadMacros();
 /* Global variables */
 
 #endif

@@ -87,6 +87,7 @@
                                currentBeam */
 #include "utilities.h"      /* For weight2string, errorLog, debugLevel */
 #include "chop.h"           /* For chopIsOn */
+#include "setup.h"          /* for getDataFileDir */
 
 #define MAX_FILTER_CHANNELS 15  /* Used by dfilter to set array size */
 #define NUM_DECIMATORS  12      /* Number of channels needing decimation 
@@ -96,10 +97,19 @@
 
 /* Filenames of filter coefficients */
 
+
+#if 0
 #define LOW_COEFFS "./data/low.dat"
 #define HIGH_COEFFS "./data/high.dat"
 #define PASS_COEFFS "./data/pass.dat"
 #define STOP_COEFFS "./data/stop.dat"
+#endif
+
+#define LOW_COEFFS "low.dat"
+#define HIGH_COEFFS "high.dat"
+#define PASS_COEFFS "pass.dat"
+#define STOP_COEFFS "stop.dat"
+
 
 #define LOW_WEIGHT_LIMIT   -2
 #define HIGH_WEIGHT_LIMIT 100
@@ -1693,9 +1703,15 @@ int displayFilter (const int source, const int axis)
 static int readFilters (MATLAB * testFilter, int type, double freq1, double freq2)
 {
      FILE *fptr = NULL;
-     char filename[MAX_STRING_SIZE] = "";
+     //char filename[MAX_STRING_SIZE] = "";
+     // (There's no reason to limit the filename length to the
+     // EPICS maximum string length of 40 characters - mdw 202002080)
+     char filename[255] = "";
+     char filedir[128]; /* path to dynamic configuration data directory */
      int found1 = FALSE;
      int i, sum1, lim1, blockSize;
+     
+     getDataFileDir(filedir);
 
      FILTER dummyFilter =
      {
@@ -1720,7 +1736,8 @@ static int readFilters (MATLAB * testFilter, int type, double freq1, double freq
 
      case RAW:
      case LOWPASS:
-          strncpy (filename, LOW_COEFFS, MAX_STRING_SIZE - 1);
+          sprintf(filename,"%s/%s", filedir, LOW_COEFFS);
+          /* strncpy (filename, LOW_COEFFS, MAX_STRING_SIZE - 1); */
           if (freq1 < 0.01 || freq1 > 0.99)
           {
                errorLog ("readFilters - freq out of range", 1, ON);
@@ -1730,7 +1747,8 @@ static int readFilters (MATLAB * testFilter, int type, double freq1, double freq
           break;
 
      case HIGHPASS:
-          strncpy (filename, HIGH_COEFFS, MAX_STRING_SIZE - 1);
+          sprintf(filename,"%s/%s", filedir, HIGH_COEFFS);
+          // strncpy (filename, HIGH_COEFFS, MAX_STRING_SIZE - 1);
           if (freq1 < 0.01 || freq1 > 0.99)
           {
                errorLog ("readFilters - freq out of range", 1, ON);
@@ -1740,7 +1758,8 @@ static int readFilters (MATLAB * testFilter, int type, double freq1, double freq
           break;
 
      case BANDPASS:
-          strncpy (filename, PASS_COEFFS, MAX_STRING_SIZE - 1);
+          sprintf(filename,"%s/%s", filedir, PASS_COEFFS);
+          // strncpy (filename, PASS_COEFFS, MAX_STRING_SIZE - 1);
           if (freq1 < 0.01 || freq1 > 0.8)
           {
                errorLog ("readFilters - freq out of range", 1, ON);
@@ -1749,7 +1768,8 @@ static int readFilters (MATLAB * testFilter, int type, double freq1, double freq
           break;
 
      case BANDSTOP:
-          strncpy (filename, STOP_COEFFS, MAX_STRING_SIZE - 1);
+          sprintf(filename,"%s/%s", filedir, STOP_COEFFS);
+          // strncpy (filename, STOP_COEFFS, MAX_STRING_SIZE - 1);
           if (freq1 < 0.01 || freq1 > 0.8)
           {
                errorLog ("readFilters - freq out of range", 1, ON);

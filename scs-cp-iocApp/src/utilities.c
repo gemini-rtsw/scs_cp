@@ -73,8 +73,8 @@
 #include <subRecord.h>
 #endif
 
-#define SCSTOP "top = m2:"
-#define INSTTOP "I = m2:inst:"
+#define SCSTOP "top=m2:"
+#define INSTTOP "I=m2:inst:"
 
 static int loggingEnable = ON;
 
@@ -86,15 +86,7 @@ int debugLevel = DEBUG_NONE;
 long inPosition = 0;
 frameChange *ag2m2[MAX_SOURCES];
 
-/* not used anywhere. 20171019 MDW */
-//SEM_ID compileStatus = NULL; 
-//SEM_ID statusCompiled = NULL;
-
-
-// SEM_ID doPvLoad = NULL;
-// SEM_ID pvLoadComplete = NULL;
 epicsEventId doPvLoad;
-//epicsEventId pvLoadComplete;
 
 
 extern epicsMessageQueueId healthQId;
@@ -967,33 +959,43 @@ long readHealth(struct genSubRecord *pgsub)
 /* why aren't these being loaded in the startup script? */
 int loadInitFiles(void*p)
 {
+   char filedir[128];
+   char filepath[255];
+   char macros[40];
+   
+   getDataFileDir(filedir);
+   getPvloadMacros(macros);
+
    for(;;)
    {
       epicsEventMustWait(doPvLoad);
 
-      errlogPrintf("pvload initialisation data\n");
+      errlogPrintf("pvload macros: \"%s\"\n", macros);
 
-      if(pvload("./data/SCSinit.dat", SCSTOP, 0, 0) != OK)
-         errlogPrintf("pvload error SCSinit.dat\n");
+      snprintf(filepath, 255, "%s/%s", filedir, "SCSinit.pv");
+      if(pvload(filepath, macros, 0, 0) != OK)
+         errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload SCSinit.dat\n");
+         errlogPrintf("pvload %s\n", filepath);
                 
-      if(pvload("./data/xforms.dat", SCSTOP, 0, 0) != OK)
-         errlogPrintf("pvload error xforms.dat\n");
+      snprintf(filepath, 255, "%s/%s", filedir, "xforms.pv");
+      if(pvload(filepath, macros, 0, 0) != OK)
+         errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload xforms.dat\n");
+         errlogPrintf("pvload %s\n", filepath);
 
-      if(pvload("./data/limits.dat", SCSTOP, 0, 0) != OK)
-         errlogPrintf("pvload error limits.dat\n");
+      snprintf(filepath, 255, "%s/%s", filedir, "limits.pv");
+      if(pvload(filepath, macros, 0, 0) != OK)
+         errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload limits.dat\n");
+         errlogPrintf("pvload %s\n", filepath);
 
-      if(pvload("./data/instConfig.dat", INSTTOP, 0, 0) != OK)
-         errlogPrintf("pvload error instConfig.dat\n");
+      snprintf(filepath, 255, "%s/%s", filedir, "instConfig.pv");
+      if(pvload(filepath, macros, 0, 0) != OK)
+         errlogPrintf("pvload error %s\n", filepath);
       else
-         errlogPrintf("pvload instConfig.dat\n");
+         errlogPrintf("pvload %s\n", filepath);
 
-      //epicsEventSignal(pvLoadComplete);
       loadComplete = 1;
     }
 }

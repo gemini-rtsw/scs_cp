@@ -12,8 +12,9 @@ scs_cp_ioc_registerRecordDeviceDriver(pdbbase)
 ## Load record instances
 dbLoadRecords("db/m2.db")
 dbLoadRecords("db/m2sad.db")
-dbLoadRecords("db/iocAdminRTEMS.db"," IOC=m2:iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
-dbLoadRecords("db/timeProbe.db","top=m2:")
+# SCSTOP is set in $(top)/configure/CONFIG_SITE
+dbLoadRecords("db/iocAdminRTEMS.db","IOC=$(SCSTOP):iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
+dbLoadRecords("db/timeProbe.db","top=$(SCSTOP):")
 
 # Configure BANCOMM card
 # - set the bc635 Time Provider priority to something other than the default
@@ -23,16 +24,26 @@ bc635TimeSetTpPrio (60)
 # - Master ? Simulate ? intPerSecond, intPerTick, timeOffset (microsec)
 BCconfigure (0, 0, 200, 1, 0)
 
-# initialise the xycom 240
-#drvXy240Config(1, 32, 0xd000)
+# initialize the xycom 240
 drvXy240ConfigOutputInit(1, 32, 0xd000, 0x0000, 0x0003)
 
-# initialise reflective memory
+# initialize reflective memory
 drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 
 # connect rm interrupts to handler routines
 #rmIntConnect(2, rmISR2)
 #rmIntConnect(3, rmISR3)
+
+
+# This sets the path to the dynamic configuration files directory 
+# where the pvload files reside.
+# It must be called before scsInit()
+# CNFGDIR is set in $(top)configure/CONFIG_SITE
+setDataFileDir("$(CNFGDIR)");
+# SCSTOP is set in $(top)/configure/CONFIG_SITE
+setPvloadMacros("top=$(SCSTOP):, I=$(SCSTOP):inst:")
+showDataFileDir
+showPvloadMacros
 
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled
@@ -54,7 +65,7 @@ iocInit
 #CADlogging = 1
 
 #startGuideSim
-dbpf "m2:interlockOverride","1"
+dbpf "$(SCSTOP):interlockOverride","1"
 
 ##M2TS TTL SERVO ON Card0, PORT7, Bit 1, HIGH #####
 #xy240_writePortBit (0,7,1,1)
@@ -62,31 +73,37 @@ dbpf "m2:interlockOverride","1"
 ##M2TS CEM POWER ON Card0, PORT7, Bit 0, HIGH #####
 #xy240_writePortBit (0,7,0,1)
 
-#dbpf "m2:guideConfigReset.DIR","0"
+#dbpf "$(SCSTOP):guideConfigReset.DIR","0"
+
+
 ###### Start any sequence programs
-seq &timeSeq, "sys=m2:, top=tc1:"
-#seq &scs_mon "T=m2:, D=m2:"
-seq &tilt_st, "S=m2:tilt:, debug=0"
-seq &scs_st, "T=m2:, D=m2:, F=m2:, I=m2:inst:"
-###dbpr "m2:interlock"
+#seq &timeSeq, "sys=$(SCSTOP):, top=tc1:"
+seq &timeSeq, "sys=$(SCSTOP):"
+#seq &scs_mon "T=$(SCSTOP):, D=$(SCSTOP):"
+seq &tilt_st, "S=$(SCSTOP):tilt:, debug=0"
+seq &scs_st, "T=$(SCSTOP):, D=$(SCSTOP):, F=$(SCSTOP):, I=$(SCSTOP):inst:"
+
+
+###dbpr "$(SCSTOP):interlock"
 ##### Comment out during testing signal from GIS:
 ####
-dbpf "m2:guideConfigReset.DIR","3"
-#####taskDelay(200)
-dbpf "m2:guideConfigReset.DIR","3"
-####
-dbpf "m2:setController.DIR","3"
-#####taskDelay(200)
-#dbpf "m2:setController.DIR","0"
-#dbpf "m2:setController.DIR","3"
 
-####dbpf "m2:byte3:b6","OFF"
-####dbpf "m2:byte3:b7","OFF"
-####dbpf "m2:byte0:b7","OFF"
-####dbpf "m2:byte1:b0","OFF"
-####dbpf "m2:byte1:b4","NO"
-####dbpf "m2:byte0:b6","DISABLED"
-####dbpf "m2:byte0:b2","DISABLED"
-dbpf "m2:byte0:b3","0"
+
+dbpf "$(SCSTOP):guideConfigReset.DIR","3"
+dbpf "$(SCSTOP):guideConfigReset.DIR","3"
+
+
+dbpf "$(SCSTOP):setController.DIR","1"
+dbpf "$(SCSTOP):setController.DIR","0"
+dbpf "$(SCSTOP):setController.DIR","3"
+
+####dbpf "$(SCSTOP):byte3:b6","OFF"
+####dbpf "$(SCSTOP):byte3:b7","OFF"
+####dbpf "$(SCSTOP):byte0:b7","OFF"
+####dbpf "$(SCSTOP):byte1:b0","OFF"
+####dbpf "$(SCSTOP):byte1:b4","NO"
+####dbpf "$(SCSTOP):byte0:b6","DISABLED"
+####dbpf "$(SCSTOP):byte0:b2","DISABLED"
+dbpf "$(SCSTOP):byte0:b3","0"
 ####
 

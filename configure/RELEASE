@@ -35,7 +35,7 @@ IOCSTATS=$(PRODSUP)/iocStats/3-1-16-5
 TIMEPROBE=$(PRODSUP)/timeProbe/1-1-15
 SYMB=$(PRODSUP)/symb/1-1-4
 VMIC=$(PRODSUP)/vmi5588/1-1-2
-XYCOM=$(PRODSUP)/xycom/2-1-11
+XYCOM=$(PRODSUP)/xycom/2-1-12
 
 
 # EPICS_BASE usually appears last so other apps can override stuff:
