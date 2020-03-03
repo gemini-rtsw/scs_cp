@@ -41,7 +41,7 @@ drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 # It must be called before scsInit()
 # CNFGDIR is set in $(top)configure/CONFIG_SITE
 # SCSTOP is set in $(top)/configure/CONFIG_SITE
-initSetParameters("$(CNFGDIR)"  "top=$(SCSTOP):, I=$(SCSTOP):inst:")
+initSetParameters("$(CNFGDIR)",  "top=$(SCSTOP):, I=$(SCSTOP):inst:")
 
 
 # old way, do the above instead
