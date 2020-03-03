@@ -36,12 +36,19 @@ drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 
 
 # This sets the path to the dynamic configuration files directory 
-# where the pvload files reside.
+# where the pvload files reside. It also sets the macros to pass to
+# pvload()
 # It must be called before scsInit()
 # CNFGDIR is set in $(top)configure/CONFIG_SITE
-setDataFileDir("$(CNFGDIR)");
 # SCSTOP is set in $(top)/configure/CONFIG_SITE
-setPvloadMacros("top=$(SCSTOP):, I=$(SCSTOP):inst:")
+initSetParameters("$(CNFGDIR)"  "top=$(SCSTOP):, I=$(SCSTOP):inst:")
+
+
+# old way, do the above instead
+#setDataFileDir("$(CNFGDIR)");
+#setPvloadMacros("top=$(SCSTOP):, I=$(SCSTOP):inst:")
+
+
 showDataFileDir
 showPvloadMacros
 
