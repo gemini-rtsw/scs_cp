@@ -304,6 +304,17 @@ int scsInit (void)
 static char dataFileDir[128]; /* path to dynamic config data */
 static char pvloadMacros[40]; /* macros to pass to pvload  */
 
+
+/* OK, this is apparently the "official" way to do it instead
+ * of the separate functions below, which I'll leave for now -- mdw 20200303
+ */
+void initSetParameters(char *dir, char *macros)
+{
+   strncpy(dataFileDir, dir, 127);
+   strncpy(pvloadMacros, macros, 39);
+}
+
+
 void setDataFileDir(char *dir)
 {
    strncpy(dataFileDir, dir, 127);
@@ -332,6 +343,16 @@ void showPvloadMacros()
    epicsPrintf("pvload Macros: %s\n", pvloadMacros);
 }
 
+
+static const iocshArg initSetParametersArg0 = {"data directory", iocshArgString};
+static const iocshArg initSetParametersArg1 = {"pvload macros", iocshArgString};
+static const iocshArg *initSetParametersArgs[] = {&initSetParametersArg0, &initSetParametersArg1};
+static const iocshFuncDef initSetParametersFuncDef =
+        {"initSetParameters", 2, initSetParametersArgs};
+static void initSetParametersCallFunc(const iocshArgBuf *args)
+{
+    initSetParameters(args[0].sval, args[1].sval);
+}
 
 
 static const iocshArg setDataFileDirArg0 = {"data directory", iocshArgString};
@@ -375,6 +396,7 @@ static void scsInitCallFunc(const iocshArgBuf *args)
 static void scsRegisterCommands(void)
 {
     iocshRegister(&scsInitFuncDef, scsInitCallFunc);
+    iocshRegister(&initSetParametersFuncDef, initSetParametersCallFunc);
     iocshRegister(&setDataFileDirFuncDef, setDataFileDirCallFunc);
     iocshRegister(&showDataFileDirFuncDef, showDataFileDirCallFunc);
     iocshRegister(&setPvloadMacrosFuncDef, setPvloadMacrosCallFunc);
