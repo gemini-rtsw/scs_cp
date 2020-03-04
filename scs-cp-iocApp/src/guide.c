@@ -1183,29 +1183,29 @@ long CADguideReset (struct cadRecord * pcad)
     static char *resetOpts[] = {"OFF", "ON", NULL} ;
 
 
-     printf("CADguideReset: BEGIN \n");
+     // printf("CADguideReset: BEGIN \n");
 
      cadDirLog ("guideConfigReset", pcad->dir, 1, pcad);
 
      /* Set message prefix */
      tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char *) NULL);
 
-     printf("CADguideReset: pcad->dir %d  \n", pcad->dir);
+     // printf("CADguideReset: pcad->dir %d  \n", pcad->dir);
 
      switch (pcad->dir)
      {
      case menuDirectiveMARK:
-	  printf("CADguideReset: MARK \n");
+	  // printf("CADguideReset: MARK \n");
           status = CAD_ACCEPT ;
           break;
 
      case menuDirectiveCLEAR:
-	  printf("CADguideReset: CLEAR \n");
+	  // printf("CADguideReset: CLEAR \n");
           status = CAD_ACCEPT ;
           break;
 
      case menuDirectivePRESET:
-	  printf("CADguideReset: PRESET reset %d \n",reset);
+	  // printf("CADguideReset: PRESET reset %d \n",reset);
 
 
           if (tcsDcString (resetOpts, "reset -  ", pcad->a, &reset, pcad)){
@@ -1213,7 +1213,7 @@ long CADguideReset (struct cadRecord * pcad)
                break ;
           }
 
-	  printf("CADguideReset: PRESET reset %d \n",reset);
+	  // printf("CADguideReset: PRESET reset %d \n",reset);
 
           status = CAD_ACCEPT ;
 
@@ -1222,24 +1222,24 @@ long CADguideReset (struct cadRecord * pcad)
           break;
 
      case menuDirectiveSTART:
-	  printf("CADguideReset: START \n");
+	  printf("%s: CADguideReset: START \n", tcsCsCadName(pcad));
 
           if (interlockFlag == ON)
           {
                strncpy (pcad->mess, "interlocks active", MAX_STRING_SIZE - 1);
                break;
           }
-	  printf("CADguideReset: menuDirectiveSTART: %d \n",menuDirectiveSTART);
+	  // printf("CADguideReset: menuDirectiveSTART: %d \n",menuDirectiveSTART);
           status = CAD_ACCEPT ;
           break;
 
      case menuDirectiveSTOP:
-	  printf("CADguideReset: STOP \n");
+	  // printf("CADguideReset: STOP \n");
           status = CAD_ACCEPT ;
           break;
 
      default:
-	  printf("CADguideReset: default \n");
+	  // printf("CADguideReset: default \n");
           strncpy (pcad->mess, "inappropriate CAD directive", MAX_STRING_SIZE - 1);
           status = CAD_REJECT;
           break;
