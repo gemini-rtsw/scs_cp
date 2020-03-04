@@ -807,6 +807,7 @@ long CADguideConfig (struct cadRecord * pcad)
           break;
 
      case menuDirectiveSTART:
+          printf("%s: CADguideConfig - START, source = %s, filter = %s\n", tcsCsCadName(pcad), sourceOpts[source], filterOpts[filterType]);  
 
           if (interlockFlag == ON)
           {
