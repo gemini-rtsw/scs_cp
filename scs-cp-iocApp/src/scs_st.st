@@ -869,6 +869,11 @@ assign xyPosDeadband to "{T}tolerance.VALF";
 double tolDir;
 assign tolDir to "{T}tolerance.DIR";
 
+double guideConfReset;
+assign guideConfReset to "{T}guideConfigReset.DIR";
+
+double setCont;
+assign setCont to "{T}setController.DIR";
 
 /* ===================================================================== */
 
@@ -1923,12 +1928,24 @@ ss CADprocessor {
          /* Submit tolerance data to CEM prior to base move*/
          tolDir = 0;
          pvPut(tolDir);
-
          tolDir = 2;
          pvPut(tolDir);
-
          tolDir = 3;
          pvPut(tolDir);
+
+         setCont = 0;
+         pvPut(setCont);
+         setCont = 2;
+         pvPut(setCont);
+         setCont = 3;
+         pvPut(setCont);
+
+         guideConfReset = 0;
+         pvPut(guideConfReset);
+         guideConfReset = 2;
+         pvPut(guideConfReset);
+         guideConfReset = 3;
+         pvPut(guideConfReset);
 
       } state initCompleteStartMove
 
