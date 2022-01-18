@@ -309,6 +309,23 @@ typedef struct
 
 typedef struct
 {
+    unsigned long access0;
+    float   x[3];
+    float   y[3];
+    long    flux[3];
+    unsigned long update[3];
+    unsigned long access1;
+    float   pad[242];
+}Ngs2Block;
+
+typedef struct
+{
+    unsigned long sync;
+    float   pad[255];
+}RtcBlock;
+
+typedef struct
+{
     float           notUsed;
     float           follow1;
     float           follow2;
@@ -394,8 +411,8 @@ typedef struct
     m2EngData       m2Eng;      /* page13a,b */
     unusedBlock     page4;
     unusedBlock     page5;
-    unusedBlock     page6;
-    unusedBlock     page7;      /* page 7 - no longer used */
+    Ngs2Block       ngs2rtc;    /* page 6 */
+    RtcBlock        rtc2ngs2;    /* page 7 */
     wfsBlock        pwfs1;      /* page 8 */
     wfsBlock        pwfs2;      /* page 9 */
     wfsBlock        oiwfs;      /* page10 */

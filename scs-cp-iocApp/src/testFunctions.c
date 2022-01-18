@@ -528,6 +528,7 @@ void    testMem (const memMap * buffPtr)
     printPage0 (buffPtr);
     printPage1 (buffPtr);
     printPage2 (buffPtr);
+    printPage6 (buffPtr);
     printPage7 (buffPtr);
     printPage8 (buffPtr);
     printPage9 (buffPtr);
@@ -604,6 +605,10 @@ void showMemory(int page) {
 
         case 2:
             printPage2(ptr);
+            break;
+
+        case 6:
+            printPage6(ptr);
             break;
 
         case 7:
@@ -862,19 +867,33 @@ void    printPage2 (const memMap * buffPtr)
 
 /* ===================================================================== */
 
+void    printPage6 (const memMap * buffPtr)
+{
+    printf ("\nPage 6 - NGS2 corrections to RTC2\n");
+    
+    printf ("access counter 0  Addr = %lx, Value = %ld\n", (long) &buffPtr->ngs2rtc.access0, buffPtr->ngs2rtc.access0);
+    printf ("x centroids 0     Addr = %lx, Value = %f\n",  (long) &buffPtr->ngs2rtc.x[0], buffPtr->ngs2rtc.x[0]);
+    printf ("x centroids 1     Addr = %lx, Value = %f\n",  (long) &buffPtr->ngs2rtc.x[1], buffPtr->ngs2rtc.x[1]);
+    printf ("x centroids 2     Addr = %lx, Value = %f\n",  (long) &buffPtr->ngs2rtc.x[2], buffPtr->ngs2rtc.x[2]);
+    printf ("y centroids 0     Addr = %lx, Value = %f\n",  (long) &buffPtr->ngs2rtc.y[0], buffPtr->ngs2rtc.y[0]);
+    printf ("y centroids 1     Addr = %lx, Value = %f\n",  (long) &buffPtr->ngs2rtc.y[1], buffPtr->ngs2rtc.y[1]);
+    printf ("y centroids 2     Addr = %lx, Value = %f\n",  (long) &buffPtr->ngs2rtc.y[2], buffPtr->ngs2rtc.y[2]);
+    printf ("flux 0            Addr = %lx, Value = %ld\n", (long) &buffPtr->ngs2rtc.flux[0], buffPtr->ngs2rtc.flux[0]);
+    printf ("flux 1            Addr = %lx, Value = %ld\n", (long) &buffPtr->ngs2rtc.flux[1], buffPtr->ngs2rtc.flux[1]);
+    printf ("flux 2            Addr = %lx, Value = %ld\n", (long) &buffPtr->ngs2rtc.flux[2], buffPtr->ngs2rtc.flux[2]);
+    printf ("update 0          Addr = %lx, Value = %ld\n", (long) &buffPtr->ngs2rtc.update[0], buffPtr->ngs2rtc.update[0]);
+    printf ("update 1          Addr = %lx, Value = %ld\n", (long) &buffPtr->ngs2rtc.update[1], buffPtr->ngs2rtc.update[1]);
+    printf ("update 2          Addr = %lx, Value = %ld\n", (long) &buffPtr->ngs2rtc.update[2], buffPtr->ngs2rtc.update[2]);
+    printf ("access counter 1  Addr = %lx, Value = %ld\n", (long) &buffPtr->ngs2rtc.access1, buffPtr->ngs2rtc.access1);
+    
+}
+
+/* ===================================================================== */
+
 void    printPage7 (const memMap * buffPtr)
 {
-    printf ("\nPage 7 - Event System Data\n");
-    printf ("currentBeam    Addr = %lx, Value = %d\n", (long) &eventData.currentBeam, eventData.currentBeam);
-    printf ("inPosition Addr = %lx, Value = %d\n", (long) &eventData.inPosition, eventData.inPosition);
-    /*
-    printf ("xTilt      Addr = %lx, Value = %f\n", (long) &eventData.xTilt, eventData.xTilt);
-    printf ("yTilt      Addr = %lx, Value = %f\n", (long) &eventData.yTilt, eventData.yTilt);
-    printf ("zFocus     Addr = %lx, Value = %f\n", (long) &eventData.zFocus, eventData.zFocus);
-    printf ("xPosition  Addr = %lx, Value = %f\n", (long) &eventData.xPosition, eventData.xPosition);
-    printf ("yPosition  Addr = %lx, Value = %f\n", (long) &eventData.yPosition, eventData.yPosition);
-    printf ("time       Addr = %lx, Value = %f\n", (long) &eventData.time, eventData.time);
-    */
+    printf ("\nPage 7 - RTC sync signal to NGS2\n");
+    printf ("currentBeam    Addr = %lx, Value = %ld\n", (long) &buffPtr->rtc2ngs2.sync, buffPtr->rtc2ngs2.sync);
 }
 
 /* ===================================================================== */
