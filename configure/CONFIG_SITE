@@ -39,3 +39,10 @@ TSCS = m2
 
 CNFG_DIR = /gem_sw/etc/rtconfig/scs
 USR_BOOT_FLAGS = -MSCSTOP=$(TSCS) -MCNFGDIR=$(CNFG_DIR)
+
+# These allow developers to override the CONFIG_SITE variable
+# settings without having to modify the configure/CONFIG_SITE
+# file itself.
+-include $(TOP)/../CONFIG_SITE.local
+-include $(TOP)/../configure/CONFIG_SITE.local
+-include $(TOP)/configure/CONFIG_SITE.local

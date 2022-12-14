@@ -11,7 +11,7 @@ vpath %.db $(SYS_DB_PATHS)
 
 DB = m2.db 
 DB += m2sad.db
-DB += iocAdminRTEMS.db
+#DB += iocAdminRTEMS.db
 DB += timeProbe.db
 
 
@@ -26,5 +26,5 @@ include $(TOP)/configure/RULES
 $(COMMON_DIR)/%.db: %.db
 	cp $< $@
 
-clean::
+clean:
 	$(RM) *.dat *.bak

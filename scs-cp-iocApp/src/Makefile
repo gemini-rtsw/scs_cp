@@ -14,17 +14,17 @@ DBD += scs-cp-ioc.dbd
 
 # scs-cp-ioc.dbd will be made up from these files:
 scs-cp-ioc_DBD += base.dbd
-scs-cp-ioc_DBD += iocAdmin.dbd
+#scs-cp-ioc_DBD += iocAdmin.dbd
 scs-cp-ioc_DBD += menuScan.dbd
 scs-cp-ioc_DBD += geminiRecords.dbd
-scs-cp-ioc_DBD += vmi5588.dbd
-scs-cp-ioc_DBD += xy240.dbd
-scs-cp-ioc_DBD += tcslib.dbd
-scs-cp-ioc_DBD += bancomm.dbd
+#scs-cp-ioc_DBD += vmi5588Supp.dbd
+scs-cp-ioc_DBD += xy240Supp.dbd
+scs-cp-ioc_DBD += tcslibSupp.dbd
+scs-cp-ioc_DBD += bancommDev.dbd
 scs-cp-ioc_DBD += pvload.dbd
-scs-cp-ioc_DBD += timelib.dbd
+scs-cp-ioc_DBD += timelibSupp.dbd
 scs-cp-ioc_DBD += slalib.dbd
-scs-cp-ioc_DBD += timeProbe.dbd
+scs-cp-ioc_DBD += timeProbeSupp.dbd
 scs-cp-ioc_DBD += initTrace.dbd
 scs-cp-ioc_DBD += symb.dbd
 scs-cp-ioc_DBD += scs.dbd
@@ -72,7 +72,7 @@ scs-cp-ioc_LIBS += pvload
 scs-cp-ioc_LIBS += tcslib
 scs-cp-ioc_LIBS += timelib
 scs-cp-ioc_LIBS += slalib
-scs-cp-ioc_LIBS += devIocStats 
+#scs-cp-ioc_LIBS += devIocStats 
 scs-cp-ioc_LIBS += timeProbe 
 scs-cp-ioc_LIBS += Symb 
 

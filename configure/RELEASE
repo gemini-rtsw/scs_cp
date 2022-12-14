@@ -21,26 +21,38 @@
 
 TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 
-PRODSUP=/gem_sw/prod/R3.14.12.8/support
-WORKSUP=/gem_sw/work/R3.14.12.8/support
+PRODSUP=/gem_base/epics/support
 
-TIMELIB=$(PRODSUP)/timelib/2-0-8
-SLALIB=$(PRODSUP)/slalib/1-9-10
-GEMREC=$(PRODSUP)/geminiRec/4-1-11
-TCSLIB=$(PRODSUP)/tcslib/1-0-16
-SNCSEQ=$(PRODSUP)/seq/2-2-5-3
-PVLOAD=$(PRODSUP)/pvload/1-1-4
-BANCOMM=$(PRODSUP)/bancomm/1-6-10
-IOCSTATS=$(PRODSUP)/iocStats/3-1-16-5
-TIMEPROBE=$(PRODSUP)/timeProbe/1-1-15
-SYMB=$(PRODSUP)/symb/1-1-4
-VMIC=$(PRODSUP)/vmi5588/1-1-2
-XYCOM=$(PRODSUP)/xycom/2-1-12
+TIMELIB=$(PRODSUP)/timelib
+SLALIB=$(PRODSUP)/slalib
+GEMREC=$(PRODSUP)/geminiRec
+TCSLIB=$(PRODSUP)/tcslib
+SNCSEQ=$(PRODSUP)/sequencer
+PVLOAD=$(PRODSUP)/pvload
+BANCOMM=$(PRODSUP)/bancomm
+#IOCSTATS=$(PRODSUP)/iocStats
+TIMEPROBE=$(PRODSUP)/timeProbe
+SYMB=$(PRODSUP)/symb
+VMIC=$(PRODSUP)/vmi5588
+XYCOM=$(PRODSUP)/xycom
 
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/gem_sw/epics/R3.14.12.8/base
+EPICS_BASE=/gem_base/epics/epics-base
 
 # Set RULES here if you want to take build rules from somewhere
 # other than EPICS_BASE:
 #RULES=/path/to/epics/support/module/rules/x-y
+
+# include local RELEASE configuration file (this will be ignored by with
+# .gitignore to keep it local and prevent poisoning the default build 
+# scheme)
+# overwrite configuration from above with this file and do not edit
+# this one
+#
+# These lines allow developers to override these RELEASE settings
+# without having to modify this file directly.
+-include $(TOP)/../RELEASE.local
+-include $(TOP)/../RELEASE.$(EPICS_HOST_ARCH).local
+-include $(TOP)/configure/RELEASE.local
+
