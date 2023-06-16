@@ -33,11 +33,12 @@ CHECK_RELEASE = YES
 #   take effect.
 #IOCS_APPL_TOP = </IOC/path/to/application/top>
 #
+USR_CPPFLAGS += -DUSE_TYPED_RSET
 
 # Change this if you want a different "top"
 TSCS = m2
 
-CNFG_DIR = /gem_sw/etc/rtconfig/scs
+CNFG_DIR = /gem_test/etc/rtconfig/scs
 USR_BOOT_FLAGS = -MSCSTOP=$(TSCS) -MCNFGDIR=$(CNFG_DIR)
 
 # These allow developers to override the CONFIG_SITE variable

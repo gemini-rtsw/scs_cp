@@ -360,7 +360,7 @@ long scsStateStringInit (struct genSubRecord * pgsub);
 long driveEvent (struct subRecord * psub);
 
 /* Global variables */
-int loadComplete;
+extern int loadComplete;
 extern int debugLevel;
 extern long inPosition;
 extern frameChange *ag2m2[MAX_SOURCES];
