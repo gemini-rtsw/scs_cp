@@ -474,8 +474,8 @@ assign rebootCarErrIn to "{T}rebootC.IERR";
 string rebootCarMessIn;             /* message input to     */
 assign rebootCarMessIn to "{T}rebootC.IMSS";    /* rebootC CAR      */
 
-int32_t rebootIocStat;                /* iocStats reboot */
-assign rebootIocStat to "{T}iocStats:SYSRESET";
+/* int32_t rebootIocStat; I/                /* iocStats reboot */
+/* assign rebootIocStat to "{T}iocStats:SYSRESET"; */
 
 
 /* ===================================================================== */
@@ -4429,8 +4429,8 @@ ss rebootScs {
      /*vmi5588_reboot(NULL);*/
 
          /* %%reboot(BOOT_QUICK_AUTOBOOT); */
-	 rebootIocStat = REBOOT_VALUE;
-	 pvPut(rebootIocStat);
+	 /* rebootIocStat = REBOOT_VALUE;
+	 pvPut(rebootIocStat); */
 	 
 
          /* At this point the system shall reboot so no further code */

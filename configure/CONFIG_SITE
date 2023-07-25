@@ -21,6 +21,7 @@ CHECK_RELEASE = YES
 #   for a subset of the cross-compiled target architectures
 #   that Base is built for.
 #CROSS_COMPILER_TARGET_ARCHS = vxWorks-68040
+CROSS_COMPILER_TARGET_ARCHS = RTEMS-mvme2700
 
 # To install files into a location other than $(TOP) define
 #   INSTALL_LOCATION here.
@@ -38,8 +39,10 @@ USR_CPPFLAGS += -DUSE_TYPED_RSET
 # Change this if you want a different "top"
 TSCS = m2
 
-CNFG_DIR = /gem_test/etc/rtconfig/scs
-USR_BOOT_FLAGS = -MSCSTOP=$(TSCS) -MCNFGDIR=$(CNFG_DIR)
+CNFG_DIR = /gem_prod/etc/rtconfig/scs
+NTP_CNFG_FILE = /gem_prod/etc/rtconfig/ntp/ntp-172.17.2.75-and-172.17.33.10.conf
+
+USR_BOOT_FLAGS = -MSCSTOP=$(TSCS) -MCNFGDIR=$(CNFG_DIR) -MNTPCFGFILE=$(NTP_CNFG_FILE)
 
 # These allow developers to override the CONFIG_SITE variable
 # settings without having to modify the configure/CONFIG_SITE

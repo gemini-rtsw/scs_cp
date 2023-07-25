@@ -1,5 +1,5 @@
 [schematic2]
-uniq 44
+uniq 45
 [tools]
 [detail]
 w 1952 771 100 0 n#1 egenSubC.displayScs2.FLNK 1728 768 2176 768 2176 832 2240 832 embbos.lostSync.SLNK
@@ -45,6 +45,7 @@ w 2272 2819 100 0 n#40 egenSubC.status.VALC 2208 2816 2336 2816 2336 2560 2912 2
 w 2288 2851 100 0 n#41 egenSubC.status.VALB 2208 2848 2368 2848 2368 2720 2912 2720 showbits.showbits#381.input
 w 2560 2883 100 0 n#42 egenSubC.status.VALA 2208 2880 2912 2880 showbits.showbits#380.input
 w 1352 1587 100 0 n#43 efanouts.fan1.LNK2 912 1584 1792 1584 1792 2176 1920 2176 egenSubC.status.SLNK
+w 1098 1122 -100 0 n#44 hwout.hwout#384.outp 1088 1112 1088 1112 ebos.loadComplete.OUT
 s 160 768 200 0 on the engineering screens
 s 144 832 200 0 an put the data onto record outputs for display
 s 128 896 200 0 These records read the scs reflective memory buffers
@@ -317,4 +318,7 @@ xform 0 960 1144
 p 1050 1062 100 0 1 DTYP:Global Variable
 p 1065 1026 100 0 1 ONAM:COMPLETE
 p 1072 1006 100 0 1 ZNAM:NOT_COMPLETE
+use hwout 1088 1096 100 0 hwout#384
+xform 0 1184 1112
+p 1184 1103 100 0 -1 val(outp):@loadComplete
 [comments]
