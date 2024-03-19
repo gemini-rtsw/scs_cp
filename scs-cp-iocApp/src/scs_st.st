@@ -119,6 +119,7 @@
    %%#include "testFunctions.h"        /* For startGuideSim, endGuideSim */
    %%#include "interlock.h"        /* For startGuideSim, endGuideSim */
    %%#include <vmi5588.h>        /* For vmi5588_reboot */
+   %%#include <epicsThread.h>
 
 
    %%#include <stdlib.h>
@@ -148,7 +149,6 @@
    %%enum {NOT_COMPLETE, COMPLETE};
 
    %{
-
       /* declare globals */
 
       /*
@@ -4431,7 +4431,7 @@ ss rebootScs {
          /* %%reboot(BOOT_QUICK_AUTOBOOT); */
 	 /* rebootIocStat = REBOOT_VALUE;
 	 pvPut(rebootIocStat); */
-	 
+	 %%exit(0);
 
          /* At this point the system shall reboot so no further code */
          /* execution is permitted. The return state has been set to */
