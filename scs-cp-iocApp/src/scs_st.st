@@ -4431,7 +4431,8 @@ ss rebootScs {
          /* %%reboot(BOOT_QUICK_AUTOBOOT); */
 	 /* rebootIocStat = REBOOT_VALUE;
 	 pvPut(rebootIocStat); */
-	 %%exit(0);
+         printf("rebootNow - Sendind exit command\n");
+	 %%exit(1);
 
          /* At this point the system shall reboot so no further code */
          /* execution is permitted. The return state has been set to */
