@@ -34,7 +34,8 @@ CROSS_COMPILER_TARGET_ARCHS = RTEMS-mvme2700
 #   take effect.
 #IOCS_APPL_TOP = </IOC/path/to/application/top>
 #
-USR_CPPFLAGS += -DUSE_TYPED_RSET
+#USR_CPPFLAGS += -DUSE_TYPED_RSET -I/gem_base/targetOS/RTEMS/rtems/6/powerpc-rtems6/mvme2700/lib/include
+USR_CPPFLAGS += -DUSE_TYPED_RSET 
 
 # Change this if you want a different "top"
 TSCS = m2

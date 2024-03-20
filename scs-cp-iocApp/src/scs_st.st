@@ -128,6 +128,8 @@
 
    %%#include <car.h>
 
+   /* %%#include "bsp.h" */
+
    %%#define CMD_RESPONSE_TIMEOUT    13.0 /* command acknowledgement timeout in 
                                              units equal to ~0.33 seconds */
    %%#define INIT_COMPLETE_TIMEOUT 400.0 /* init execution timeout in units
@@ -4218,99 +4220,23 @@ ss rebootScs {
           */
 
          /* NEW 16-Aug-2000 */
-         writeCommand(ACT_PWR_ON);
+         writeCommand(ACT_PWR_OFF);
          writeCommand(MEND);
          writeCommand(VEND);
          writeCommand(MOFFLON);
 
          printf("startReboot - wait for mirror control to disable\n");
-      } state proceedWithRebootPark
-   }
-
-   state proceedWithRebootPark {
-      when(servoOnStat == 0) {
-         printf("mirror control disable - proceed with move\n");
-
-         myscsState = PARKED;
-         scsState = myscsState;
-         pvPut(myscsState);
-
-         /* write park demand conditions to the control loops */
-
-         parkPosition.xTilt  = xTiltAdef;
-         parkPosition.yTilt  = yTiltAdef;
-         parkPosition.zFocus = zFocusDef;
-         parkPosition.xPos   = xPosTcsDef;
-         parkPosition.yPos   = yPosTcsDef;
-
-         tcs2m2(&parkPosition);
-
-         %{
-         if(setPointFree) {
-            epicsMutexLock(setPointFree);
-            setPoint.xTiltA = parkPosition.xTiltNew;
-            setPoint.yTiltA = parkPosition.yTiltNew;
-            setPoint.zFocus = parkPosition.zFocusNew;
-            setPoint.xTiltB = parkPosition.xTiltNew;
-            setPoint.yTiltB = parkPosition.yTiltNew;
-            setPoint.xTiltC = parkPosition.xTiltNew;
-            setPoint.yTiltC = parkPosition.yTiltNew;
-            setPoint.xPosition = parkPosition.xPosNew;
-            setPoint.yPosition = parkPosition.yPosNew;
-
-            epicsMutexUnlock(setPointFree);
-         }
-         else {
-            errlogPrintf("proceedWithRebootPark - setPointFree timeout\n");
-         }
-         }%
-
-      } state rebootParkWaitForCoincidence
-
-
-      /* SCS has not detected that the mirror control have been turned off so
-       * aborts the move 
-       */
-      when(delay(SERVO_OFF_TIMEOUT))       {
-         cadProcessorState = SERVOOFFTIMEOUT;
-         pvPut(cadProcessorState);
-
-         printf("proceedWithRebootPark - Servo off timeout n");
-         errorLog
-            ("proceedWithRebootPark - M2 system not switching sevos off",
-             1, ON);
-
-         parkCarErrIn = STATUS_ERROR; /* parkCar or rebootCar ?? */
-         pvPut(parkCarErrIn);
-         strncpy(parkCarMessIn,
-               "M2 not switching mirror control off", MAX_STRING_SIZE - 1);
-         pvPut(parkCarMessIn);
-
       } state rebootParkWaitForCoincidence 
-
-      /* bug fix 14nov2000 - this was 'idle' and we do not want this. If the
-       * servos will not turn off, keep going to the next state. Later: figure
-       * out why servos do not turn off sometimes. */
+   /*   } state proceedWithRebootPark */
    }
 
    state rebootParkWaitForCoincidence {
       /* wait for system to achieve the desired position */
 
-      when(delay(3.0) && (servoInPosition == 1)) {
+      /* when(delay(3.0) && (servoInPosition == 1)) { */
+      when() {
          rebootScsState = WAITFORPARKREBOOT;
          pvPut(rebootScsState);
-
-         /* in close range - no need to restart mirror control */
-
-         /* shut down the unused functions */
-
-         writeCommand(VEND);
-         writeCommand(MEND);
-         writeCommand(MOFFLOFF);
-         writeCommand(ACT_PWR_OFF);
-
-         /* NEW for 22-jun-2000: */
-         /* Toggle tilt system by writing to the event system */
 
          if (eventConfig.change == 0) {
             /* if previous changes have been acknowledged, 
@@ -4328,51 +4254,10 @@ ss rebootScs {
             printf("waitForParkReboot - command not acknowledged\n");
          }
       }   state powerCycleCEM
-
-      when(delay(TIMEOUT)) {
-         rebootScsState = TIMEOUTWAITFORPARKREBOOT;
-         pvPut(rebootScsState);
-
-         parkCarErrIn = STATUS_ERROR;
-         pvPut(parkCarErrIn);
-
-         strncpy(parkCarMessIn, "No response to park command", MAX_STRING_SIZE - 1);
-         pvPut(parkCarMessIn);
-
-         parkCarIn = CAR_ERROR;
-         pvPut(parkCarIn);
-
-         /* shut down the unused functions */
-
-         writeCommand(VEND);
-         writeCommand(MEND);
-         writeCommand(MOFFLOFF);
-         writeCommand(ACT_PWR_OFF);
-
-         /* NEW for 22-jun-2000: */
-         /* Toggle tilt system by writing to the event system */
-
-         printf("state waitForParkReboot\n");
-         if (eventConfig.change == 0) {
-            /* if previous changes have been acknowledged, 
-               write new data, flag change and give sem  */
-
-            printf("waitForParkReboot - Shutting off CEM power\n");
-            eventConfig.change  = 1;
-            eventConfig.on = 0;    /* make sure you do not send an ON */
-            eventConfig.m2Servo = OFF;
-            eventConfig.m2Power = OFF;
-            epicsEventSignal(eventSem); 
-         }
-         else {
-            errorLog("waitForParkReboot - command not acknowledged", 1, ON);
-            printf("waitForParkReboot - command not acknowledged\n");
-         }
-      } state powerCycleCEM
    }
 
    state powerCycleCEM {
-      when(delay(1.0)) {
+      when() {
          printf("state powerCycleCEM\n");
          if (eventConfig.change == 0) {
             /* if previous changes have been acknowledged, 
@@ -4385,25 +4270,12 @@ ss rebootScs {
             eventConfig.m2Power = ON;
             epicsEventSignal(eventSem); 
          }
-         else {
-            errorLog("powerCycleCEM - command not acknowledged", 1, ON);
-            printf("waitForParkReboot - command not acknowledged\n");
-         }
-
-         /* send idle indication to the parkC record */
-
-         parkCarIn = CAR_IDLE;
-         pvPut(parkCarIn);
-
-         strncpy(parkCarMessIn, "", MAX_STRING_SIZE - 1);
-         pvPut(parkCarMessIn);
-
       }   state rebootNow
    }
 
 
    state rebootNow {
-      when(delay (5.0)) {
+      when() {
          rebootScsState = REBOOTNOW;
          pvPut(rebootScsState);
 
@@ -4431,14 +4303,16 @@ ss rebootScs {
          /* %%reboot(BOOT_QUICK_AUTOBOOT); */
 	 /* rebootIocStat = REBOOT_VALUE;
 	 pvPut(rebootIocStat); */
+
          printf("rebootNow - Sendind exit command\n");
-	 %%exit(1);
+        %% exit(1); 
+	 /* %%bsp_reset(); */
 
          /* At this point the system shall reboot so no further code */
          /* execution is permitted. The return state has been set to */
          /* startReboot to keep it tidy and local            */
 
-      }   state startReboot
+      }   state waitForRebootCmd
    }
 }
 
