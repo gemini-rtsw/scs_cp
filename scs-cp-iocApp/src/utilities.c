@@ -164,9 +164,7 @@ int rebootVME ()
     if (!rtems_shell_make_args(cmd_argv, &argc, argv, 40)) {
        rtems_shell_execute_cmd(argv[0], argc, argv);
     }
-
     return (OK);
-  
 }
 
 
