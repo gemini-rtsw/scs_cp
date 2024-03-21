@@ -73,6 +73,9 @@
 #include <subRecord.h>
 #endif
 
+#include <rtems.h>
+#include <rtems/shell.h>
+
 #define SCSTOP "top=m2:"
 #define INSTTOP "I=m2:inst:"
 
@@ -105,6 +108,68 @@ long monitorSadSnlState;
 long monitorProcessSnlState;
 long rebootScsSnlState;
 long moveBaffleSnlState;
+
+/* ===================================================================== */
+/* INDENT OFF */
+/*
+ * Function name:
+ * rebootVME
+ * 
+ * Purpose:
+ * Reboot a VME system
+ *
+ * Invocation:
+ * int rebootVME()
+ *
+ * Parameters in:
+ * 
+ * Parameters out:
+ * None
+ * 
+ * Return value:
+ *      < int       OK or ERROR
+ *
+ * Globals: 
+ *  External functions:
+ *  None
+ * 
+ *  External variables:
+ *  None
+ * 
+ * Requirements:
+ * 
+ * Author:
+ * 
+ * History:
+ * 
+ */
+
+/* INDENT ON */
+/* ===================================================================== */
+
+int rebootVME ()
+{
+    int     argc;
+    char *argv[40];
+    char *cmd_argv;
+    char *cmds[40];
+
+    /* function reboot a VME system */
+    puts ("init CAD start");
+    cmd_argv = malloc (40);
+    cmds[0] = calloc (1, 40);
+    memset (cmds[0], 0, 1 * 40);
+    strncpy(cmds[0],"shutdown",40);
+    memcpy (cmd_argv, cmds[0], 40);
+    if (!rtems_shell_make_args(cmd_argv, &argc, argv, 40)) {
+       rtems_shell_execute_cmd(argv[0], argc, argv);
+    }
+
+    return (OK);
+  
+}
+
+
 
 /* ===================================================================== */
 /* INDENT OFF */

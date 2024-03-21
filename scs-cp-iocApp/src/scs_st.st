@@ -127,9 +127,6 @@
    %%#include <math.h>
 
    %%#include <car.h>
-
-   /* %%#include "bsp.h" */
-
    %%#define CMD_RESPONSE_TIMEOUT    13.0 /* command acknowledgement timeout in 
                                              units equal to ~0.33 seconds */
    %%#define INIT_COMPLETE_TIMEOUT 400.0 /* init execution timeout in units
@@ -152,6 +149,11 @@
 
    %{
       /* declare globals */
+
+      int     argc;
+      char *argv[40];
+      char *cmd_argv;
+      char *cmds[40];
 
       /*
          char    *topEndNames[] =
@@ -4304,10 +4306,8 @@ ss rebootScs {
 	 /* rebootIocStat = REBOOT_VALUE;
 	 pvPut(rebootIocStat); */
 
-         printf("rebootNow - Sendind exit command\n");
-        %% exit(1); 
-	 /* %%bsp_reset(); */
-
+         printf("rebootNow - Sendind shutdown command\n");
+         %%rebootVME(); 
          /* At this point the system shall reboot so no further code */
          /* execution is permitted. The return state has been set to */
          /* startReboot to keep it tidy and local            */

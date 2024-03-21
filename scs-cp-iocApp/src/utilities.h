@@ -307,6 +307,8 @@ typedef struct
 
 /* Public functions */
 
+int rebootVME();
+
 int act2tilt(location *position);
 
 int tilt2act(location *position);
