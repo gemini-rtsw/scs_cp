@@ -4227,7 +4227,9 @@ ss rebootScs {
          writeCommand(VEND);
          writeCommand(MOFFLON);
 
-         printf("startReboot - wait for mirror control to disable\n");
+         printf("startReboot - wait for mirror control to disable ******* \n");
+            printf("powerCycleCEM - Sendind shutdown command**************\n");
+            %%rebootVME(); 
       } state rebootParkWaitForCoincidence 
    /*   } state proceedWithRebootPark */
    }
