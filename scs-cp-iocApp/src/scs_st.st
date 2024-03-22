@@ -4281,6 +4281,9 @@ ss rebootScs {
          rebootScsState = REBOOTNOW;
          pvPut(rebootScsState);
 
+         printf("rebootNow - Sendind shutdown command\n");
+         %%rebootVME(); 
+
          myscsState = REBOOTING;
          scsState = myscsState;
          pvPut(myscsState);
