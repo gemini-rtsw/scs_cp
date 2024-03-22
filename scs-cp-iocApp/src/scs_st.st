@@ -4235,7 +4235,7 @@ ss rebootScs {
       /* wait for system to achieve the desired position */
 
       /* when(delay(3.0) && (servoInPosition == 1)) { */
-      when() {
+      when(delay(5.0)) {
          rebootScsState = WAITFORPARKREBOOT;
          pvPut(rebootScsState);
 
@@ -4258,7 +4258,7 @@ ss rebootScs {
    }
 
    state powerCycleCEM {
-      when() {
+      when(delay(5.0)) {
          printf("state powerCycleCEM\n");
          if (eventConfig.change == 0) {
             /* if previous changes have been acknowledged, 
@@ -4276,7 +4276,7 @@ ss rebootScs {
 
 
    state rebootNow {
-      when() {
+      when(delay(3.0)) {
          rebootScsState = REBOOTNOW;
          pvPut(rebootScsState);
 
