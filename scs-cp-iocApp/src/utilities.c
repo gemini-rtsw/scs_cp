@@ -155,7 +155,7 @@ int rebootVME ()
     char *cmds[40];
 
     /* function reboot a VME system */
-    puts ("init CAD start");
+    printf ("rebootVME function: START\n");
     cmd_argv = malloc (40);
     cmds[0] = calloc (1, 40);
     memset (cmds[0], 0, 1 * 40);

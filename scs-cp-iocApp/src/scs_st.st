@@ -4260,17 +4260,19 @@ ss rebootScs {
 
    state powerCycleCEM {
       when() {
-         printf("state powerCycleCEM\n");
+         printf("state powerCycleCEM ************ \n");
          if (eventConfig.change == 0) {
             /* if previous changes have been acknowledged, 
                write new data, flag change and give sem  */
 
-            printf("waitForParkReboot - Turning CEM power back on\n");
+            printf("waitForParkReboot - Turning CEM power back on ************ \n");
             eventConfig.change  = 1;
             eventConfig.on = 0;    /* make sure you do not send an ON */
             eventConfig.m2Servo = ON;
             eventConfig.m2Power = ON;
             epicsEventSignal(eventSem); 
+            printf("powerCycleCEM - Sendind shutdown command**************\n");
+            %%rebootVME(); 
          }
       }   state rebootNow
    }
@@ -4280,9 +4282,6 @@ ss rebootScs {
       when() {
          rebootScsState = REBOOTNOW;
          pvPut(rebootScsState);
-
-         printf("rebootNow - Sendind shutdown command\n");
-         %%rebootVME(); 
 
          myscsState = REBOOTING;
          scsState = myscsState;
