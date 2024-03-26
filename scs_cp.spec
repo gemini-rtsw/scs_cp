@@ -35,12 +35,12 @@ AutoReqProv: no
 This is the module %{name}.
 
 ## If you want to have a devel-package to be generated uncomment the following:
-%package devel
-Summary: %{name}-devel Package
-Group: Development/Gemini
-Requires: %{name} tdct sequencer-devel autosave-devel  bancomm-devel geminiRec-devel timelib-devel slalib-devel xycom-devel gemUtil-devel timeProbe-devel tcslib-devel pvload-devel symb-devel vmi5588-devel
-%description devel
-This is the module %{name}.
+#%package devel
+#Summary: %{name}-devel Package
+#Group: Development/Gemini
+#Requires: %{name} tdct sequencer-devel autosave-devel  bancomm-devel geminiRec-devel timelib-devel slalib-devel xycom-devel gemUtil-devel timeProbe-devel tcslib-devel pvload-devel symb-devel vmi5588-devel
+#%description devel
+#This is the module %{name}.
 
 %prep
 %setup -q 
@@ -65,7 +65,6 @@ cp -r db $RPM_BUILD_ROOT/%{_prefix}/%{name}
 cp -r bin $RPM_BUILD_ROOT/%{_prefix}/%{name}
 cp -r configure $RPM_BUILD_ROOT/%{_prefix}/%{name}
 
-
 %postun
 if [ "$1" = "0" ]; then
 	rm -rf %{_prefix}/%{name}
@@ -87,3 +86,5 @@ rm -rf $RPM_BUILD_ROOT
 #   /%{_prefix}/%{name}/include
 
 %changelog
+* Wed Mar 26 2024 Pedro Gigoux <pedro.gigoux@noirlab.edu> 2.9
+- Commented out devel entries
