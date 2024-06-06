@@ -83,7 +83,7 @@ dbpf "$(SCSTOP):interlockOverride","1"
 
 
 ###### Start any sequence programs
-#seq &timeSeq, "sys=$(SCSTOP):, top=tc1:"
+seq &timeSeq, "sys=$(SCSTOP):, top=tcs:"
 #seq &timeSeq, "sys=$(SCSTOP):"
 #seq &scs_mon "T=$(SCSTOP):, D=$(SCSTOP):"
 seq &tilt_st, "S=$(SCSTOP):tilt:, debug=0"
