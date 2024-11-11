@@ -13,10 +13,10 @@ s 3600 1664 100 0 Secondary Control System
 [cell use]
 use instruments 2784 2711 100 0 instruments#62
 xform 0 2944 2912
-p 2784 2688 100 0 1 seta:top m2:inst:
+p 2784 2688 100 0 1 seta:top $(top)inst:
 use scssir 2208 2656 100 0 scssir
 xform 0 2368 2904
-p 2224 2688 100 0 1 seta:top m2:
+p 2224 2688 100 0 1 seta:top $(top)
 use bc200tr 784 1384 -100 0 frame
 xform 0 2464 2688
 [comments]
