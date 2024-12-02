@@ -2070,6 +2070,8 @@ ss CADprocessor {
 
          /* send controller command to set up pid values */
 
+         pidDir = 0;
+         pvPut(pidDir);
          pidDir = 2;
          pvPut(pidDir);
          pidDir = 3;

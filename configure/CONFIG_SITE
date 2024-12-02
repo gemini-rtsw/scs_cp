@@ -38,10 +38,12 @@ CROSS_COMPILER_TARGET_ARCHS = RTEMS-mvme2700
 USR_CPPFLAGS += -DUSE_TYPED_RSET 
 
 # Change this if you want a different "top"
-TSCS = m2v
+TSCS = tm2
 
-CNFG_DIR = /gem_prod/etc/rtconfig/scs
-NTP_CNFG_FILE = /gem_prod/etc/rtconfig/ntp/ntp-172.17.2.75-and-172.17.33.10.conf
+#CNFG_DIR = /gem_prod/etc/rtconfig/scs
+#NTP_CNFG_FILE = /gem_prod/etc/rtconfig/ntp/ntp-172.17.2.75-and-172.17.33.10.conf
+CNFG_DIR = /gem_test/etc/rtconfig/scs
+NTP_CNFG_FILE = /gem_test/etc/rtconfig/ntp/ntp-172.17.2.75-and-172.17.33.10.conf
 
 USR_BOOT_FLAGS = -MSCSTOP=$(TSCS) -MCNFGDIR=$(CNFG_DIR) -MNTPCFGFILE=$(NTP_CNFG_FILE)
 

@@ -1427,6 +1427,7 @@ int setPid (int axis, double P, double I, double D, double windUpLimit,
             double rateLimit)
 {
 
+    printf ("setPid: START\n");
     if (axis < 0 || axis > 2)
     {
         printf ("setPid axis out of range\n");
@@ -1442,9 +1443,9 @@ int setPid (int axis, double P, double I, double D, double windUpLimit,
         controller[axis].windUpLimit = windUpLimit;
         controller[axis].rateLimit = rateLimit;
 
-        /* controller[axis].sum = 0.0;
+        controller[axis].sum = 0.0;
         controller[axis].oldError = 0.0;
-        controller[axis].oldOutput = 0.0; */
+        controller[axis].oldOutput = 0.0;
     }
     return (OK);
 }
