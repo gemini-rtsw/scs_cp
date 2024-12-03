@@ -558,7 +558,7 @@ long CADguideControl (struct cadRecord * pcad)
                /* zero the filtered error values for all sources */
 
                if (debugLevel == DEBUG_RESERVED2)
-                   printf ("CADguideControl - zeroing filtered terms\n"); */
+                   printf ("CADguideControl - zeroing filtered terms\n"); 
 
                for (i=0; i<MAX_SOURCES; i++)
                {
