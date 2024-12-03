@@ -537,10 +537,10 @@ long CADguideControl (struct cadRecord * pcad)
                controller[XTILT].oldError = 0.0;
                controller[YTILT].oldError = 0.0; 
 
-               controller[FOCUS].sum = 0.0;
+/*               controller[FOCUS].sum = 0.0;
                controller[FOCUS].oldSum = 0.0;
                controller[FOCUS].oldError = 0.0;
-
+*/
                /* zero guide outputs to TCS */
 
                xGuideTcs = 0.0;
@@ -557,7 +557,7 @@ long CADguideControl (struct cadRecord * pcad)
 
                /* zero the filtered error values for all sources */
 
-/*               if (debugLevel == DEBUG_RESERVED2)
+               if (debugLevel == DEBUG_RESERVED2)
                    printf ("CADguideControl - zeroing filtered terms\n"); */
 
                for (i=0; i<MAX_SOURCES; i++)
@@ -570,8 +570,8 @@ long CADguideControl (struct cadRecord * pcad)
 	       /* fix up currentBeam if not chopping */
 	       if (!chopIsOn)
 	       {
-/*		   if (debugLevel == DEBUG_RESERVED2)
-		       printf("CADguideControl - setting currentBeam to A\n"); */
+		   if (debugLevel == DEBUG_RESERVED2)
+		       printf("CADguideControl - setting currentBeam to A\n"); 
 		   currentBeam = 0;
 	       }
 

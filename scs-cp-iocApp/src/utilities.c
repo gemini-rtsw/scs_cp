@@ -1336,7 +1336,13 @@ double control (int axis, double input, double systemOutput)
 	{
             printf("control - found huge integral sum = %f. repl with %f\n", 
 	        controller[axis].sum, controller[axis].oldSum);
-	    controller[axis].sum = controller[axis].oldSum;
+            printf("control - error = %f. input = %f systemOutput = %f\n", 
+	        error, input, systemOutput);
+	   /* controller[axis].sum = controller[axis].oldSum; */
+            controller[axis].sum = 0.0;
+            controller[axis].oldSum = 0.0;
+            controller[axis].oldError = 0.0;
+            controller[axis].oldOutput = 0.0;
 	}
 
         /* calculate output */
