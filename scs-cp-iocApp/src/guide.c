@@ -537,9 +537,9 @@ long CADguideControl (struct cadRecord * pcad)
                controller[XTILT].oldError = 0.0;
                controller[YTILT].oldError = 0.0; 
 
-               /*controller[FOCUS].sum = 0.0;
+               controller[FOCUS].sum = 0.0;
                controller[FOCUS].oldSum = 0.0;
-               controller[FOCUS].oldError = 0.0;*/
+               controller[FOCUS].oldError = 0.0;
 
                /* zero guide outputs to TCS */
 
