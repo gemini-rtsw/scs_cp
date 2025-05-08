@@ -54,8 +54,8 @@ showPvloadMacros
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled
 # with the USR C FLAG for TIME_LATENCY, so chopInit goes first.
-chopInit
-scsInit
+#chopInit
+#scsInit
 
 ## Run this to trace the stages of iocInit
 traceIocInit
@@ -83,7 +83,7 @@ dbpf "$(SCSTOP):interlockOverride","1"
 
 
 ###### Start any sequence programs
-seq &timeSeq, "sys=$(SCSTOP):, top=tcs:"
+#seq &timeSeq, "sys=$(SCSTOP):, top=tcs:"
 ##seq &timeSeq, "sys=$(SCSTOP):"
 ##seq &scs_mon "T=$(SCSTOP):, D=$(SCSTOP):"
 #seq &tilt_st, "S=$(SCSTOP):tilt:, debug=0"
