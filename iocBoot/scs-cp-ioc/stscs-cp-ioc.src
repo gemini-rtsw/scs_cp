@@ -12,7 +12,7 @@ scs_cp_ioc_registerRecordDeviceDriver(pdbbase)
 epicsEnvSet("EPICS_TS_NTP_CONF_FILE","$(NTPCFGFILE)")
 
 ## Load record instances
-#dbLoadRecords("db/m2.db","top=$(SCSTOP):")
+dbLoadRecords("db/m2.db","top=$(SCSTOP):")
 dbLoadRecords("db/m2sad.db","top=$(SCSTOP):")
 #dbLoadRecords("db/iocAdminRTEMS.db","IOC=$(SCSTOP):iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
 dbLoadRecords("db/timeProbe.db","top=$(SCSTOP):")
