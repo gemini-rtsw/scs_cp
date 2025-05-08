@@ -26,10 +26,10 @@ dbLoadRecords("db/timeProbe.db","top=$(SCSTOP):")
 #BCconfigure (0, 0, 200, 1, 0)
 
 # initialize the xycom 240
-drvXy240ConfigOutputInit(1, 32, 0xd000, 0x0000, 0x0003)
+#drvXy240ConfigOutputInit(1, 32, 0xd000, 0x0000, 0x0003)
 
 # initialize reflective memory
-drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
+#drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 
 # connect rm interrupts to handler routines
 #rmIntConnect(2, rmISR2)
@@ -40,7 +40,7 @@ drvVmi5588Config(0xA00000, 0x040000, 0xb0, 0x06)
 # where the pvload files reside. It also sets the macros to pass to
 # pvload()
 # It must be called before scsInit()
-initSetParameters("$(CNFGDIR)",  "top=$(SCSTOP):, I=$(SCSTOP):inst:")
+#initSetParameters("$(CNFGDIR)",  "top=$(SCSTOP):, I=$(SCSTOP):inst:")
 
 
 # old way, do the above instead
@@ -48,8 +48,8 @@ initSetParameters("$(CNFGDIR)",  "top=$(SCSTOP):, I=$(SCSTOP):inst:")
 #setPvloadMacros("top=$(SCSTOP):, I=$(SCSTOP):inst:")
 
 
-showDataFileDir
-showPvloadMacros
+#showDataFileDir
+#showPvloadMacros
 
 # initialise system, first xycom (via chopInit), then then rest.
 # Note: scsInit spawns processGuides which writes to the xycom if compiled
@@ -58,7 +58,7 @@ showPvloadMacros
 #scsInit
 
 ## Run this to trace the stages of iocInit
-traceIocInit
+#traceIocInit
 
 #Start EPICS
 iocInit
