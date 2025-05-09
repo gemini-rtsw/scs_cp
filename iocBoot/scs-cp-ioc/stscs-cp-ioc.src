@@ -86,7 +86,7 @@ dbpf "$(SCSTOP):interlockOverride","1"
 seq &timeSeq, "sys=$(SCSTOP):, top=tcs:"
 ##seq &timeSeq, "sys=$(SCSTOP):"
 ##seq &scs_mon "T=$(SCSTOP):, D=$(SCSTOP):"
-#seq &tilt_st, "S=$(SCSTOP):tilt:, debug=0"
+seq &tilt_st, "S=$(SCSTOP):tilt:, debug=0"
 seq &scs_st, "T=$(SCSTOP):, D=$(SCSTOP):, F=$(SCSTOP):, I=$(SCSTOP):inst:"
 
 zoneset "CLST3"
