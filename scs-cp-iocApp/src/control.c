@@ -1061,6 +1061,8 @@ void processGuides (void)
        * as long as the rate the TCS sends at 20 Hz = 20 x per sec = 0.05 s 
        */
 
+      	epicsPrintf("processGuides - Returning\n");
+	return;
 
       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
