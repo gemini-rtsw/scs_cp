@@ -109,7 +109,7 @@ p 259 1579 100 0 0 DESC:percentage in position
 p 416 1040 100 0 1 INAM:initInterlock
 p 128 1278 100 0 0 PREC:2
 p 416 1008 100 0 1 PV:$(top)
-p 416 944 100 0 1 SCAN:.05 second
+p 416 944 100 0 1 SCAN:.1 second
 p 416 1072 100 0 1 SNAM:percentCalc
 p 384 1600 75 1280 -1 pproc(INPA):PP
 use esubs 736 1735 100 0 state1

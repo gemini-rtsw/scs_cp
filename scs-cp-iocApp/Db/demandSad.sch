@@ -54,7 +54,7 @@ p 1935 2160 100 0 0 EGU:microns
 p 1935 2464 100 0 0 FDSC:z focus demand
 p 1935 2256 100 0 0 FTVL:DOUBLE
 p 1935 2224 100 0 0 PREC:2
-p 2369 2894 100 0 1 SCAN:.05 second
+p 2369 2894 100 0 1 SCAN:.1 second
 p 2112 2896 100 0 -1 name:$(top)zNetDmd
 use esirs 1984 2967 100 0 yTiltDemand
 xform 0 2192 3120
@@ -63,7 +63,7 @@ p 1935 2544 100 0 0 EGU:arcsecs
 p 1935 2848 100 0 0 FDSC:y tilt demand
 p 1935 2640 100 0 0 FTVL:DOUBLE
 p 1935 2608 100 0 0 PREC:2
-p 2403 3263 100 0 1 SCAN:.05 second
+p 2403 3263 100 0 1 SCAN:.1 second
 p 2080 3264 100 0 -1 name:$(top)yNetTiltDmd
 use esirs 1984 3327 100 0 xTiltDemand
 xform 0 2192 3480
@@ -72,6 +72,6 @@ p 1935 2904 100 0 0 EGU:arcsecs
 p 1935 3208 100 0 0 FDSC:x tilt demand
 p 1935 3000 100 0 0 FTVL:DOUBLE
 p 1935 2968 100 0 0 PREC:2
-p 2364 3649 100 0 1 SCAN:.05 second
+p 2364 3649 100 0 1 SCAN:.1 second
 p 2096 3640 100 0 -1 name:$(top)xNetTiltDmd
 [comments]
