@@ -1077,7 +1077,6 @@ void processGuides (void)
       /* then ISR has given sem or it has never been taken */
       {
          epicsPrintf("processGuides -epicsEventWaitWithTimeout Then \n");
-         return;
          //
          //
          //  ******REMOVED DELAY HERE AFTER PORT TO RTEMS*********
