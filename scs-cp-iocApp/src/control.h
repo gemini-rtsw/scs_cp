@@ -559,7 +559,7 @@ extern epicsMutexId refMemFree;
 extern epicsEventId xySem;
 extern epicsEventId slowUpdate;
 extern epicsEventId diagnosticsAvailable;
-static epicsEventId guideUpdateNow;
+static epicsEventId guideUpdateNow = NULL;
 extern epicsEventId scsDataAvailable;
 extern epicsEventId scsReceiveNow;
 
