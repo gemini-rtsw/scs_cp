@@ -1092,7 +1092,7 @@ void processGuides (void)
             errlogPrintf( "***** nodeISR3 = %d intervalas %f > %f \n",
                   nodeISR3, scsBase->pwfs1.interval,  updateInterval.pwfs1); 
          }
-
+         return;
          if ( (nodeISR3 == AGP1_NODE) && (weight[PWFS1][currentBeam] > -2) )
          {
             if (scsBase->pwfs1.interval > updateInterval.pwfs1) 
