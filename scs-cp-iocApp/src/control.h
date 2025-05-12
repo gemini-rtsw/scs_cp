@@ -558,8 +558,8 @@ extern epicsMutexId refMemFree;
 
 extern epicsEventId xySem;
 extern epicsEventId slowUpdate;
-extern epicsEventId diagnosticsAvailable; 
-extern GLBLTYPE epicsEventId guideUpdateNow;
+extern epicsEventId diagnosticsAvailable;
+GLBLTYPE epicsEventId guideUpdateNow;
 extern epicsEventId scsDataAvailable;
 extern epicsEventId scsReceiveNow;
 
