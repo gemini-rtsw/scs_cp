@@ -55,7 +55,7 @@ showPvloadMacros
 # Note: scsInit spawns processGuides which writes to the xycom if compiled
 # with the USR C FLAG for TIME_LATENCY, so chopInit goes first.
 chopInit
-#scsInit
+scsInit
 
 ## Run this to trace the stages of iocInit
 #traceIocInit
