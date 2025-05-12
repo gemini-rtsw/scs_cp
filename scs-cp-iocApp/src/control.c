@@ -1061,12 +1061,12 @@ void processGuides (void)
        * as long as the rate the TCS sends at 20 Hz = 20 x per sec = 0.05 s 
        */
 
-      	epicsPrintf("processGuides - Returning\n");
-	return;
+      	epicsPrintf("processGuides -epicsEventWaitWithTimeout before \n");
 
       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
       {
+         epicsPrintf("processGuides -epicsEventWaitWithTimeout Then \n");
          //
          //
          //  ******REMOVED DELAY HERE AFTER PORT TO RTEMS*********
@@ -1460,7 +1460,7 @@ void processGuides (void)
           * occurred and bypass timestamp checking 
           */
 
-         //errlogSevPrintf(errlogInfo, "guideUpdateNow timeout\n");
+         errlogSevPrintf(errlogInfo, "guideUpdateNow timeout\n");
          guideUpdate = FALSE;         
          procGuideCount2++; /*2*/
       }
