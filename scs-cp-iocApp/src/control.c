@@ -337,7 +337,7 @@ epicsMutexId m2MemFree = NULL;
 epicsEventId slowUpdate = NULL;
 epicsMutexId wfsFree[MAX_SOURCES];
 epicsEventId diagnosticsAvailable = NULL;
-epicsEventId guideUpdateNow = NULL;
+statis epicsEventId guideUpdateNow = NULL;
 epicsEventId scsDataAvailable = NULL;
 epicsEventId scsReceiveNow = NULL;
 epicsMutexId eventDataSem = NULL;
@@ -1072,8 +1072,8 @@ void processGuides (void)
          { 
             epicsPrintf("processGuides - guideUpdateNow OK \n");
          }
-      /* if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) */ 
-         if(1)
+       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK)
+         /* if(1) */
       /* then ISR has given sem or it has never been taken */
       {
          epicsPrintf("processGuides -epicsEventWaitWithTimeout Then \n");
