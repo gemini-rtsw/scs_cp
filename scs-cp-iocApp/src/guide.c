@@ -2327,7 +2327,7 @@ long decimate (struct genSubRecord * pgsub)
      if(simLevel != 0)
      {
           /* simulation active */
-      /*  if ( m2MemFree ) { */
+     if ( m2MemFree ) { 
 	  mutex13++;
           epicsMutexLock(m2MemFree);
 
@@ -2347,9 +2347,9 @@ long decimate (struct genSubRecord * pgsub)
 
           epicsMutexUnlock(m2MemFree);
 	  mutex14++;
-     /*   } else {
+     } else {
          errorLog ("decimate - couldn't obtain m2MemFree mutex", 1, ON);
-       }  */
+       }
      }
      else
      {
@@ -2373,7 +2373,7 @@ long decimate (struct genSubRecord * pgsub)
 
      }
 
-/*      if ( setPointFree ) { */
+     if ( setPointFree ) { 
         epicsMutexLock(setPointFree);
 
         switch (currentBeam)
@@ -2397,10 +2397,9 @@ long decimate (struct genSubRecord * pgsub)
         tcsData.zNetDmd = (double) setPoint.zFocus;
 
         epicsMutexUnlock(setPointFree); 
- /*     } else {
+      } else {
          errorLog ("decimate - couldn't obtain setPointFree mutex", 1, ON);
      } 
- */
 
      /* convert current position readings from m2 to tcs frame of reference */
 
