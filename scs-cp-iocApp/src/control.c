@@ -337,7 +337,7 @@ epicsMutexId m2MemFree = NULL;
 epicsEventId slowUpdate = NULL;
 epicsMutexId wfsFree[MAX_SOURCES];
 epicsEventId diagnosticsAvailable = NULL;
-static epicsEventId guideUpdateNow = NULL;
+epicsEventId guideUpdateNow = NULL;
 epicsEventId scsDataAvailable = NULL;
 epicsEventId scsReceiveNow = NULL;
 epicsMutexId eventDataSem = NULL;
