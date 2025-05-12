@@ -543,6 +543,15 @@ enum
 };
 
 /* Global variables*/
+#ifdef  GLBLSOURCE
+#   define GLBLTYPE
+#   define GLBLTYPE_INIT(A) = A
+#else
+#   define GLBLTYPE extern
+#   define GLBLTYPE_INIT(A)
+#endif
+
+GLBLTYPE ELLLIST            clientQ             GLBLTYPE_INIT(ELLLIST_INIT);
 
 extern int simLevel;
 extern int refmem_mon1;
@@ -559,7 +568,7 @@ extern epicsMutexId refMemFree;
 extern epicsEventId xySem;
 extern epicsEventId slowUpdate;
 extern epicsEventId diagnosticsAvailable;
-static epicsEventId guideUpdateNow = NULL;
+extern epicsEventId guideUpdateNow;
 extern epicsEventId scsDataAvailable;
 extern epicsEventId scsReceiveNow;
 

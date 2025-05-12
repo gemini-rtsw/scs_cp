@@ -85,6 +85,7 @@
 #include "utilities.h"  /* For debugLevel, ag2m2 */
 //#include "archive.h"    /* For refMemFree */
 #include "chop.h"       /* For jogBeam, chopIsOn */
+#define GLBLSOURCE
 #include "control.h"    /* For logThreshold, SYSTEM_CLOCK_RATE */
 #include "guide.h"      /* For updateInterval, guideOn, guideOnA, guideOnB,
                            weight */
@@ -337,7 +338,7 @@ epicsMutexId m2MemFree = NULL;
 epicsEventId slowUpdate = NULL;
 epicsMutexId wfsFree[MAX_SOURCES];
 epicsEventId diagnosticsAvailable = NULL;
-/* epicsEventId guideUpdateNow; */
+static epicsEventId guideUpdateNow = NULL; */
 epicsEventId scsDataAvailable = NULL;
 epicsEventId scsReceiveNow = NULL;
 epicsMutexId eventDataSem = NULL;
