@@ -181,7 +181,7 @@ int scsInit (void)
    scsDataAvailable = epicsEventMustCreate(epicsEventEmpty);
    slowUpdate = epicsEventMustCreate(epicsEventEmpty);
    scsReceiveNow = epicsEventMustCreate(epicsEventEmpty);
-   guideUpdateNow = epicsEventMustCreate(epicsEventEmpty);
+   // guideUpdateNow = epicsEventMustCreate(epicsEventEmpty);
    diagnosticsAvailable = epicsEventMustCreate(epicsEventEmpty);
 
    /* spawn task to pvload initialisation data */
