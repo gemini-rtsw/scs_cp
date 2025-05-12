@@ -1063,6 +1063,13 @@ void processGuides (void)
 
       	epicsPrintf("processGuides -epicsEventWaitWithTimeout before \n");
 
+         if (guideUpdateNow == NULL) 
+         }
+            epicsPrintf("processGuides - guideUpdateNow == NULL \n");
+            return;
+         }
+
+
       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
       {
