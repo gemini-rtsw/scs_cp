@@ -542,17 +542,6 @@ enum
     //SCS_TIME_UPDATE=61          [> 61 <]
 };
 
-/* Global variables*/
-#ifdef  GLBLSOURCE
-#   define GLBLTYPE
-#   define GLBLTYPE_INIT(A) = A
-#else
-#   define GLBLTYPE extern
-#   define GLBLTYPE_INIT(A)
-#endif
-
-GLBLTYPE ELLLIST            clientQ             GLBLTYPE_INIT(ELLLIST_INIT);
-
 extern int simLevel;
 extern int refmem_mon1;
 extern memMap *scsPtr;
