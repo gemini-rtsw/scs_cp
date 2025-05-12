@@ -1069,11 +1069,11 @@ void processGuides (void)
             return;
          }
 
-         return;
       if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
          /* then ISR has given sem or it has never been taken */
       {
          epicsPrintf("processGuides -epicsEventWaitWithTimeout Then \n");
+         return;
          //
          //
          //  ******REMOVED DELAY HERE AFTER PORT TO RTEMS*********
