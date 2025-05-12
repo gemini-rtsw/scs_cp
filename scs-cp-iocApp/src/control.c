@@ -1064,7 +1064,7 @@ void processGuides (void)
       	epicsPrintf("processGuides -epicsEventWaitWithTimeout before \n");
 
          if (guideUpdateNow == NULL) 
-         }
+         {
             epicsPrintf("processGuides - guideUpdateNow == NULL \n");
             return;
          }
