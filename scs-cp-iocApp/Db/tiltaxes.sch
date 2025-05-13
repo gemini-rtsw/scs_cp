@@ -34,7 +34,7 @@ p -2015 -27 100 0 0 FTVD:DOUBLE
 p -1728 176 100 0 1 INAM:
 p -2080 814 100 0 0 PREC:2
 p -1712 224 100 0 1 PV:$(top)
-p -1728 96 100 0 1 SCAN:Passive
+p -1728 96 100 0 1 SCAN:.01 second
 p -1728 144 100 0 1 SNAM:mechSim
 use ebis -544 -473 100 0 inpos
 xform 0 -416 -400
