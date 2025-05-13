@@ -1029,9 +1029,11 @@ void processGuides (void)
    eventData.currentBeam = 0;
    eventData.inPosition = 0;
 
-   if (guideUpdateNow == NULL)  
+   if (guideUpdateNow == NULL)  {
+      errlogSevPrintf(errlogMajor, "guideUpdateNow first time Null!\n");
       guideUpdateNow = epicsEventMustCreate(epicsEventEmpty);  
-
+   }
+   
    if (guideUpdateNow == NULL) {
       errlogSevPrintf(errlogMajor, "guideUpdateNow Null!\n");
       return;
