@@ -37,7 +37,7 @@ CHECK_RELEASE = YES
 USR_CPPFLAGS += -DUSE_TYPED_RSET 
 
 # Change this if you want a different "top"
-TSCS = m2vt
+TSCS = m2v
 
 CNFG_DIR = /gem_test/rt/scs
 NTP_CNFG_FILE = /gem_test/rt/ntp/ntp-172.17.2.75-and-172.17.33.10.conf
