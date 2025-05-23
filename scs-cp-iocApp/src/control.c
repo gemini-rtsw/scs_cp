@@ -1029,16 +1029,11 @@ void processGuides (void)
    eventData.currentBeam = 0;
    eventData.inPosition = 0;
 
-   if (guideUpdateNow == NULL)  {
-      errlogSevPrintf(errlogMajor, "guideUpdateNow first time Null!\n");
-      guideUpdateNow = epicsEventMustCreate(epicsEventEmpty);  
-   }
-
    if (guideUpdateNow == NULL) {
       errlogSevPrintf(errlogMajor, "guideUpdateNow Null!\n");
       return;
-  }
-  else {
+   }
+   else {
       errlogSevPrintf(errlogInfo, "guideUpdateNow= starting control!\n");
    }
 
@@ -1067,23 +1062,10 @@ void processGuides (void)
        * as long as the rate the TCS sends at 20 Hz = 20 x per sec = 0.05 s 
        */
 
-      	epicsPrintf("processGuides -epicsEventWaitWithTimeout before \n");
 
-         if (guideUpdateNow == NULL) 
-         {
-            epicsPrintf("processGuides - guideUpdateNow == NULL \n");
-            return;
-         }
-         else
-         { 
-            epicsPrintf("processGuides - guideUpdateNow OK \n");
-         }
-      if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK)
-      //   epicsEventMustWait(guideUpdateNow);
-      //if(1) 
-      /* then ISR has given sem or it has never been taken */
+      if (epicsEventWaitWithTimeout(guideUpdateNow, waittime) == epicsEventWaitOK) 
+         /* then ISR has given sem or it has never been taken */
       {
-         epicsPrintf("processGuides -epicsEventWaitWithTimeout Then \n");
          //
          //
          //  ******REMOVED DELAY HERE AFTER PORT TO RTEMS*********
@@ -1099,7 +1081,7 @@ void processGuides (void)
             errlogPrintf( "***** nodeISR3 = %d intervalas %f > %f \n",
                   nodeISR3, scsBase->pwfs1.interval,  updateInterval.pwfs1); 
          }
-         return;
+
          if ( (nodeISR3 == AGP1_NODE) && (weight[PWFS1][currentBeam] > -2) )
          {
             if (scsBase->pwfs1.interval > updateInterval.pwfs1) 
@@ -1477,7 +1459,7 @@ void processGuides (void)
           * occurred and bypass timestamp checking 
           */
 
-         errlogSevPrintf(errlogInfo, "guideUpdateNow timeout\n");
+         //errlogSevPrintf(errlogInfo, "guideUpdateNow timeout\n");
          guideUpdate = FALSE;         
          procGuideCount2++; /*2*/
       }
