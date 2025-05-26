@@ -90,4 +90,3 @@ rm -rf $RPM_BUILD_ROOT
 - Commented out devel entries
 
 
-
