@@ -88,3 +88,10 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Wed Mar 26 2024 Pedro Gigoux <pedro.gigoux@noirlab.edu> 2.9
 - Commented out devel entries
+
+
+
+
+
+
+
