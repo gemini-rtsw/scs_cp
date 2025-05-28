@@ -37,10 +37,12 @@ CHECK_RELEASE = YES
 USR_CPPFLAGS += -DUSE_TYPED_RSET 
 
 # Change this if you want a different "top"
-TSCS = m2
+TSCS = m2v
 
 CNFG_DIR = /gem_prod/etc/rt/scs
 NTP_CNFG_FILE = /gem_prod/etc/rt/ntp/ntp-172.17.2.75-and-172.17.33.10.conf
+CNFG_DIR = /gem_test/rt/scs
+NTP_CNFG_FILE = /gem_test/rt/ntp/ntp-172.17.2.75-and-172.17.33.10.conf
 
 USR_BOOT_FLAGS = -MSCSTOP=$(TSCS) -MCNFGDIR=$(CNFG_DIR) -MNTPCFGFILE=$(NTP_CNFG_FILE)
 
