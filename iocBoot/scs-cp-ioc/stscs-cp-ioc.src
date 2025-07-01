@@ -89,4 +89,11 @@ seq &timeSeq, "sys=$(SCSTOP):, top=tcs:"
 seq &tilt_st, "S=$(SCSTOP):tilt:, debug=0"
 seq &scs_st, "T=$(SCSTOP):, D=$(SCSTOP):, F=$(SCSTOP):, I=$(SCSTOP):inst:"
 
+dbpf "m2v:guideConfigReset.DIR","2"
+dbpf "m2v:guideConfigReset.DIR","3"
+
+dbpf "m2v:setController.DIR","2"
+dbpf "m2v:setController.DIR","3"
+
+
 zoneset "CLST3"
