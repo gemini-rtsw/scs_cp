@@ -140,6 +140,7 @@ static int  mutex16 = 0;
 int scsInit (void)
 {
    int source = PWFS1;
+   int scsBaseMallocd = 0;
 
    if (scsConfigureISR() != OK) {
 
@@ -204,6 +205,7 @@ int scsInit (void)
    if ((scsPtr = (memMap *) malloc (sizeof (memMap))) == NULL)
    {
       printf ("malloc fail on creation of scsPtr buffer\n");
+      free(m2Ptr);
       return (ERROR);
    }
 
@@ -216,18 +218,24 @@ int scsInit (void)
    {
       printf("Reflective memory card not available\n");
 
-      if ((scsBase = (memMap *) malloc (sizeof (memMap))) == NULL)    
+      if ((scsBase = (memMap *) malloc (sizeof (memMap))) == NULL)
       {
          errlogMessage("malloc fail on creation of scsBase buffer\n");
+         free(scsPtr);
+         free(m2Ptr);
          return (ERROR);
       }
+      scsBaseMallocd = 1;
    }
 
-   printf ("initRefMem, scsPtr = %p, scsBase = %p\n",  scsPtr, scsBase); 
+   printf ("initRefMem, scsPtr = %p, scsBase = %p\n",  scsPtr, scsBase);
 
    if ((sbStatus = (SynchroStatus *) malloc (sizeof (SynchroStatus))) ==NULL )
    {
       printf ("malloc fail on creation of sbStatus buffer\n");
+      if (scsBaseMallocd) free(scsBase);
+      free(scsPtr);
+      free(m2Ptr);
       return (ERROR);
    }
 
