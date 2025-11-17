@@ -1,5 +1,5 @@
 [schematic2]
-uniq 61
+uniq 62
 [tools]
 [detail]
 w 3984 611 100 0 n#1 egenSub.guideSimPROC.C 4064 608 3904 608 3904 800 4224 800 4224 912 4192 912 eaos.guideSimyscale.OUT
@@ -66,6 +66,7 @@ w 1296 2083 100 0 n#57 ecad20.guideConfig.OUTD 1088 2080 1504 2080 egenSub.guide
 w 1296 2147 100 0 n#58 ecad20.guideConfig.OUTC 1088 2144 1504 2144 egenSub.guideConfigProc.C
 w 1296 2211 100 0 n#59 ecad20.guideConfig.OUTB 1088 2208 1504 2208 egenSub.guideConfigProc.B
 w 1296 2275 100 0 n#60 ecad20.guideConfig.OUTA 1088 2272 1504 2272 egenSub.guideConfigProc.A
+w 1818 -86 -100 0 n#61 hwout.hwout#365.outp 1808 -96 1808 -96 egenSub.guideConfResetProc.OUTJ
 s 5104 -1472 100 0 Secondary Control System
 s 5104 -1536 100 0 Guide Commands
 s 5584 -1744 100 0 1
@@ -255,6 +256,9 @@ p 2432 1431 100 0 -1 val(outp):$(top)allCar1.VAL
 use hwout 2976 2535 100 0 hwout#151
 xform 0 3072 2576
 p 3072 2567 100 0 -1 val(outp):$(top)allCar.VAL
+use hwout 1808 -137 100 0 hwout#365
+xform 0 1904 -96
+p 2032 -96 100 0 -1 val(outp):$(top)guideReset.VAL PP NMS
 use hwin 3088 1335 100 0 hwin#359
 xform 0 3184 1376
 p 3091 1368 100 0 -1 val(in):$(CAR_IDLE)
