@@ -4367,6 +4367,13 @@ ss clearguidefocusScs
    {
       when()
       {
+         efClear(clearGuideFocusCadChange);
+
+      } state waitForClearGuideFocusCmd
+   }
+
+   state waitForClearGuideFocusCmd
+   {
          /* turn off following */
 
          followOn = OFF;
@@ -4377,13 +4384,7 @@ ss clearguidefocusScs
 
          guideOn = OFF;
 
-         efClear(clearGuideFocusCadChange);
 
-      } state waitForClearGuideFocusCmd
-   }
-
-   state waitForClearGuideFocusCmd
-   {
       when(efTest(clearGuideFocusCadChange))
       {
 
