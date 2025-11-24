@@ -4370,6 +4370,8 @@ ss clearguidefocusScs
          /* turn off following */
 
          followOn = OFF;
+         followS = followOn;
+         pvPut(followS);
 
          /* turn off guiding */
 
