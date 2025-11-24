@@ -4374,16 +4374,6 @@ ss clearguidefocusScs
 
    state waitForClearGuideFocusCmd
    {
-         /* turn off following */
-
-         followOn = OFF;
-         followS = followOn;
-         pvPut(followS);
-
-         /* turn off guiding */
-
-         guideOn = OFF;
-
 
       when(efTest(clearGuideFocusCadChange))
       {
@@ -4398,6 +4388,17 @@ ss clearguidefocusScs
 
       when()
       {
+                  /* turn off following */
+
+         followOn = OFF;
+         followS = followOn;
+         pvPut(followS);
+
+         /* turn off guiding */
+
+         guideOn = OFF;
+
+
          clearGuideFocusCarIn = CAR_BUSY;
          pvPut(clearGuideFocusCarIn);
 
