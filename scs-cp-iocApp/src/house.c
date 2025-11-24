@@ -115,7 +115,7 @@ long    CADtest (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
 
-    cadDirLog ("test", pcad->dir, 0, pcad);
+    //cadDirLog ("test", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {
@@ -203,7 +203,7 @@ long    CADinit (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
 
-    cadDirLog ("init", pcad->dir, 0, pcad);
+    //cadDirLog ("init", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {
@@ -293,7 +293,7 @@ long    CADinitXY (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
 
-    cadDirLog ("init", pcad->dir, 0, pcad);
+    //cadDirLog ("init", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {
@@ -381,7 +381,7 @@ long    CADreboot (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
 
-    cadDirLog ("reboot", pcad->dir, 0, pcad);
+    //cadDirLog ("reboot", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {
@@ -470,7 +470,7 @@ long    CADdatum (struct cadRecord * pcad)
 {
     long    status = CAD_ACCEPT;
 
-    cadDirLog ("datum", pcad->dir, 0, pcad);
+    //cadDirLog ("datum", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {
@@ -559,7 +559,7 @@ long    CADsimulate (struct cadRecord * pcad)
     static int simBuffer;
     static char *simOpts[]= {"NONE", "VSM", "FAST", "FULL", NULL} ;
 
-    cadDirLog ("simulate", pcad->dir, 1, pcad);
+    //cadDirLog ("simulate", pcad->dir, 1, pcad);
 
     /* Fetch name of cad for messages */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;

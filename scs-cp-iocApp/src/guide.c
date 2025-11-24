@@ -239,7 +239,7 @@ long CADclearGuideFocus (struct cadRecord * pcad)
 {
      long status = CAD_ACCEPT;
 
-     cadDirLog ("clearGuideFocusLog", pcad->dir, 1, pcad);
+     //cadDirLog ("clearGuideFocusLog", pcad->dir, 1, pcad);
 
      /* Fetch name of cad for messages */
      tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;
@@ -362,7 +362,7 @@ long CADclearTiltGuide (struct cadRecord * pcad)
 {
      long status = CAD_ACCEPT;
 
-     cadDirLog ("clearTiltGuide", pcad->dir, 1, pcad);
+     //cadDirLog ("clearTiltGuide", pcad->dir, 1, pcad);
 
      /* Fetch name of cad for messages */
      tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;
@@ -483,7 +483,7 @@ long CADguideControl (struct cadRecord * pcad)
      static char *guideOpts[]= {"OFF", "ON", NULL} ;
      int i;
 
-     cadDirLog ("guideControl", pcad->dir, 1, pcad);
+     //cadDirLog ("guideControl", pcad->dir, 1, pcad);
 
      /* Fetch name of cad for messages */
      tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;
@@ -673,7 +673,7 @@ long CADguideConfig (struct cadRecord * pcad)
      static char *sourceOpts[] = {"PWFS1", "PWFS2", "OIWFS", "GAOS", "GYRO", "GPI", NULL } ;
      static char *filterOpts[] = {"OFF", "RAW", "LOWPASS", "HIGHPASS", "BANDPASS", "BANDSTOP", NULL} ;
 
-     cadDirLog ("guideConfig", pcad->dir, 10, pcad);
+     //cadDirLog ("guideConfig", pcad->dir, 10, pcad);
 
      /* Set message prefix */
      tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char *) NULL);
@@ -1186,7 +1186,7 @@ long CADguideReset (struct cadRecord * pcad)
 
      // printf("CADguideReset: BEGIN \n");
 
-     cadDirLog ("guideConfigReset", pcad->dir, 1, pcad);
+     //cadDirLog ("guideConfigReset", pcad->dir, 1, pcad);
 
      /* Set message prefix */
      tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char *) NULL);
@@ -2709,7 +2709,11 @@ static void displayFilterCallFunc(const iocshArgBuf *args)
 
 static void displayFilterRegisterCommands(void)
 {
+ static int firstTimeDF = 1;   
+  if(firstTimeDF) {
     iocshRegister(&displayFilterFuncDef, displayFilterCallFunc);
+    firstTimeDF = 0;
+  }
 }
 
 epicsExportRegistrar(displayFilterRegisterCommands);

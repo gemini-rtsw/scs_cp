@@ -571,7 +571,7 @@ void showArchive (void)
        epicsPrintf ("unable to retrieve positions for time specified, use current position\n");
     }
 }
-
+/*
 void CADLogToggle() {
    char msg[10];
    CADlogging = !CADlogging;
@@ -588,6 +588,7 @@ void CADLogToggle() {
  * Returns true if logging is ARMED on.
  * Allows replacement of the global loggingArmed. 
  */
+/*
 int isLoggingArmed(void)
 {
   return loggingArmed == ON;
@@ -607,3 +608,4 @@ static void CADlogTogRegisterCommands(void)
 
 epicsExportRegistrar(scsRegisterCommands);
 
+*/

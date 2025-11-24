@@ -141,8 +141,12 @@ static void chopInitCallFunc(const iocshArgBuf *args)
 
 static void chopRegisterCommands(void)
 {
-    iocshRegister(&chopInitFuncDef, chopInitCallFunc);
-
+   static int firstTimeCh = 1;   
+   if(firstTimeCh) {
+     iocshRegister(&chopInitFuncDef, chopInitCallFunc);
+     firstTimeCh = 0;
+   }
+  
 }
 
 epicsExportRegistrar(chopRegisterCommands);

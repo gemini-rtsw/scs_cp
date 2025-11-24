@@ -56,7 +56,7 @@
 /* INDENT ON */
 /* ===================================================================== */
 
-#include "m2Log.h"          /* For cadDirLog */
+//#include "m2Log.h"          /* For cadDirLog */
 //#include "archive.h"        /* For refMemFree */
 #include "control.h"        /* For scsPtr, scsBase, m2Ptr, 
                                diagnosticsAvailable, controller,
@@ -1576,7 +1576,7 @@ long CADguideSimCont (struct cadRecord * pcad)
     static int guideSim;
     static char *guideSimOpts[] = {"OFF", "ON", NULL};
 
-    cadDirLog ("guideSim", pcad->dir, 0, pcad);
+    //cadDirLog ("guideSim", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {
@@ -1843,6 +1843,8 @@ static void checkCommandBlockCallFunc(const iocshArgBuf *args)
 
 static void testFunctionsRegisterCommands(void)
 {
+  static int firstTimeTF = 1;   
+  if(firstTimeTF) {
     iocshRegister(&checkSafeBlockFuncDef, checkSafeBlockCallFunc);
     iocshRegister(&checkCommandBlockFuncDef, checkCommandBlockCallFunc);
     iocshRegister(&showMemoryFuncDef, showMemoryCallFunc);
@@ -1854,6 +1856,8 @@ static void testFunctionsRegisterCommands(void)
     iocshRegister(&bigFuncDef, bigCallFunc);
     iocshRegister(&clearPage0FuncDef, clearPage0CallFunc);
     iocshRegister(&showCountsFuncDef, showCountsCallFunc);
+    firstTimeTF = 0;
+  }
 }
 
 epicsExportRegistrar(testFunctionsRegisterCommands);

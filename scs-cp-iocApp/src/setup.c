@@ -403,12 +403,17 @@ static void scsInitCallFunc(const iocshArgBuf *args)
 
 static void scsRegisterCommands(void)
 {
+  static int firstTimeCmd = 1;   
+  if(firstTimeCmd) {
     iocshRegister(&scsInitFuncDef, scsInitCallFunc);
     iocshRegister(&initSetParametersFuncDef, initSetParametersCallFunc);
     iocshRegister(&setDataFileDirFuncDef, setDataFileDirCallFunc);
     iocshRegister(&showDataFileDirFuncDef, showDataFileDirCallFunc);
     iocshRegister(&setPvloadMacrosFuncDef, setPvloadMacrosCallFunc);
     iocshRegister(&showPvloadMacrosFuncDef, showPvloadMacrosCallFunc);
+    firstTimeCmd = 0;
+  }
+
 }
 
 epicsExportRegistrar(scsRegisterCommands);

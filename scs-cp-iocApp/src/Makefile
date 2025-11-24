@@ -35,7 +35,7 @@ scs-cp-ioc_SRCS += scs-cp-ioc_registerRecordDeviceDriver.cpp
 # Build the main IOC entry point on workstation OSs.
 scs-cp-ioc_SRCS_DEFAULT += scs-cp-iocMain.cpp
 
-scs-cp-ioc_SRCS += m2Log.c
+#scs-cp-ioc_SRCS += m2Log.c
 scs-cp-ioc_SRCS += chop.c
 scs-cp-ioc_SRCS += chopControl.c
 scs-cp-ioc_SRCS += config.c

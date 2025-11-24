@@ -618,7 +618,7 @@ long CADstop (struct cadRecord * pcad)
 {
     long status = CAD_ACCEPT;
 
-    cadDirLog ("stop", pcad->dir, 0, pcad);
+    //cadDirLog ("stop", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {
@@ -732,7 +732,7 @@ long CADmove (struct cadRecord * pcad)
     static double AxTilt, AyTilt, BxTilt, ByTilt, CxTilt, CyTilt, zFocus,
                   xPos, yPos;
 
-    cadDirLog ("move", pcad->dir, 9, pcad);
+    //cadDirLog ("move", pcad->dir, 9, pcad);
 
     switch (pcad->dir)
     {
@@ -993,7 +993,7 @@ long CADfollow (struct cadRecord * pcad)
 {
     long status = CAD_ACCEPT;
 
-    cadDirLog ("follow", pcad->dir, 0, pcad);
+    //cadDirLog ("follow", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {
@@ -1106,7 +1106,7 @@ long CADactuators (struct cadRecord * pcad)
     static location position;
     char dumpString[MAX_STRING_SIZE];
 
-    cadDirLog ("actuators", pcad->dir, 3, pcad);
+    //cadDirLog ("actuators", pcad->dir, 3, pcad);
 
     switch (pcad->dir)
     {
@@ -1231,7 +1231,7 @@ long CADpark (struct cadRecord * pcad)
 {
     long status = CAD_ACCEPT;
 
-    cadDirLog ("park", pcad->dir, 0, pcad);
+    //cadDirLog ("park", pcad->dir, 0, pcad);
 
     switch (pcad->dir)
     {

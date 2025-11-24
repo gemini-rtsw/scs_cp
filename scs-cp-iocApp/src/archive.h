@@ -57,7 +57,7 @@ void showArchive (void);
 
 void loggerTask (void);
 
-int cadDirLog (char *cadName, int directive, int argc, struct cadRecord * pcad);
+//int cadDirLog (char *cadName, int directive, int argc, struct cadRecord * pcad);
 
 long scsLogDestruct(void);
 

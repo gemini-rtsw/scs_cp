@@ -51,7 +51,7 @@
 #include "utilities.h"      /* for all the EPICS base includes, plus other stuff */
 #include "chop.h"               
 //#include "archive.h"        /* for cadDirLog, refMemFree */
-#include "m2Log.h"          /* cadDirLog*/
+//#include "m2Log.h"          /* cadDirLog*/
 #include "control.h"        /* For scsPtr, interlockFlag */
 
 /* Define frequency limits for the various chop profiles (Hertz)  */
@@ -176,7 +176,7 @@ long CADchopConfig (struct cadRecord * pcad)
    static char *ssOpts[] = {"SCS", "ICS0", "ICS1", "ICS2", "ICS3",
                                  "ICS4", NULL} ; 
 
-   cadDirLog ("chopConfig", pcad->dir, 4, pcad);
+   //cadDirLog ("chopConfig", pcad->dir, 4, pcad);
 
    /* Fetch name of cad for messages */
    tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;
@@ -393,7 +393,7 @@ long    CADchopControl (struct cadRecord * pcad)
             decsreset;
         static char *chopOpts[] = {"OFF", "ON", NULL} ;
 
-    cadDirLog ("chopControl", pcad->dir, 5, pcad);
+    //cadDirLog ("chopControl", pcad->dir, 5, pcad);
 
     /* Fetch name of cad for messages */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;
@@ -505,7 +505,7 @@ long    CADbeamJog (struct cadRecord * pcad)
     long    status = CAD_ACCEPT;
     static  int requestedBeam = BEAMA;
 
-    cadDirLog ("beamJog", pcad->dir, 1, pcad);
+    //cadDirLog ("beamJog", pcad->dir, 1, pcad);
 
     switch (pcad->dir)
     {

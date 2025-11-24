@@ -228,7 +228,7 @@ long    CADmoveBaffle (struct cadRecord * pcad)
     long    status = CAD_ACCEPT;
     static  int deployable, central;
 
-    cadDirLog ("moveBaffle", pcad->dir, 2, pcad);
+    //cadDirLog ("moveBaffle", pcad->dir, 2, pcad);
 
     /* Set message prefix */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char *) NULL);
@@ -374,7 +374,7 @@ long    CADservoBandwidth (struct cadRecord * pcad)
     static  double bandwidth;
     char    dumpString[MAX_STRING_SIZE];
 
-    cadDirLog ("servoBandwidth", pcad->dir, 1, pcad);
+    //cadDirLog ("servoBandwidth", pcad->dir, 1, pcad);
 
     switch (pcad->dir)
     {
@@ -491,7 +491,7 @@ long    CADcontroller (struct cadRecord * pcad)
     static double pid[17];
     int     tmp;
 
-    cadDirLog ("controller", pcad->dir, 17, pcad);
+    //cadDirLog ("controller", pcad->dir, 17, pcad);
 
     switch (pcad->dir)
     {
@@ -812,7 +812,7 @@ long    CADsetPhasorControl (struct cadRecord * pcad)
     Phasor *phasor;
     int axis;
 
-    cadDirLog ("Phasorcontroller", pcad->dir, 17, pcad);
+    //cadDirLog ("Phasorcontroller", pcad->dir, 17, pcad);
 
     switch (pcad->dir)
     {
@@ -966,7 +966,7 @@ long    CADsetVTKControl (struct cadRecord * pcad)
     Vtk *vtk;
     int axis;
 
-    cadDirLog ("VTKcontroller", pcad->dir, 17, pcad);
+    //cadDirLog ("VTKcontroller", pcad->dir, 17, pcad);
 
     switch (pcad->dir)
     {
@@ -1263,7 +1263,7 @@ long    CADdecsAdjust (struct cadRecord * pcad)
             double  zSmooth;
         } decsValue;
 
-    cadDirLog ("decsConfig", pcad->dir, 9, pcad);
+    //cadDirLog ("decsConfig", pcad->dir, 9, pcad);
 
     switch (pcad->dir)
     {
@@ -1497,7 +1497,7 @@ long    CADtolerance (struct cadRecord * pcad)
     char    dumpString[MAX_STRING_SIZE];
     static  double xPosTol, yPosTol, xTiltTol, yTiltTol, zFocusTol, xyPosDeadband;
 
-    cadDirLog ("tolerance", pcad->dir, 6, pcad);
+    //cadDirLog ("tolerance", pcad->dir, 6, pcad);
 
     switch (pcad->dir)
     {
@@ -1665,7 +1665,7 @@ long    CADdebug (struct cadRecord * pcad)
         static char *debugOpts[]= 
                {"NONE", "MIN", "MED", "MAX", "RESERVED1", "RESERVED2", NULL} ;
 
-    cadDirLog ("debug", pcad->dir, 1, pcad);
+    //cadDirLog ("debug", pcad->dir, 1, pcad);
 
     /* Fetch name of cad for messages */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL) ;
@@ -1767,7 +1767,7 @@ long    CADdriveFollower (struct cadRecord * pcad)
     char    dumpString[MAX_STRING_SIZE];
     static  long follower, foldir, followersteps;
 
-    cadDirLog ("driveFollower", pcad->dir, 5, pcad);
+    //cadDirLog ("driveFollower", pcad->dir, 5, pcad);
 
     switch (pcad->dir)
     {
@@ -1904,7 +1904,7 @@ long    CADdriveOffloader (struct cadRecord * pcad)
     char    dumpString[MAX_STRING_SIZE];
     static  long offloader, ofldir, offloadersteps;
 
-    cadDirLog ("driveOffloader", pcad->dir, 5, pcad);
+    //cadDirLog ("driveOffloader", pcad->dir, 5, pcad);
 
     switch (pcad->dir)
     {
@@ -2035,7 +2035,7 @@ long    CADdriveDB (struct cadRecord * pcad)
     char    dumpString[MAX_STRING_SIZE];
     static  long deployable_baffle, dbafdir, dbsteps;
 
-    cadDirLog ("driveDB", pcad->dir, 5, pcad);
+    //cadDirLog ("driveDB", pcad->dir, 5, pcad);
 
     switch (pcad->dir)
     {
@@ -2165,7 +2165,7 @@ long    CADdriveCB(struct cadRecord * pcad)
     char    dumpString[MAX_STRING_SIZE];
     static  long cbafdir, cbsteps;
 
-    cadDirLog ("driveCB", pcad->dir, 5, pcad);
+    //cadDirLog ("driveCB", pcad->dir, 5, pcad);
 
     switch (pcad->dir)
     {
@@ -2283,7 +2283,7 @@ long    CADdriveXY (struct cadRecord * pcad)
     char    dumpString[MAX_STRING_SIZE];
     static  long xy_motor, xydir, xysteps;
 
-    cadDirLog ("driveXY", pcad->dir, 5, pcad);
+   //cadDirLog ("driveXY", pcad->dir, 5, pcad);
 
     switch (pcad->dir)
     {
@@ -2415,7 +2415,7 @@ long CADtiltPidControl (struct cadRecord * pcad)
     static int tiltPidRqst;
     static char *tiltPidOpts[]= {"OFF", "ON", NULL};
 
-    cadDirLog ("tiltPidControl", pcad->dir, 1, pcad);
+    //cadDirLog ("tiltPidControl", pcad->dir, 1, pcad);
 
     /* Fetch name of cad for messages */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL);
@@ -2530,7 +2530,7 @@ long CADfocusPidControl (struct cadRecord * pcad)
     static int focusPidRqst;
     static char *focusPidOpts[]= {"OFF", "ON", NULL};
 
-    cadDirLog ("focusPidControl", pcad->dir, 1, pcad);
+    //cadDirLog ("focusPidControl", pcad->dir, 1, pcad);
 
     /* Fetch name of cad for messages */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL);
@@ -2611,7 +2611,7 @@ long CADphasorControl (struct cadRecord * pcad)
     static char *phasorOpts[]= {"OFF", "ON", NULL};
     static char *phasorAxisOpts[]= {"XTILT", "YTILT", NULL};
 
-    cadDirLog ("phasorControl", pcad->dir, 1, pcad);
+    //cadDirLog ("phasorControl", pcad->dir, 1, pcad);
 
     /* Fetch name of cad for messages */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL);
@@ -2732,7 +2732,7 @@ long CADvtkControl (struct cadRecord * pcad)
     static char *vibTrackOpts[]= {"OFF", "ON", NULL};
     static char *vtkAxisOpts[]= {"XTILT", "YTILT", NULL};
 
-    cadDirLog ("vibTrackControl", pcad->dir, 1, pcad);
+    //cadDirLog ("vibTrackControl", pcad->dir, 1, pcad);
 
     /* Fetch name of cad for messages */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char*)NULL);
@@ -2892,7 +2892,7 @@ long    CADmovePeriscope (struct cadRecord * pcad)
     long    status = CAD_ACCEPT;
     static  int periscope;
 
-    cadDirLog ("movePeriscope", pcad->dir, 1, pcad);
+    //cadDirLog ("movePeriscope", pcad->dir, 1, pcad);
 
     /* Set message prefix */
     tcsCsSetMessageN (pcad, tcsCsCadName(pcad), ": ", (char *) NULL);
