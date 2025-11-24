@@ -33,7 +33,8 @@ PVLOAD=$(PRODSUP)/pvload
 #IOCSTATS=$(PRODSUP)/iocStats
 TIMEPROBE=$(PRODSUP)/timeProbe
 SYMB=$(PRODSUP)/symb
-VMIC=$(PRODSUP)/vmi5588
+#VMIC=$(PRODSUP)/vmi5588
+VMIC=/home/rrojas/work/support/vmi5588
 XYCOM=$(PRODSUP)/xycom
 
 
