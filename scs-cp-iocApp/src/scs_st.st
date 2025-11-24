@@ -4367,6 +4367,14 @@ ss clearguidefocusScs
    {
       when()
       {
+         /* turn off following */
+
+         followOn = OFF;
+
+         /* turn off guiding */
+
+         guideOn = OFF;
+
          efClear(clearGuideFocusCadChange);
 
       } state waitForClearGuideFocusCmd
