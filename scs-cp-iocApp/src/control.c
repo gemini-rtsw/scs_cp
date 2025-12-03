@@ -876,11 +876,49 @@ void fireLoops (void *param)
 
 
 static int isr2 = 0;
-/* Later: add header */
+
+/*
+ * Corruption detection counters for ISR event pointers.
+ * These track when the event semaphore pointers contain invalid values:
+ * - NULL pointer (never initialized or zeroed)
+ * - 0xa5a5a5xx pattern (RTEMS freed memory fill pattern)
+ * 
+ * See: SCS_Crash_Investigation_Report.md for full analysis
+ * Jira: GSFR-43648, GE7-94
+ */
+int isr2_null_count = 0;
+int isr2_freed_count = 0;
+int isr3_null_count = 0;
+int isr3_freed_count = 0;
+
+/* Macro to detect RTEMS freed memory pattern (0xa5a5a5a5) */
+#define IS_FREED_MEMORY_PATTERN(ptr) \
+   (((unsigned long)(ptr) & 0xFFFFFF00) == 0xa5a5a500)
+
+/* 
+ * rmISR2 - Reflective Memory Interrupt Service Routine for channel 2
+ * 
+ * Called by VMI5588 driver when interrupt 2 is received.
+ * Signals scsReceiveNow event to wake up scsReceive() thread.
+ * 
+ * DEFENSIVE CHECK: Validates scsReceiveNow pointer before use to
+ * prevent crash if pointer is corrupted. Logs corruption via counters.
+ */
 void rmISR2 (int node)
 {
    nodeISR2 = node;
    isr2++;
+   
+   /* Defensive check: detect corrupted event pointer */
+   if (scsReceiveNow == NULL) {
+      isr2_null_count++;
+      return;  /* Don't crash - just skip signaling */
+   }
+   if (IS_FREED_MEMORY_PATTERN(scsReceiveNow)) {
+      isr2_freed_count++;
+      return;  /* Don't crash - pointer contains freed memory pattern */
+   }
+   
    epicsEventSignal(scsReceiveNow);
 
    /* why is this commented out? This is the only place the 
@@ -891,11 +929,31 @@ void rmISR2 (int node)
 }
 
 static int isr3 = 0;
-/* Later: add header */
+
+/* 
+ * rmISR3 - Reflective Memory Interrupt Service Routine for channel 3
+ * 
+ * Called by VMI5588 driver when interrupt 3 is received.
+ * Signals guideUpdateNow event to wake up processGuides() thread.
+ * 
+ * DEFENSIVE CHECK: Validates guideUpdateNow pointer before use to
+ * prevent crash if pointer is corrupted. Logs corruption via counters.
+ */
 void rmISR3 (int node)
 {
    nodeISR3 = node;
    isr3++;
+   
+   /* Defensive check: detect corrupted event pointer */
+   if (guideUpdateNow == NULL) {
+      isr3_null_count++;
+      return;  /* Don't crash - just skip signaling */
+   }
+   if (IS_FREED_MEMORY_PATTERN(guideUpdateNow)) {
+      isr3_freed_count++;
+      return;  /* Don't crash - pointer contains freed memory pattern */
+   }
+   
    epicsEventSignal(guideUpdateNow);
 }
 
@@ -3438,6 +3496,10 @@ epicsExportAddress(int, scsrx5 );
 epicsExportAddress(int, NsNrTolerance );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
+epicsExportAddress(int, isr2_null_count );
+epicsExportAddress(int, isr2_freed_count );
+epicsExportAddress(int, isr3_null_count );
+epicsExportAddress(int, isr3_freed_count );
 epicsExportAddress(int, showcs );
 epicsExportAddress(int, showLF );
 epicsExportAddress(int, sendpulse );
