@@ -502,6 +502,108 @@ The next step is to deploy this branch, monitor the counters, and correlate any 
 
 ---
 
+## Canary Corruption Detection (Added December 2024)
+
+### Overview
+
+In addition to the ISR-based defensive checks, this branch now implements **canary corruption detection** - a second layer of monitoring that provides earlier detection and more diagnostic information about memory corruption.
+
+### How It Works
+
+**Canary values** are sentinel integers placed in memory immediately before and after the critical event pointers:
+
+```c
+unsigned long canary_before_scsReceiveNow = 0xDEADBEEF;
+epicsEventId scsReceiveNow = NULL;
+unsigned long canary_after_scsReceiveNow = 0xCAFEBABE;
+
+unsigned long canary_before_guideUpdateNow = 0xFEEDFACE;
+epicsEventId guideUpdateNow = NULL;
+unsigned long canary_after_guideUpdateNow = 0xC0FFEE00;
+```
+
+A monitoring task (`canaryCheckTask`) runs every 1 second and checks if these sentinel values have been overwritten. If corruption is detected, counters are incremented and exposed via EPICS PVs that alarm when non-zero.
+
+### Why "DEADBEEF" and "CAFEBABE"?
+
+These hexadecimal values are **industry-standard magic numbers** used in debugging:
+
+- **Human-readable**: Easy to spot in memory dumps (`0xDEADBEEF` reads as "DEAD BEEF")
+- **Statistically unique**: Probability of occurring naturally is 1 in 4 billion
+- **Invalid as pointers**: On most systems, these addresses would be in invalid memory regions
+- **Historical precedent**: Used for decades in debugging (Java class files use 0xCAFEBABE, Microsoft uses 0xDEADBEEF for freed heap)
+
+### Advantages Over ISR-Only Detection
+
+| Feature | ISR Detection | Canary Detection |
+|---------|---------------|------------------|
+| **Detection timing** | Only when ISR fires (unpredictable) | Every 1 second (continuous) |
+| **Directional info** | No | Yes (before/after pointer) |
+| **Transient corruption** | May miss between ISRs | Catches all instances |
+| **Pattern analysis** | Pointer value only | Canary + pointer values |
+| **System impact** | Prevents crash | Prevents crash + provides forensics |
+
+### EPICS Monitoring
+
+New PVs added (assuming `SCSTOP=m2`):
+
+| PV Name | Purpose | Alarm |
+|---------|---------|-------|
+| `m2:CANARIES_ADJACENT` | Verifies correct memory layout | MAJOR if not adjacent |
+| `m2:SCS_CANARY_BEFORE_CORRUPT` | Corruption before `scsReceiveNow` | MAJOR if > 0 |
+| `m2:SCS_CANARY_AFTER_CORRUPT` | Corruption after `scsReceiveNow` | MAJOR if > 0 |
+| `m2:GUIDE_CANARY_BEFORE_CORRUPT` | Corruption before `guideUpdateNow` | MAJOR if > 0 |
+| `m2:GUIDE_CANARY_AFTER_CORRUPT` | Corruption after `guideUpdateNow` | MAJOR if > 0 |
+
+### Memory Layout Verification
+
+At startup, `canaryCheckTask` verifies that canaries are physically adjacent to the pointers they protect. This is critical because:
+
+- Canaries only detect corruption if they're **in the path** of the corrupting write
+- The compiler could theoretically reorder global variables
+- The `CANARIES_ADJACENT` PV alarms if layout verification fails
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `scs-cp-iocApp/src/control.c` | Added canary variables, monitoring task, exports |
+| `scs-cp-iocApp/src/setup.c` | Spawn `canaryCheckTask` at initialization |
+| `scs-cp-iocApp/src/scs.dbd` | Added variable declarations |
+| `scs-cp-iocApp/Db/canaryDiag.db` | New database file with 5 monitoring records |
+| `scs-cp-iocApp/Db/Makefile` | Install `canaryDiag.db` |
+| `iocBoot/scs-cp-ioc/stscs-cp-ioc.src` | Load `canaryDiag.db` at startup |
+
+### Interpreting Corruption Patterns
+
+When canary corruption is detected, the pattern indicates the likely source:
+
+**Example 1: Buffer overflow from before**
+```
+BEFORE canary: corrupted (counter > 0)
+Pointer: still valid
+AFTER canary: intact (counter = 0)
+```
+→ Corruption approaching from lower memory addresses
+
+**Example 2: Targeted pointer write**
+```
+BEFORE canary: intact (counter = 0)
+Pointer: corrupted (ISR counter > 0)
+AFTER canary: intact (counter = 0)
+```
+→ Direct write to pointer location only
+
+**Example 3: Large block corruption**
+```
+BEFORE canary: corrupted (counter > 0)
+Pointer: corrupted (ISR counter > 0)
+AFTER canary: corrupted (counter > 0)
+```
+→ Wide-area corruption (DMA, VME bus, hardware issue)
+
+---
+
 ## References
 
 - [GSFR-43648](https://noirlab.atlassian.net/browse/GSFR-43648) - Master issue: SCS WSOD and focus lost

@@ -17,6 +17,7 @@ dbLoadRecords("db/m2sad.db","top=$(SCSTOP):")
 #dbLoadRecords("db/iocAdminRTEMS.db","IOC=$(SCSTOP):iocStats,TODFORMAT=%m/%d/%Y %H:%M:%S")
 dbLoadRecords("db/timeProbe.db","top=$(SCSTOP):")
 dbLoadRecords("db/isrDiag.db","top=$(SCSTOP):")
+dbLoadRecords("db/canaryDiag.db","top=$(SCSTOP):")
 
 # Configure BANCOMM card
 # - set the bc635 Time Provider priority to something other than the default

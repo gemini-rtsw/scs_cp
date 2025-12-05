@@ -9,11 +9,12 @@ include $(TOP)/configure/CONFIG
 vpath %.db $(SYS_DB_PATHS)
 
 
-DB = m2.db 
+DB = m2.db
 DB += m2sad.db
 #DB += iocAdminRTEMS.db
 DB += timeProbe.db
 DB += isrDiag.db
+DB += canaryDiag.db
 
 
 #----------------------------------------------------
