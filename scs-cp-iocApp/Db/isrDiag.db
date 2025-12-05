@@ -8,8 +8,8 @@
 # ISR2 (scsReceiveNow) corruption counters
 record(longin, "$(top)ISR2_NULL_CNT") {
     field(DESC, "ISR2 NULL pointer detections")
-    field(DTYP, "iocvar")
-    field(INP,  "@isr2_null_count")
+    field(DTYP, "Global Variable")
+    field(INP,  "isr2_null_count")
     field(SCAN, "1 second")
     field(HIHI, "1")
     field(HHSV, "MAJOR")
@@ -17,8 +17,8 @@ record(longin, "$(top)ISR2_NULL_CNT") {
 
 record(longin, "$(top)ISR2_FREED_CNT") {
     field(DESC, "ISR2 freed memory detections")
-    field(DTYP, "iocvar")
-    field(INP,  "@isr2_freed_count")
+    field(DTYP, "Global Variable")
+    field(INP,  "isr2_freed_count")
     field(SCAN, "1 second")
     field(HIHI, "1")
     field(HHSV, "MAJOR")
@@ -27,8 +27,8 @@ record(longin, "$(top)ISR2_FREED_CNT") {
 # ISR3 (guideUpdateNow) corruption counters
 record(longin, "$(top)ISR3_NULL_CNT") {
     field(DESC, "ISR3 NULL pointer detections")
-    field(DTYP, "iocvar")
-    field(INP,  "@isr3_null_count")
+    field(DTYP, "Global Variable")
+    field(INP,  "isr3_null_count")
     field(SCAN, "1 second")
     field(HIHI, "1")
     field(HHSV, "MAJOR")
@@ -36,8 +36,8 @@ record(longin, "$(top)ISR3_NULL_CNT") {
 
 record(longin, "$(top)ISR3_FREED_CNT") {
     field(DESC, "ISR3 freed memory detections")
-    field(DTYP, "iocvar")
-    field(INP,  "@isr3_freed_count")
+    field(DTYP, "Global Variable")
+    field(INP,  "isr3_freed_count")
     field(SCAN, "1 second")
     field(HIHI, "1")
     field(HHSV, "MAJOR")
