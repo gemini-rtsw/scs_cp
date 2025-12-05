@@ -414,7 +414,7 @@ variable( isr3_freed_count, int)
 - `$(top)ISR3_FREED_CNT` - monitors `isr3_freed_count`
 
 All records:
-- Use `iocvar` device type to read C variables
+- Use `Global Variable` device type to read C variables
 - Scan at 1 second interval
 - Alarm MAJOR if value > 0 (HIHI=1, HHSV=MAJOR)
 
