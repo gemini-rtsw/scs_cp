@@ -1,606 +1,247 @@
 # SCS Crash Investigation Report
 ## Exception Vector 3/4 Memory Corruption Analysis
 
-**System:** Gemini South Secondary Control System (SCS)  
-**Branch:** bugfix/isr-corruption-detection-2024q3  
-**Based on:** unstable/2024q3  
-**Date:** 2025-12-03  
-**Master Issue:** [GSFR-43648](https://noirlab.atlassian.net/browse/GSFR-43648)  
-**Bug Tracking:** [GE7-94](https://noirlab.atlassian.net/browse/GE7-94)
+**System:** Gemini South Secondary Control System (SCS)
+**Branch:** bugfix/isr-corruption-detection-2024q3
+**Based on:** unstable/2024q3
+**Issue:** [GSFR-43648](https://noirlab.atlassian.net/browse/GSFR-43648) | [GE7-94](https://noirlab.atlassian.net/browse/GE7-94)
+**Author:** Patrick Parks
+**Date:** December 2025
+
+---
+
+## Table of Contents
+
+1. [Executive Summary](#executive-summary)
+2. [Problem Description](#problem-description)
+3. [Root Cause Investigation](#root-cause-investigation)
+4. [Defensive Measures Implemented](#defensive-measures-implemented)
+5. [EPICS Monitoring](#epics-monitoring)
+6. [Next Steps](#next-steps)
+7. [References](#references)
 
 ---
 
 ## Executive Summary
 
-The SCS experiences intermittent crashes (every 3-5 weeks) caused by **two distinct exception types**:
+The SCS experiences intermittent crashes every 3-5 weeks caused by memory corruption of event pointers used in interrupt service routines. The system manifests as **"SCS froze and rebooted itself"** - interrupts are disabled when the crash occurs in ISR context, system hangs, then watchdog triggers reboot.
 
-| Exception | Type | Root Cause | Status |
-|-----------|------|------------|--------|
-| **Vector 4** (ISI) | Instruction Storage Interrupt | XYCOM-240 hardware failure | ✅ **FIXED** (Aug 2025) |
-| **Vector 3** (DSI) | Data Storage Interrupt | Event pointer memory corruption | ❌ **STILL OCCURRING** |
+**Status:**
+- ✅ **Vector 4 (Hardware)** - Fixed by XYCOM-240 board replacement (Aug 2025)
+- ❌ **Vector 3 (Memory corruption)** - Still occurring, root cause unknown
 
-The Vector 3 crashes occur in the VMI5588 reflective memory interrupt handlers when calling `epicsEventSignal()` on corrupted event pointers. These crashes manifest as **"SCS froze and rebooted itself"** - the system hangs because the crash occurs in ISR context (interrupts disabled), then the watchdog timer triggers a reboot.
-
-**Root Cause Status:** NOT DEFINITIVELY IDENTIFIED through static code analysis. This branch implements defensive measures to:
-1. Prevent crashes by validating pointers in ISRs
-2. Collect diagnostic data about corruption occurrences
-3. Allow the system to continue operating while gathering evidence
+**This Branch:** Implements two-layer defensive system to prevent crashes and collect diagnostic data while root cause is investigated.
 
 ---
 
-## Issue Timeline (from Jira GSFR-43648)
+## Problem Description
 
-| Date | Event |
-|------|-------|
-| **Jul 2024** | Vector 4 crash logged (ntwk thread, PC=0xab715d64) |
-| **Nov 2024** | New CPU board installed - issue continued |
-| **Dec 2024** | New Transition Module installed - issue continued |
-| **Jan 2025** | Rolled back to EPICS 3.14 for diagnosis - issue continued |
-| **Aug 2025** | XYCOM-240 board replaced - Vector 4 crashes stopped |
-| **Sep 2025** | Issue REOPENED - "New instance of vector 4/3" |
-| **Oct 2025** | Trace analysis requested - "issue is still occurring" |
-| **Recent** | Fault report: "SCS froze and rebooted itself" during guide offset |
+### Crash Symptoms
 
----
+When operators report "SCS froze and rebooted itself":
+1. Guide loops fail to re-close after telescope offset
+2. SCS shows error state, all controls frozen
+3. Watchdog timeout triggers automatic reboot
+4. Occurs every 3-5 weeks, often during guide offset operations
 
-## Crash Analysis
+### Technical Cause
 
-### Two Exception Types
-
-**Vector 4 (ISI - Instruction Storage Interrupt)** - FIXED
-- Caused by attempting to execute code at invalid address
-- July 2024 crash: PC = 0xab715d64 (invalid code address)
-- Root cause: XYCOM-240 hardware failure
-- **Resolved** by board replacement August 2025
-
-**Vector 3 (DSI - Data Storage Interrupt)** - STILL OCCURRING
-- Caused by attempting to access data at invalid address
-- Crashes in VMI5588 ISR when signaling corrupted event pointer
-- Root cause: Unknown memory corruption affecting global pointers
-
-### Vector 3 Stack Trace Evidence
-
-| Crash | DAR Value | Interpretation |
-|-------|-----------|----------------|
-| StackTracer-1 | `0x00000014` | Event pointer is NULL (0x0 + offset 20) |
-| StackTracer-2 | `0xa5a5a5a9` | Event pointer is 0xa5a5a5a5 (RTEMS freed memory pattern + offset 4) |
-
-### Crash Call Chain
+VMI5588 reflective memory ISRs (`rmISR2`, `rmISR3`) crash when calling `epicsEventSignal()` on corrupted event pointers:
 
 ```
-VME Interrupt fires
-    ↓
-universeVMEISR() [vmeUniverse.c:1981]
-    ↓
-vmi5588_intr() [drvVmi5588.c:456]
-    ↓
-(*pisr[irqNumber])() → rmISR2() or rmISR3()
-    ↓
-epicsEventSignal(guideUpdateNow)  ← CORRUPTED POINTER
-    ↓
-epicsEventTrigger() [osdEvent.c:55]
-    ↓
-_Semaphore_Post_binary() [semaphore.c:199]  ← CRASH HERE
+VME Interrupt → rmISR3() → epicsEventSignal(guideUpdateNow) → CRASH
 ```
 
-### Key Observations
+Corrupted pointer values found in crash dumps:
+- `NULL` (0x00000000)
+- `0xa5a5a5a5` (RTEMS freed memory pattern)
 
-1. **Timing:** Crashes occur every 3-5 weeks, NOT at startup
-2. **Context:** Often during `CADguideConfig` operations or guide offset transitions
-3. **Thread:** `ntwk` (EPICS Channel Access) thread often involved
-4. **Pattern:** 0xa5a5a5a5 is RTEMS's freed memory fill pattern
-5. **Scope:** Affects `guideUpdateNow` and potentially `scsReceiveNow` global pointers
+### Affected Pointers
 
-### Recent Fault Report: "SCS froze and rebooted itself"
+Two global event pointers used to signal ISRs:
+- `scsReceiveNow` - signaled by `rmISR2()`
+- `guideUpdateNow` - signaled by `rmISR3()`
 
-> *"23:19 - We were on a GMOS OI longslit program. We had just taken one spectrum, then the loops opened to offset to a new position. However, when we reached the new position, the loops didn't re-close and there was an error message on the SCS saying that the SCS was in an error state. When I looked at the SCS status screen I could see everything was frozen. I was looking up the directions for rebooting the SCS when it went into a WSOD and rebooted itself."*
-
-**Analysis of this fault:**
-
-| Symptom | Technical Interpretation |
-|---------|-------------------------|
-| "loops didn't re-close" | Guide system stopped responding |
-| "SCS was in an error state" | Exception detected |
-| "everything was frozen" | **ISR crash** - interrupts disabled, no code can run |
-| "went into a WSOD and rebooted" | Watchdog timeout triggered reboot |
-
-**Trigger pattern:** Guide loop open → telescope offset → attempt to re-close loops. This transition involves stopping and restarting guide operations, which may expose or trigger the corruption.
-
----
-
-## Code Investigation Summary
-
-### Areas Analyzed (All Clean)
-
-| Investigation | Result | Details |
-|--------------|--------|---------|
-| Buffer overflows (strcpy/sprintf) | ✅ Clean | All buffers properly sized |
-| Array bounds checking | ✅ Clean | source/beam indices validated with else clauses |
-| Stack overflow risk | ✅ Clean | Large arrays are static globals, not on stack |
-| VMI5588 driver | ✅ Clean | Function pointer handling is correct |
-| Wild pointer patterns | ✅ Clean | No `&guideUpdateNow` usage found |
-| Pointer arithmetic | ✅ Clean | No unsafe arithmetic on malloc'd buffers |
-| EPICS record processing | ✅ Clean | Standard patterns, no memory issues |
-| Structure/sizeof mismatches | ✅ Clean | Proper sizing throughout |
-
-### Event Pointer Lifecycle
-
-```c
-// Declaration (control.c:340)
-epicsEventId guideUpdateNow = NULL;
-
-// Creation (setup.c - during scsInit)
-guideUpdateNow = epicsEventMustCreate(epicsEventEmpty);
-
-// Usage (control.c - in rmISR3)
-epicsEventSignal(guideUpdateNow);
-
-// Waiting (control.c - in processGuides)
-epicsEventWaitWithTimeout(guideUpdateNow, waittime);
-```
-
-**Critical Finding:** The event is:
+These pointers are:
 - Created once at startup
-- NEVER destroyed (no `epicsEventDestroy`)
-- NEVER has its address taken (`&guideUpdateNow`)
-- NEVER reassigned after initialization
-
-**Yet it becomes corrupted after weeks of operation.**
+- Never destroyed or reassigned
+- **Yet become corrupted after weeks of operation**
 
 ---
 
-## Remaining Hypotheses
+## Root Cause Investigation
 
-Since static analysis found no definitive cause, the corruption likely stems from:
+### Code Analysis - All Clean
 
-### 1. Heap Corruption Spreading to BSS
-- Severe heap corruption could overflow into the BSS segment
-- Would require massive heap damage to reach global variables
-- **Likelihood:** Low
+Extensive static code analysis found no definitive cause:
 
-### 2. Hardware Memory Issues
-- VME bus noise or signal integrity problems
-- Memory bit flips (cosmic rays, power issues)
-- Reflective memory card intermittent failure
-- **Likelihood:** Medium (hardware was replaced but issue recurred)
+| Investigation | Result |
+|--------------|--------|
+| Buffer overflows | ✅ All buffers properly sized |
+| Array bounds | ✅ All indices validated |
+| Stack overflow | ✅ Large arrays are globals |
+| VMI5588 driver | ✅ Function pointers handled correctly |
+| Pointer arithmetic | ✅ No unsafe operations |
 
-### 3. External Memory Writes
-- Another VME node writing to wrong memory via reflective memory
-- DMA controller misconfiguration
-- **Likelihood:** Medium
+### Hypotheses
 
-### 4. RTEMS Kernel Issue
-- Memory management bug under specific conditions
-- Race condition in memory allocator
-- **Likelihood:** Low
+Since no code defects found, corruption likely caused by:
 
-### 5. Undetected Software Bug
-- Very subtle memory corruption in code not reviewed
-- Third-party library issue
-- **Likelihood:** Unknown
+1. **Hardware Issues** - VME bus noise, memory bit flips, reflective memory card failure
+2. **External Writes** - Another VME node writing to wrong memory location
+3. **RTEMS Kernel Bug** - Memory management issue under specific conditions
+4. **Undetected Software Bug** - Very subtle corruption in unreviewed code
+
+**Conclusion:** Root cause remains unknown. Defensive measures implemented to survive corruption and collect evidence.
 
 ---
 
 ## Defensive Measures Implemented
 
-### ISR Pointer Validation
+This branch implements a two-layer defensive system:
 
-Modified `rmISR2()` and `rmISR3()` in `control.c` to validate event pointers before use:
+### Layer 1: ISR Pointer Validation
+
+**What:** Validate event pointers before use in ISR context
+**Where:** `rmISR2()` and `rmISR3()` in `control.c`
+**How:** Check for NULL and freed memory pattern (0xa5a5a5xx)
 
 ```c
-#define IS_FREED_MEMORY_PATTERN(ptr) \
-   (((unsigned long)(ptr) & 0xFFFFFF00) == 0xa5a5a500)
-
-void rmISR3 (int node)
-{
-   nodeISR3 = node;
-   isr3++;
-   
-   /* Defensive check: detect corrupted event pointer */
-   if (guideUpdateNow == NULL) {
-      isr3_null_count++;
-      return;  /* Don't crash - just skip signaling */
-   }
-   if (IS_FREED_MEMORY_PATTERN(guideUpdateNow)) {
-      isr3_freed_count++;
-      return;  /* Don't crash - pointer contains freed memory pattern */
-   }
-   
-   epicsEventSignal(guideUpdateNow);
+void rmISR3(int node) {
+    if (guideUpdateNow == NULL) {
+        isr3_null_count++;      // Log corruption
+        return;                  // Don't crash
+    }
+    if (IS_FREED_MEMORY_PATTERN(guideUpdateNow)) {
+        isr3_freed_count++;     // Log corruption
+        return;                  // Don't crash
+    }
+    epicsEventSignal(guideUpdateNow);  // Safe to use
 }
 ```
 
-### Corruption Detection Counters
+**Result:** System continues operating (degraded guiding) instead of crashing
 
-Four new counters exported via EPICS:
+### Layer 2: Canary Corruption Detection
 
-| Counter | Purpose |
-|---------|---------|
-| `isr2_null_count` | Times `scsReceiveNow` was NULL in rmISR2 |
-| `isr2_freed_count` | Times `scsReceiveNow` had freed pattern in rmISR2 |
-| `isr3_null_count` | Times `guideUpdateNow` was NULL in rmISR3 |
-| `isr3_freed_count` | Times `guideUpdateNow` had freed pattern in rmISR3 |
+**What:** Sentinel values placed in memory around event pointers
+**Where:** Global variables in `control.c`
+**How:** Monitoring task checks every 1 second if canaries are overwritten
 
-These can be monitored to:
-1. Confirm corruption is occurring (count > 0)
-2. Determine which pointer is affected
-3. Correlate with operations/time of day
+```c
+// Memory layout:
+unsigned long canary_before_scsReceiveNow = 0xDEADBEEF;  // Guard
+epicsEventId scsReceiveNow = NULL;                        // Protected
+unsigned long canary_after_scsReceiveNow = 0xCAFEBABE;   // Guard
+
+unsigned long canary_before_guideUpdateNow = 0xFEEDFACE; // Guard
+epicsEventId guideUpdateNow = NULL;                       // Protected
+unsigned long canary_after_guideUpdateNow = 0xC0FFEE00;  // Guard
+```
+
+Monitoring task (`canaryCheckTask`) runs every 1 second:
+```c
+if (canary_before_scsReceiveNow != 0xDEADBEEF) scs_canary_before_corrupt++;
+if (canary_after_scsReceiveNow != 0xCAFEBABE) scs_canary_after_corrupt++;
+// ... check all 4 canaries
+```
+
+**Why DEADBEEF/CAFEBABE?**
+- Human-readable in hex dumps for debugging
+- Statistically unlikely to occur naturally (1 in 4 billion)
+- Industry-standard magic numbers (Java uses 0xCAFEBABE, Microsoft uses 0xDEADBEEF)
+- Invalid as memory addresses on most systems
+
+**Advantages:**
+- Detects corruption within 1 second (vs waiting for ISR to fire)
+- Provides directional information (corruption from before vs after pointer)
+- Catches transient corruption between ISR firings
+- Memory layout verification ensures canaries are adjacent to protected pointers
+
+### Comparison
+
+| Feature | ISR Validation | Canary Detection |
+|---------|----------------|------------------|
+| **Detection timing** | Only when ISR fires | Every 1 second |
+| **Directional info** | No | Yes (before/after) |
+| **Transient corruption** | May miss | Catches all |
+| **System impact** | Prevents crash | Prevents crash + forensics |
+
+**Both layers work together:** ISR checks prevent crashes, canaries provide early warning and diagnostic information.
 
 ---
 
-## Monitoring Recommendations
+## EPICS Monitoring
 
-### 1. Create EPICS Records for Counters
+### Available PVs (assuming SCSTOP=m2)
 
-Add to database file:
-```
-record(longin, "$(P)ISR2_NULL_CNT") {
-    field(DTYP, "Soft Channel")
-    field(INP,  "@isr2_null_count")
-    field(SCAN, "1 second")
-}
-record(longin, "$(P)ISR2_FREED_CNT") {
-    field(DTYP, "Soft Channel")
-    field(INP,  "@isr2_freed_count")
-    field(SCAN, "1 second")
-}
-record(longin, "$(P)ISR3_NULL_CNT") {
-    field(DTYP, "Soft Channel")
-    field(INP,  "@isr3_null_count")
-    field(SCAN, "1 second")
-}
-record(longin, "$(P)ISR3_FREED_CNT") {
-    field(DTYP, "Soft Channel")
-    field(INP,  "@isr3_freed_count")
-    field(SCAN, "1 second")
-}
-```
-
-### 2. Set Up Alarms
-
-Configure alarms when any counter > 0:
-- Immediate notification when corruption detected
-- Log timestamp and recent operations
-
-### 3. Correlate with Operations
-
-When corruption is detected, note:
-- Time of day
-- Active operations (guiding, chopping, etc.)
-- Recent commands sent to SCS
-- Network activity
-
----
-
-## Further Debugging Recommendations
-
-### Priority 1: Runtime Detection
-
-1. **Deploy this branch** to detect and survive corruption
-2. **Monitor counters** for first corruption event
-3. **Correlate** with system operations and timing
-
-### Priority 2: Memory Watchpoint
-
-If JTAG debugger available:
-1. Get address of `guideUpdateNow` global
-2. Set hardware watchpoint to trap writes
-3. Capture stack trace of corrupting code
-
-### Priority 3: Heap Debugging
-
-Enable RTEMS heap debugging:
-```c
-// In startup code
-rtems_heap_set_config(RTEMS_HEAP_CHECK_ON_ALLOC | RTEMS_HEAP_CHECK_ON_FREE);
-```
-
-This adds overhead but catches heap corruption early.
-
-### Priority 4: Canary Values
-
-Add sentinel values around critical globals:
-```c
-unsigned long canary_before = 0xDEADBEEF;
-epicsEventId guideUpdateNow = NULL;
-unsigned long canary_after = 0xCAFEBABE;
-```
-
-Periodically check canaries haven't changed.
-
----
-
-## Complete Changelog from unstable/2024q3
-
-This branch (`bugfix/isr-corruption-detection-2024q3`) is based on `origin/unstable/2024q3` with the following changes:
-
-### Files Changed Summary
-
-| File | Lines Added | Description |
-|------|-------------|-------------|
-| `scs-cp-iocApp/src/control.c` | +66 | Defensive ISR checks and counters |
-| `scs-cp-iocApp/src/scs.dbd` | +4 | Variable declarations for EPICS |
-| `scs-cp-iocApp/Db/isrDiag.db` | +45 | New database file for monitoring |
-| `scs-cp-iocApp/Db/Makefile` | +1 | Install isrDiag.db |
-| `iocBoot/scs-cp-ioc/stscs-cp-ioc.src` | +1 | Load isrDiag.db at startup |
-| `SCS_Crash_Investigation_Report.md` | +376 | This investigation report |
-
----
-
-### Detailed Code Changes
-
-#### 1. `scs-cp-iocApp/src/control.c`
-
-**Added corruption detection counters (lines 889-892):**
-```c
-int isr2_null_count = 0;
-int isr2_freed_count = 0;
-int isr3_null_count = 0;
-int isr3_freed_count = 0;
-```
-
-**Added freed memory pattern detection macro (lines 895-896):**
-```c
-#define IS_FREED_MEMORY_PATTERN(ptr) \
-   (((unsigned long)(ptr) & 0xFFFFFF00) == 0xa5a5a500)
-```
-
-**Modified `rmISR2()` - added defensive checks (lines 907-929):**
-```c
-void rmISR2 (int node)
-{
-   nodeISR2 = node;
-   isr2++;
-   
-   /* Defensive check: detect corrupted event pointer */
-   if (scsReceiveNow == NULL) {
-      isr2_null_count++;
-      return;  /* Don't crash - just skip signaling */
-   }
-   if (IS_FREED_MEMORY_PATTERN(scsReceiveNow)) {
-      isr2_freed_count++;
-      return;  /* Don't crash - pointer contains freed memory pattern */
-   }
-   
-   epicsEventSignal(scsReceiveNow);
-}
-```
-
-**Modified `rmISR3()` - added defensive checks (lines 942-958):**
-```c
-void rmISR3 (int node)
-{
-   nodeISR3 = node;
-   isr3++;
-   
-   /* Defensive check: detect corrupted event pointer */
-   if (guideUpdateNow == NULL) {
-      isr3_null_count++;
-      return;  /* Don't crash - just skip signaling */
-   }
-   if (IS_FREED_MEMORY_PATTERN(guideUpdateNow)) {
-      isr3_freed_count++;
-      return;  /* Don't crash - pointer contains freed memory pattern */
-   }
-   
-   epicsEventSignal(guideUpdateNow);
-}
-```
-
-**Added EPICS exports (lines 3499-3502):**
-```c
-epicsExportAddress(int, isr2_null_count );
-epicsExportAddress(int, isr2_freed_count );
-epicsExportAddress(int, isr3_null_count );
-epicsExportAddress(int, isr3_freed_count );
-```
-
-#### 2. `scs-cp-iocApp/src/scs.dbd`
-
-**Added variable declarations (after line 133):**
-```
-variable( isr2_null_count, int)
-variable( isr2_freed_count, int)
-variable( isr3_null_count, int)
-variable( isr3_freed_count, int)
-```
-
-#### 3. `scs-cp-iocApp/Db/isrDiag.db` (NEW FILE)
-
-**Created database file with 4 longin records:**
-- `$(top)ISR2_NULL_CNT` - monitors `isr2_null_count`
-- `$(top)ISR2_FREED_CNT` - monitors `isr2_freed_count`
-- `$(top)ISR3_NULL_CNT` - monitors `isr3_null_count`
-- `$(top)ISR3_FREED_CNT` - monitors `isr3_freed_count`
-
-All records:
-- Use `Global Variable` device type to read C variables
-- Scan at 1 second interval
-- Alarm MAJOR if value > 0 (HIHI=1, HHSV=MAJOR)
-
-#### 4. `scs-cp-iocApp/Db/Makefile`
-
-**Added line:**
-```makefile
-DB += isrDiag.db
-```
-
-#### 5. `iocBoot/scs-cp-ioc/stscs-cp-ioc.src`
-
-**Added line after other dbLoadRecords:**
-```
-dbLoadRecords("db/isrDiag.db","top=$(SCSTOP):")
-```
-
----
-
-### EPICS PV Names (assuming SCSTOP=m2)
-
-| PV Name | Description | Alarm |
-|---------|-------------|-------|
-| `m2:ISR2_NULL_CNT` | NULL pointer detections in rmISR2 | MAJOR if > 0 |
+**ISR Corruption Counters:**
+| PV | Description | Alarm |
+|----|-------------|-------|
+| `m2:ISR2_NULL_CNT` | NULL detections in rmISR2 | MAJOR if > 0 |
 | `m2:ISR2_FREED_CNT` | Freed pattern detections in rmISR2 | MAJOR if > 0 |
-| `m2:ISR3_NULL_CNT` | NULL pointer detections in rmISR3 | MAJOR if > 0 |
+| `m2:ISR3_NULL_CNT` | NULL detections in rmISR3 | MAJOR if > 0 |
 | `m2:ISR3_FREED_CNT` | Freed pattern detections in rmISR3 | MAJOR if > 0 |
 
----
+**Canary Corruption Counters:**
+| PV | Description | Alarm |
+|----|-------------|-------|
+| `m2:CANARIES_ADJACENT` | Memory layout verified | MAJOR if not adjacent |
+| `m2:SCS_CANARY_BEFORE_CORRUPT` | Corruption before scsReceiveNow | MAJOR if > 0 |
+| `m2:SCS_CANARY_AFTER_CORRUPT` | Corruption after scsReceiveNow | MAJOR if > 0 |
+| `m2:GUIDE_CANARY_BEFORE_CORRUPT` | Corruption before guideUpdateNow | MAJOR if > 0 |
+| `m2:GUIDE_CANARY_AFTER_CORRUPT` | Corruption after guideUpdateNow | MAJOR if > 0 |
 
-### Safety Analysis
+### Interpreting Alarms
 
-The defensive code is **guaranteed not to crash** because:
+**If ISR counters increment:**
+- Corruption occurred and was caught by defensive checks
+- System did NOT crash (degraded guiding only)
+- Note timestamp and active operations
 
-1. **NULL check** - Simple pointer comparison (`ptr == NULL`), no memory dereference
-2. **Freed pattern check** - Bitwise operations on pointer value itself, no memory dereference:
-   ```c
-   ((unsigned long)(ptr) & 0xFFFFFF00) == 0xa5a5a500
-   ```
-3. **Counter increments** - Simple integer increments, safe in ISR context
-4. **Early return** - If any check fails, function returns without calling `epicsEventSignal()`
-5. **Only valid pointers reach epicsEventSignal()** - If pointer passes both checks, it's safe to use
+**If canary counters increment:**
+- Shows **which direction** corruption came from
+- Helps identify if buffer overflow vs targeted write vs DMA
 
----
+**Example Patterns:**
 
-## Hardware History
+| Before Canary | Pointer | After Canary | Interpretation |
+|--------------|---------|--------------|----------------|
+| Corrupted | Valid | OK | Buffer overflow from lower memory |
+| OK | Corrupted | OK | Targeted write to pointer only |
+| Corrupted | Corrupted | Corrupted | Wide-area corruption (DMA/VME/hardware) |
 
-| Date | Action | Result |
-|------|--------|--------|
-| 2024-11-04 | New CPU board (MVME2700) installed | Vector 4 crashes continued |
-| 2024-12-04 | New Transition Module installed | Vector 4 crashes continued |
-| 2025-01-03 | Rolled back to EPICS 3.14 | Vector 4 crashes continued |
-| 2025-08-01 | XYCOM-240 board replaced | **Vector 4 crashes STOPPED** |
-| 2025-09-24 | Issue REOPENED | Vector 3 crashes still occurring |
+### When Alarms Fire
 
-**Conclusion from hardware changes:**
-- The XYCOM-240 replacement fixed the **Vector 4** (ISI) crashes
-- The **Vector 3** (DSI) crashes are a **separate issue** that was always present
-- Vector 3 crashes are caused by software memory corruption, not hardware failure
-
----
-
-## Conclusion
-
-**Two distinct crash types were identified:**
-
-1. **Vector 4 (ISI)** - Hardware failure in XYCOM-240 board → **FIXED** (August 2025)
-2. **Vector 3 (DSI)** - Software memory corruption → **STILL OCCURRING**
-
-The Vector 3 crashes manifest as:
-- **"SCS froze and rebooted itself"** - Classic ISR crash symptom
-- NULL or freed-memory pattern (0xa5a5a5a5) in global event pointers
-- Crash in ISR context when signaling events → system hangs → watchdog reboot
-- 3-5 week intervals between occurrences
-- Often triggered during guide offset operations
-
-The root cause of the Vector 3 memory corruption remains unknown after extensive static code analysis.
-
-This branch implements defensive measures to:
-1. **Prevent crashes** by validating pointers in ISRs before use
-2. **Collect evidence** via corruption detection counters
-3. **Allow continued operation** while investigating (degraded guiding vs. full crash)
-
-The next step is to deploy this branch, monitor the counters, and correlate any detected corruption with system operations to narrow down the root cause.
+1. **Note timestamp** - When did corruption occur?
+2. **Check operations** - What was SCS doing? (guiding, chopping, offset, etc.)
+3. **Correlate with network** - Any CA commands sent recently?
+4. **Check pattern** - Which canaries corrupted? (direction analysis)
 
 ---
 
-## Canary Corruption Detection (Added December 2024)
+## Next Steps
 
-### Overview
+### Immediate Actions
 
-In addition to the ISR-based defensive checks, this branch now implements **canary corruption detection** - a second layer of monitoring that provides earlier detection and more diagnostic information about memory corruption.
+1. **Deploy this branch** to production SCS
+2. **Monitor EPICS PVs** for corruption detection
+3. **Log all alarm events** with timestamps and operations
 
-### How It Works
+### When Corruption Detected
 
-**Canary values** are sentinel integers placed in memory immediately before and after the critical event pointers:
+1. Note exact time and system state
+2. Check which counters incremented (ISR vs canary, which pointer)
+3. Review recent operations (guide config, offsets, etc.)
+4. Correlate with reflective memory activity
+5. Save all diagnostic data for analysis
 
-```c
-unsigned long canary_before_scsReceiveNow = 0xDEADBEEF;
-epicsEventId scsReceiveNow = NULL;
-unsigned long canary_after_scsReceiveNow = 0xCAFEBABE;
+### Further Investigation (if needed)
 
-unsigned long canary_before_guideUpdateNow = 0xFEEDFACE;
-epicsEventId guideUpdateNow = NULL;
-unsigned long canary_after_guideUpdateNow = 0xC0FFEE00;
-```
-
-A monitoring task (`canaryCheckTask`) runs every 1 second and checks if these sentinel values have been overwritten. If corruption is detected, counters are incremented and exposed via EPICS PVs that alarm when non-zero.
-
-### Why "DEADBEEF" and "CAFEBABE"?
-
-These hexadecimal values are **industry-standard magic numbers** used in debugging:
-
-- **Human-readable**: Easy to spot in memory dumps (`0xDEADBEEF` reads as "DEAD BEEF")
-- **Statistically unique**: Probability of occurring naturally is 1 in 4 billion
-- **Invalid as pointers**: On most systems, these addresses would be in invalid memory regions
-- **Historical precedent**: Used for decades in debugging (Java class files use 0xCAFEBABE, Microsoft uses 0xDEADBEEF for freed heap)
-
-### Advantages Over ISR-Only Detection
-
-| Feature | ISR Detection | Canary Detection |
-|---------|---------------|------------------|
-| **Detection timing** | Only when ISR fires (unpredictable) | Every 1 second (continuous) |
-| **Directional info** | No | Yes (before/after pointer) |
-| **Transient corruption** | May miss between ISRs | Catches all instances |
-| **Pattern analysis** | Pointer value only | Canary + pointer values |
-| **System impact** | Prevents crash | Prevents crash + provides forensics |
-
-### EPICS Monitoring
-
-New PVs added (assuming `SCSTOP=m2`):
-
-| PV Name | Purpose | Alarm |
-|---------|---------|-------|
-| `m2:CANARIES_ADJACENT` | Verifies correct memory layout | MAJOR if not adjacent |
-| `m2:SCS_CANARY_BEFORE_CORRUPT` | Corruption before `scsReceiveNow` | MAJOR if > 0 |
-| `m2:SCS_CANARY_AFTER_CORRUPT` | Corruption after `scsReceiveNow` | MAJOR if > 0 |
-| `m2:GUIDE_CANARY_BEFORE_CORRUPT` | Corruption before `guideUpdateNow` | MAJOR if > 0 |
-| `m2:GUIDE_CANARY_AFTER_CORRUPT` | Corruption after `guideUpdateNow` | MAJOR if > 0 |
-
-### Memory Layout Verification
-
-At startup, `canaryCheckTask` verifies that canaries are physically adjacent to the pointers they protect. This is critical because:
-
-- Canaries only detect corruption if they're **in the path** of the corrupting write
-- The compiler could theoretically reorder global variables
-- The `CANARIES_ADJACENT` PV alarms if layout verification fails
-
-### Files Modified
-
-| File | Change |
-|------|--------|
-| `scs-cp-iocApp/src/control.c` | Added canary variables, monitoring task, exports |
-| `scs-cp-iocApp/src/setup.c` | Spawn `canaryCheckTask` at initialization |
-| `scs-cp-iocApp/src/scs.dbd` | Added variable declarations |
-| `scs-cp-iocApp/Db/canaryDiag.db` | New database file with 5 monitoring records |
-| `scs-cp-iocApp/Db/Makefile` | Install `canaryDiag.db` |
-| `iocBoot/scs-cp-ioc/stscs-cp-ioc.src` | Load `canaryDiag.db` at startup |
-
-### Interpreting Corruption Patterns
-
-When canary corruption is detected, the pattern indicates the likely source:
-
-**Example 1: Buffer overflow from before**
-```
-BEFORE canary: corrupted (counter > 0)
-Pointer: still valid
-AFTER canary: intact (counter = 0)
-```
-→ Corruption approaching from lower memory addresses
-
-**Example 2: Targeted pointer write**
-```
-BEFORE canary: intact (counter = 0)
-Pointer: corrupted (ISR counter > 0)
-AFTER canary: intact (counter = 0)
-```
-→ Direct write to pointer location only
-
-**Example 3: Large block corruption**
-```
-BEFORE canary: corrupted (counter > 0)
-Pointer: corrupted (ISR counter > 0)
-AFTER canary: corrupted (counter > 0)
-```
-→ Wide-area corruption (DMA, VME bus, hardware issue)
+- **Hardware watchpoint** - Use JTAG debugger to trap writes to pointer addresses
+- **Heap debugging** - Enable RTEMS heap checking (adds overhead)
+- **VME bus monitoring** - Check for spurious writes from other nodes
+- **Memory dump analysis** - Examine surrounding memory when corruption occurs
 
 ---
 
@@ -608,12 +249,9 @@ AFTER canary: corrupted (counter > 0)
 
 - [GSFR-43648](https://noirlab.atlassian.net/browse/GSFR-43648) - Master issue: SCS WSOD and focus lost
 - [GE7-94](https://noirlab.atlassian.net/browse/GE7-94) - Bug tracking: SCS crash with exception vector 4 or 3
-- Stack trace files: `Troubleshooting/StackTracer-*.txt` and `*.out`
 - RTEMS freed memory pattern: 0xa5a5a5a5 (debug fill for freed heap memory)
+- Magic numbers: [Wikipedia - Magic number (programming)](https://en.wikipedia.org/wiki/Magic_number_(programming))
 
 ---
 
-**Author:** Patrick Parks  
-**Investigation Date:** December 2025  
 **Status:** Defensive measures implemented, root cause investigation ongoing
-
