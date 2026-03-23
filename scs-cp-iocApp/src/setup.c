@@ -186,7 +186,7 @@ int scsInit (void)
    diagnosticsAvailable = epicsEventMustCreate(epicsEventEmpty);
 
    /* spawn task to pvload initialisation data */
-   epicsThreadMustCreate("tloadInit", epicsThreadPriorityLow, 
+   epicsThreadMustCreate("tloadInit", epicsThreadPriorityLow,
                      epicsThreadGetStackSize(epicsThreadStackBig),
                      (EPICSTHREADFUNC)loadInitFiles, (void *)NULL);
 
@@ -194,6 +194,11 @@ int scsInit (void)
    epicsThreadMustCreate("tslowTx",epicsThreadPriorityLow,
                     epicsThreadGetStackSize(epicsThreadStackBig),
                     (EPICSTHREADFUNC)slowTransmit, (void *)NULL);
+
+   /* spawn canary monitoring task for memory corruption detection */
+   epicsThreadMustCreate("canaryCheck", epicsThreadPriorityLow,
+                    epicsThreadGetStackSize(epicsThreadStackSmall),
+                    (EPICSTHREADFUNC)canaryCheckTask, (void *)NULL);
 
    /* M2 simulation pointer always points to the buffer area */
    if ((m2Ptr = (memMap *) malloc (sizeof (memMap))) == NULL)

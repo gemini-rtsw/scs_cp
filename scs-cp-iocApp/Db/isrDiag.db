@@ -1,0 +1,45 @@
+# ISR Corruption Detection Counters
+# These records monitor the defensive checks added to rmISR2 and rmISR3
+# to detect memory corruption of event semaphore pointers.
+#
+# See: SCS_Crash_Investigation_Report.md
+# Jira: GSFR-43648, GE7-94
+
+# ISR2 (scsReceiveNow) corruption counters
+record(longin, "$(top)ISR2_NULL_CNT") {
+    field(DESC, "ISR2 NULL pointer detections")
+    field(DTYP, "Global Variable")
+    field(INP,  "isr2_null_count")
+    field(SCAN, "1 second")
+    field(HIHI, "1")
+    field(HHSV, "MAJOR")
+}
+
+record(longin, "$(top)ISR2_FREED_CNT") {
+    field(DESC, "ISR2 freed memory detections")
+    field(DTYP, "Global Variable")
+    field(INP,  "isr2_freed_count")
+    field(SCAN, "1 second")
+    field(HIHI, "1")
+    field(HHSV, "MAJOR")
+}
+
+# ISR3 (guideUpdateNow) corruption counters
+record(longin, "$(top)ISR3_NULL_CNT") {
+    field(DESC, "ISR3 NULL pointer detections")
+    field(DTYP, "Global Variable")
+    field(INP,  "isr3_null_count")
+    field(SCAN, "1 second")
+    field(HIHI, "1")
+    field(HHSV, "MAJOR")
+}
+
+record(longin, "$(top)ISR3_FREED_CNT") {
+    field(DESC, "ISR3 freed memory detections")
+    field(DTYP, "Global Variable")
+    field(INP,  "isr3_freed_count")
+    field(SCAN, "1 second")
+    field(HIHI, "1")
+    field(HHSV, "MAJOR")
+}
+

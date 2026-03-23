@@ -337,9 +337,21 @@ epicsMutexId m2MemFree = NULL;
 epicsEventId slowUpdate = NULL;
 epicsMutexId wfsFree[MAX_SOURCES];
 epicsEventId diagnosticsAvailable = NULL;
+
+/* Memory corruption detection: canary values guard critical event pointers.
+ * These sentinel values (0xDEADBEEF, etc.) are placed immediately before/after
+ * the pointers in memory. If corruption occurs, canaries will be overwritten,
+ * allowing early detection before the pointers are used in ISR context. */
+unsigned long canary_before_guideUpdateNow = 0xFEEDFACE;
 epicsEventId guideUpdateNow = NULL;
+unsigned long canary_after_guideUpdateNow = 0xC0FFEE00;
+
 epicsEventId scsDataAvailable = NULL;
+
+unsigned long canary_before_scsReceiveNow = 0xDEADBEEF;
 epicsEventId scsReceiveNow = NULL;
+unsigned long canary_after_scsReceiveNow = 0xCAFEBABE;
+
 epicsMutexId eventDataSem = NULL;
 epicsEventId cemTimerEndSem = NULL;
 epicsEventId cemTimerStartSem = NULL;
@@ -876,11 +888,60 @@ void fireLoops (void *param)
 
 
 static int isr2 = 0;
-/* Later: add header */
+
+/*
+ * Corruption detection counters for ISR event pointers.
+ * These track when the event semaphore pointers contain invalid values:
+ * - NULL pointer (never initialized or zeroed)
+ * - 0xa5a5a5xx pattern (RTEMS freed memory fill pattern)
+ *
+ * See: SCS_Crash_Investigation_Report.md for full analysis
+ * Jira: GSFR-43648, GE7-94
+ */
+int isr2_null_count = 0;
+int isr2_freed_count = 0;
+int isr3_null_count = 0;
+int isr3_freed_count = 0;
+
+/*
+ * Canary corruption detection counters.
+ * Incremented when sentinel values around event pointers are found to be corrupted.
+ * Indicates direction of memory corruption (from before or after the pointer).
+ */
+int scs_canary_before_corrupt = 0;
+int scs_canary_after_corrupt = 0;
+int guide_canary_before_corrupt = 0;
+int guide_canary_after_corrupt = 0;
+int canaries_adjacent = 0;  /* 1 if memory layout verified at startup, 0 if not */
+
+/* Macro to detect RTEMS freed memory pattern (0xa5a5a5a5) */
+#define IS_FREED_MEMORY_PATTERN(ptr) \
+   (((unsigned long)(ptr) & 0xFFFFFF00) == 0xa5a5a500)
+
+/* 
+ * rmISR2 - Reflective Memory Interrupt Service Routine for channel 2
+ * 
+ * Called by VMI5588 driver when interrupt 2 is received.
+ * Signals scsReceiveNow event to wake up scsReceive() thread.
+ * 
+ * DEFENSIVE CHECK: Validates scsReceiveNow pointer before use to
+ * prevent crash if pointer is corrupted. Logs corruption via counters.
+ */
 void rmISR2 (int node)
 {
    nodeISR2 = node;
    isr2++;
+   
+   /* Defensive check: detect corrupted event pointer */
+   if (scsReceiveNow == NULL) {
+      isr2_null_count++;
+      return;  /* Don't crash - just skip signaling */
+   }
+   if (IS_FREED_MEMORY_PATTERN(scsReceiveNow)) {
+      isr2_freed_count++;
+      return;  /* Don't crash - pointer contains freed memory pattern */
+   }
+   
    epicsEventSignal(scsReceiveNow);
 
    /* why is this commented out? This is the only place the 
@@ -891,12 +952,77 @@ void rmISR2 (int node)
 }
 
 static int isr3 = 0;
-/* Later: add header */
+
+/* 
+ * rmISR3 - Reflective Memory Interrupt Service Routine for channel 3
+ * 
+ * Called by VMI5588 driver when interrupt 3 is received.
+ * Signals guideUpdateNow event to wake up processGuides() thread.
+ * 
+ * DEFENSIVE CHECK: Validates guideUpdateNow pointer before use to
+ * prevent crash if pointer is corrupted. Logs corruption via counters.
+ */
 void rmISR3 (int node)
 {
    nodeISR3 = node;
    isr3++;
+   
+   /* Defensive check: detect corrupted event pointer */
+   if (guideUpdateNow == NULL) {
+      isr3_null_count++;
+      return;  /* Don't crash - just skip signaling */
+   }
+   if (IS_FREED_MEMORY_PATTERN(guideUpdateNow)) {
+      isr3_freed_count++;
+      return;  /* Don't crash - pointer contains freed memory pattern */
+   }
+
    epicsEventSignal(guideUpdateNow);
+}
+
+/*
+ * canaryCheckTask - Periodic monitor for memory corruption detection
+ *
+ * This task runs every 1 second and checks "canary" sentinel values placed
+ * in memory immediately before and after critical event pointers.
+ *
+ * HOW IT WORKS:
+ * 1. At startup, verifies canaries are adjacent to protected pointers in memory
+ * 2. Every second, checks if canary values have been overwritten
+ * 3. If corruption detected, increments counters indicating direction (before/after)
+ *
+ * WHY CANARY VALUES (0xDEADBEEF, 0xCAFEBABE, etc.):
+ * - Human-readable in hex dumps for easy debugging
+ * - Statistically unlikely to occur naturally (1 in 4 billion)
+ * - Industry-standard magic numbers used in debugging for decades
+ * - Invalid as memory addresses on most systems
+ *
+ * ADVANTAGES OVER ISR-ONLY DETECTION:
+ * - Detects corruption within ~1 second instead of waiting for next ISR
+ * - Provides directional information (corruption from before vs after)
+ * - Allows system to continue operating while corruption is investigated
+ * - Canaries survive between ISR firings, catching transient corruption
+ */
+void canaryCheckTask(void)
+{
+    /* Verify memory layout at startup - canaries must be physically adjacent
+     * to the pointers they protect for effective corruption detection */
+    canaries_adjacent =
+        ((char*)&scsReceiveNow - (char*)&canary_before_scsReceiveNow == sizeof(unsigned long)) &&
+        ((char*)&canary_after_scsReceiveNow - (char*)&scsReceiveNow == sizeof(epicsEventId)) &&
+        ((char*)&guideUpdateNow - (char*)&canary_before_guideUpdateNow == sizeof(unsigned long)) &&
+        ((char*)&canary_after_guideUpdateNow - (char*)&guideUpdateNow == sizeof(epicsEventId));
+
+    while (1) {
+        epicsThreadSleep(1.0);
+
+        /* Check each canary sentinel value.
+         * If corrupted, increment counter - EPICS PVs will alarm on non-zero values */
+        if (canary_before_scsReceiveNow != 0xDEADBEEF) scs_canary_before_corrupt++;
+        if (canary_after_scsReceiveNow != 0xCAFEBABE) scs_canary_after_corrupt++;
+        if (canary_before_guideUpdateNow != 0xFEEDFACE) guide_canary_before_corrupt++;
+        if (canary_after_guideUpdateNow != 0xC0FFEE00) guide_canary_after_corrupt++;
+    }
 }
 
 /* ===================================================================== */
@@ -3438,6 +3564,15 @@ epicsExportAddress(int, scsrx5 );
 epicsExportAddress(int, NsNrTolerance );
 epicsExportAddress(int, isr2 );
 epicsExportAddress(int, isr3 );
+epicsExportAddress(int, isr2_null_count );
+epicsExportAddress(int, isr2_freed_count );
+epicsExportAddress(int, isr3_null_count );
+epicsExportAddress(int, isr3_freed_count );
+epicsExportAddress(int, scs_canary_before_corrupt );
+epicsExportAddress(int, scs_canary_after_corrupt );
+epicsExportAddress(int, guide_canary_before_corrupt );
+epicsExportAddress(int, guide_canary_after_corrupt );
+epicsExportAddress(int, canaries_adjacent );
 epicsExportAddress(int, showcs );
 epicsExportAddress(int, showLF );
 epicsExportAddress(int, sendpulse );

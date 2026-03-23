@@ -1,0 +1,60 @@
+# Canary Corruption Detection
+# Monitors sentinel values placed in memory around critical event pointers
+# to detect memory corruption early before pointers are used in ISR context.
+#
+# See: SCS_Crash_Investigation_Report.md
+# Jira: GSFR-43648, GE7-94
+
+# Memory layout verification
+# This record confirms that canary values are physically adjacent to the
+# pointers they protect. If not adjacent, corruption detection is ineffective.
+record(bi, "$(top)CANARIES_ADJACENT") {
+    field(DESC, "Canaries properly adjacent")
+    field(DTYP, "Global Variable")
+    field(INP,  "canaries_adjacent")
+    field(SCAN, "1 second")
+    field(ZNAM, "NOT ADJACENT")
+    field(ONAM, "ADJACENT")
+    field(ZSV,  "MAJOR")
+    field(OSV,  "NO_ALARM")
+}
+
+# SCS Receive Now (rmISR2) corruption counters
+# Detects when canaries around scsReceiveNow pointer are overwritten
+record(longin, "$(top)SCS_CANARY_BEFORE_CORRUPT") {
+    field(DESC, "SCS before canary corruptions")
+    field(DTYP, "Global Variable")
+    field(INP,  "scs_canary_before_corrupt")
+    field(SCAN, "1 second")
+    field(HIHI, "1")
+    field(HHSV, "MAJOR")
+}
+
+record(longin, "$(top)SCS_CANARY_AFTER_CORRUPT") {
+    field(DESC, "SCS after canary corruptions")
+    field(DTYP, "Global Variable")
+    field(INP,  "scs_canary_after_corrupt")
+    field(SCAN, "1 second")
+    field(HIHI, "1")
+    field(HHSV, "MAJOR")
+}
+
+# Guide Update Now (rmISR3) corruption counters
+# Detects when canaries around guideUpdateNow pointer are overwritten
+record(longin, "$(top)GUIDE_CANARY_BEFORE_CORRUPT") {
+    field(DESC, "Guide before canary corruptions")
+    field(DTYP, "Global Variable")
+    field(INP,  "guide_canary_before_corrupt")
+    field(SCAN, "1 second")
+    field(HIHI, "1")
+    field(HHSV, "MAJOR")
+}
+
+record(longin, "$(top)GUIDE_CANARY_AFTER_CORRUPT") {
+    field(DESC, "Guide after canary corruptions")
+    field(DTYP, "Global Variable")
+    field(INP,  "guide_canary_after_corrupt")
+    field(SCAN, "1 second")
+    field(HIHI, "1")
+    field(HHSV, "MAJOR")
+}
