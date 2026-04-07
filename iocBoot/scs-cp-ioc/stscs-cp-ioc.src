@@ -9,7 +9,7 @@ dbLoadDatabase("dbd/scs-cp-ioc.dbd")
 scs_cp_ioc_registerRecordDeviceDriver(pdbbase)
 
 # specify NTP server config file
-epicsEnvSet("EPICS_TS_NTP_CONF_FILE","$(NTPCFGFILE)")
+#epicsEnvSet("EPICS_TS_NTP_CONF_FILE","$(NTPCFGFILE)")
 
 ## Load record instances
 dbLoadRecords("db/m2.db","top=$(SCSTOP):")
