@@ -1,5 +1,5 @@
 [schematic2]
-uniq 53
+uniq 56
 [tools]
 [detail]
 w 1552 1731 100 0 n#1 egenSubE.highSpeed.VALO 1344 1728 1760 1728 1760 1664 2080 1664 2080 1280 3168 1280 3168 1568 3232 1568 ewaves.zRawGuideHS.INP
@@ -35,25 +35,28 @@ w 2880 1011 100 0 n#30 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.FLNK 2048
 w 2864 947 100 0 n#31 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.VAL 2048 944 3680 944 3680 3008 2144 3008 2144 2880 2272 2880 ewaves.xTipPosHS.SDIS
 w 1392 1539 100 0 n#32 egenSubE.highSpeed.VALU 1344 1536 1440 1536 1440 1008 1504 1008 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.SRATE
 w 1376 1443 100 0 n#33 egenSubE.highSpeed.FLNK 1344 1440 1408 1440 1408 880 1504 880 highSpeedWaveformCtrl.highSpeedWaveformCtrl#240.SLNK
-w 528 2021 100 0 n#34 egenSubC.decimator.FLNK 408 2016 648 2016 648 1776 104 1776 104 1472 1064 1472 egenSubE.highSpeed.SLNK
-w 411 2211 100 0 n#35 hwout.hwout#196.outp 408 2208 408 2208 egenSubC.decimator.VALR
-w 411 2243 100 0 n#36 hwout.hwout#194.outp 408 2240 408 2240 egenSubC.decimator.VALQ
-w 411 2371 100 0 n#37 hwout.hwout#189.outp 408 2368 408 2368 egenSubC.decimator.VALM
-w 411 2339 100 0 n#38 hwout.hwout#188.outp 408 2336 408 2336 egenSubC.decimator.VALN
-w 411 2307 100 0 n#39 hwout.hwout#187.outp 408 2304 408 2304 egenSubC.decimator.VALO
-w 411 2275 100 0 n#40 hwout.hwout#186.outp 408 2272 408 2272 egenSubC.decimator.VALP
-w 411 2723 100 0 n#41 hwout.hwout#164.outp 408 2720 408 2720 egenSubC.decimator.VALB
-w 411 2691 100 0 n#42 hwout.hwout#166.outp 408 2688 408 2688 egenSubC.decimator.VALC
-w 411 2563 100 0 n#43 hwout.hwout#168.outp 408 2560 408 2560 egenSubC.decimator.VALG
-w 411 2531 100 0 n#44 hwout.hwout#170.outp 408 2528 408 2528 egenSubC.decimator.VALH
-w 411 2499 100 0 n#45 hwout.hwout#172.outp 408 2496 408 2496 egenSubC.decimator.VALI
-w 411 2595 100 0 n#46 hwout.hwout#175.outp 408 2592 408 2592 egenSubC.decimator.VALF
-w 411 2627 100 0 n#47 hwout.hwout#177.outp 408 2624 408 2624 egenSubC.decimator.VALE
-w 411 2659 100 0 n#48 hwout.hwout#179.outp 408 2656 408 2656 egenSubC.decimator.VALD
-w 411 2467 100 0 n#49 hwout.hwout#180.outp 408 2464 408 2464 egenSubC.decimator.VALJ
-w 411 2435 100 0 n#50 hwout.hwout#182.outp 408 2432 408 2432 egenSubC.decimator.VALK
-w 411 2403 100 0 n#51 hwout.hwout#184.outp 408 2400 408 2400 egenSubC.decimator.VALL
-w 411 2755 100 0 n#52 hwout.hwout#162.outp 408 2752 408 2752 egenSubC.decimator.VALA
+w 3700 1571 100 0 n#34 ewaves.zRawGuideHS.FLNK 3488 1568 3912 1568 3912 1536 4072 1536 ewaves.sbRtt.SLNK
+w 528 2019 100 0 n#35 egenSubC.decimator.FLNK 408 2016 648 2016 648 1776 104 1776 104 960 272 960 egenSubE.highSpeed2.SLNK
+w 708 931 100 0 n#36 egenSubE.highSpeed2.FLNK 560 928 856 928 856 1472 1056 1472 egenSubE.highSpeed.SLNK
+w 411 2211 100 0 n#37 hwout.hwout#196.outp 408 2208 408 2208 egenSubC.decimator.VALR
+w 411 2243 100 0 n#38 hwout.hwout#194.outp 408 2240 408 2240 egenSubC.decimator.VALQ
+w 411 2371 100 0 n#39 hwout.hwout#189.outp 408 2368 408 2368 egenSubC.decimator.VALM
+w 411 2339 100 0 n#40 hwout.hwout#188.outp 408 2336 408 2336 egenSubC.decimator.VALN
+w 411 2307 100 0 n#41 hwout.hwout#187.outp 408 2304 408 2304 egenSubC.decimator.VALO
+w 411 2275 100 0 n#42 hwout.hwout#186.outp 408 2272 408 2272 egenSubC.decimator.VALP
+w 411 2723 100 0 n#43 hwout.hwout#164.outp 408 2720 408 2720 egenSubC.decimator.VALB
+w 411 2691 100 0 n#44 hwout.hwout#166.outp 408 2688 408 2688 egenSubC.decimator.VALC
+w 411 2563 100 0 n#45 hwout.hwout#168.outp 408 2560 408 2560 egenSubC.decimator.VALG
+w 411 2531 100 0 n#46 hwout.hwout#170.outp 408 2528 408 2528 egenSubC.decimator.VALH
+w 411 2499 100 0 n#47 hwout.hwout#172.outp 408 2496 408 2496 egenSubC.decimator.VALI
+w 411 2595 100 0 n#48 hwout.hwout#175.outp 408 2592 408 2592 egenSubC.decimator.VALF
+w 411 2627 100 0 n#49 hwout.hwout#177.outp 408 2624 408 2624 egenSubC.decimator.VALE
+w 411 2659 100 0 n#50 hwout.hwout#179.outp 408 2656 408 2656 egenSubC.decimator.VALD
+w 411 2467 100 0 n#51 hwout.hwout#180.outp 408 2464 408 2464 egenSubC.decimator.VALJ
+w 411 2435 100 0 n#52 hwout.hwout#182.outp 408 2432 408 2432 egenSubC.decimator.VALK
+w 411 2403 100 0 n#53 hwout.hwout#184.outp 408 2400 408 2400 egenSubC.decimator.VALL
+w 411 2755 100 0 n#54 hwout.hwout#162.outp 408 2752 408 2752 egenSubC.decimator.VALA
+w 4020 1571 100 0 n#55 ewaves.sbRtt.INP 4072 1568 3968 1568 3968 1224 920 1224 920 1664 560 1664 egenSubE.highSpeed2.VALA
 s 432 2168 100 0 measuredGuideRate
 s 2784 864 100 0 Secondary Control System
 s 2768 800 100 0 TCS status records
@@ -267,4 +270,46 @@ p -168 2510 100 0 0 PREC:6
 p 36 1959 100 0 -1 PV:$(top)
 p 328 1952 100 0 1 SCAN:.005 second
 p 120 1824 100 0 1 SNAM:decimate
+use ewaves 4152 1438 100 0 sbRtt
+xform 0 4200 1536
+p 4155 1402 100 0 1 NELM:4000
+p 4146 1347 100 0 1 FTVL:DOUBLE
+p 4162 1377 100 0 1 PREC:7
+use egenSubE 272 871 100 0 highSpeed2
+xform 0 416 1296
+p 115 1611 100 0 0 DESC:HighSpeed Capture of Reflective Memory
+p 629 1666 100 0 1 FTVA:FLOAT
+p 583 1636 100 0 1 FTVB:DOUBLE
+p 576 1600 100 0 1 FTVC:LONG
+p 576 1568 100 0 1 FTVD:FLOAT
+p 576 1536 100 0 1 FTVE:FLOAT
+p 576 1504 100 0 1 FTVF:FLOAT
+p 576 1472 100 0 1 FTVG:FLOAT
+p 576 1440 100 0 1 FTVH:FLOAT
+p 576 1408 100 0 1 FTVI:FLOAT
+p 576 1376 100 0 1 FTVJ:FLOAT
+p 576 1344 100 0 1 FTVK:FLOAT
+p 576 1312 100 0 1 FTVL:FLOAT
+p 576 1280 100 0 1 FTVM:FLOAT
+p 576 1248 100 0 1 FTVN:FLOAT
+p 576 1216 100 0 1 FTVO:FLOAT
+p 592 1088 100 0 1 FTVT:LONG
+p 592 1040 100 0 1 FTVU:LONG
+p 272 784 100 0 1 INAM:initHighSpeed2
+p 384 1664 100 0 1 NOVA:4000
+p 384 1632 100 0 1 NOVB:1
+p 384 1600 100 0 1 NOVC:1
+p 384 1568 100 0 1 NOVD:4000
+p 384 1536 100 0 1 NOVE:4000
+p 384 1504 100 0 1 NOVF:4000
+p 384 1472 100 0 1 NOVG:4000
+p 384 1440 100 0 1 NOVH:4000
+p 384 1408 100 0 1 NOVI:4000
+p 384 1376 100 0 1 NOVJ:4000
+p 384 1344 100 0 1 NOVK:4000
+p 384 1280 100 0 1 NOVL:4000
+p 384 1248 100 0 1 NOVM:4000
+p 384 1216 100 0 1 NOVN:4000
+p 384 1184 100 0 1 NOVO:4000
+p 272 832 100 0 1 SNAM:highSpeed2
 [comments]
