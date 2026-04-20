@@ -2152,7 +2152,7 @@ long highSpeed2 (struct genSubRecord *pgsub) {
     static float sbRttHS[HS_RECORD_LENGTH];
 
     sbRttHS[hs2count] = sbStatus->rtt;              /* next value on array*/
-    *(double *) pgsub->valb = sbStatus->rtt;        /* scalar of same rtt*/
+    *(float *) pgsub->valb = sbStatus->rtt;        /* scalar of same rtt*/
     *(long *) pgsub->valc = sbStatus->nsnrDiff;   /* num sent - num received*/
 
 

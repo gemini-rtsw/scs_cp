@@ -459,7 +459,7 @@ typedef struct {
 typedef struct {
 
     long nsnrDiff;  /* Difference of Page0.NumberSent and Page1.NumberReceived*/
-    double rtt;     /*Round Trip Time for SCS->CEM->SCS in seconds*/
+    float rtt;     /*Round Trip Time for SCS->CEM->SCS in seconds*/
 } SynchroStatus;
 
 enum
