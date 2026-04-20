@@ -2149,11 +2149,11 @@ long highSpeed2 (struct genSubRecord *pgsub) {
     static long hs2count = 0;
     static long hs2subcount = HS_RECORD_LENGTH-1;
 
-    static double sbRttHS[HS_RECORD_LENGTH];
+    static float sbRttHS[HS_RECORD_LENGTH];
 
     sbRttHS[hs2count] = sbStatus->rtt;              /* next value on array*/
     *(double *) pgsub->valb = sbStatus->rtt;        /* scalar of same rtt*/
-    *(double *) pgsub->valc = sbStatus->nsnrDiff;   /* num sent - num received*/
+    *(long *) pgsub->valc = sbStatus->nsnrDiff;   /* num sent - num received*/
 
 
     if (hs2subcount == 0 ) {
@@ -2161,13 +2161,13 @@ long highSpeed2 (struct genSubRecord *pgsub) {
         int numNewSamples = HS_RECORD_LENGTH - numOldSamples;
 
         /*Input pointers */
-        double *sbRttIn = sbRttHS; /*pointer to array for sbRttHS[length] */
+        float *sbRttIn = sbRttHS; /*pointer to array for sbRttHS[length] */
 
          /*Output pointers */
-        double *sbRttOut         = (double *)pgsub->vala;  /* pointer to write the entire array (waveform) to*/
+        float *sbRttOut         = (float *)pgsub->vala;  /* pointer to write the entire array (waveform) to*/
 
-        memcpy (sbRttOut, (double *)(sbRttIn+hs2count+1),  numOldSamples*sizeof (double));
-        memcpy ((double *)(sbRttOut+numOldSamples), (double *)(sbRttIn),  numNewSamples*sizeof (double));
+        memcpy (sbRttOut, (float *)(sbRttIn+hs2count+1),  numOldSamples*sizeof (float));
+        memcpy ((float *)(sbRttOut+numOldSamples), (float *)(sbRttIn),  numNewSamples*sizeof (float));
     } else {
         hs2subcount--;
     }
