@@ -30,7 +30,7 @@ Prefix: %{_prefix}
 ## below explicitly — do not relax the pins.
 BuildRequires: re2c
 BuildRequires: tdct
-BuildRequires: epics-base-devel    = 7.0.7-0.gitd18bee6.el8
+BuildRequires: epics-base-devel    = 7.0.7-0.git.16f5056.el8
 BuildRequires: sequencer-devel     = 2.2.9.e5e3615-4.git.3d01cdb.el8
 BuildRequires: autosave-devel      = 5.10.2-0.git.d0d924d.el8
 BuildRequires: bancomm-devel       = 1.6.13-4.git.6add008.el8
@@ -66,7 +66,7 @@ Group: Development/Gemini
 Requires: %{name} = %{version}-%{release}
 Requires: tdct
 Requires: re2c
-Requires: epics-base-devel = 7.0.7-0.gitd18bee6.el8
+Requires: epics-base-devel = 7.0.7-0.git.16f5056.el8
 Requires: sequencer-devel  = 2.2.9.e5e3615-4.git.3d01cdb.el8
 Requires: autosave-devel   = 5.10.2-0.git.d0d924d.el8
 Requires: bancomm-devel    = 1.6.13-4.git.6add008.el8
