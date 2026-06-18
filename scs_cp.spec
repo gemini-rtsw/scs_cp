@@ -42,7 +42,7 @@ BuildRequires: gemUtil-devel       = 1.6.13-2.git.9268b49%{?dist}
 BuildRequires: timeProbe-devel     = 1.1.16-3.git.1bb32b7%{?dist}
 BuildRequires: tcslib-devel        = 1.1.1-9.git.b18a9b9%{?dist}
 BuildRequires: pvload-devel        = 1.2.1-7.git.6df46ce%{?dist}
-BuildRequires: symb-devel          = 1.6.13-4.git.d097ef5%{?dist}
+BuildRequires: symb-devel          = 1.6.13-4.git.3503a73%{?dist}
 BuildRequires: vmi5588-devel       = 1.3-1.git.6fe16cd%{?dist}
 ## No runtime Requires on the main package.
 ## The artifacts shipped here are cross-compiled for the VME target
@@ -78,7 +78,7 @@ Requires: gemUtil-devel    = 1.6.13-2.git.9268b49%{?dist}
 Requires: timeProbe-devel  = 1.1.16-3.git.1bb32b7%{?dist}
 Requires: tcslib-devel     = 1.1.1-9.git.b18a9b9%{?dist}
 Requires: pvload-devel     = 1.2.1-7.git.6df46ce%{?dist}
-Requires: symb-devel       = 1.6.13-4.git.d097ef5%{?dist}
+Requires: symb-devel       = 1.6.13-4.git.3503a73%{?dist}
 Requires: vmi5588-devel    = 1.3-1.git.6fe16cd%{?dist}
 %description devel
 This is the module %{name}.
