@@ -30,20 +30,20 @@ Prefix: %{_prefix}
 ## below explicitly — do not relax the pins.
 BuildRequires: re2c
 BuildRequires: tdct
-BuildRequires: epics-base-devel    = 7.0.7-0.git.1159d86%{?dist}
-BuildRequires: sequencer-devel     = 2.2.9.e5e3615-4.git.cc55bbd%{?dist}
-BuildRequires: autosave-devel      = 5.10.2-0.git.65653e7%{?dist}
-BuildRequires: bancomm-devel       = 1.6.13-4.git.2127c0a%{?dist}
-BuildRequires: geminiRec-devel     = 4.1.13-3.git.b85c7fe%{?dist}
-BuildRequires: timelib-devel       = 2.1.4-3.git.4b1e6d2%{?dist}
-BuildRequires: slalib-devel        = 1.9.7-6.git.21692df%{?dist}
-BuildRequires: xycom-devel         = 2.1.12-2.git.535250e%{?dist}
-BuildRequires: gemUtil-devel       = 1.6.13-2.git.19379e6%{?dist}
-BuildRequires: timeProbe-devel     = 1.1.16-3.git.79cc814%{?dist}
-BuildRequires: tcslib-devel        = 1.1.1-9.git.abd5764%{?dist}
-BuildRequires: pvload-devel        = 1.2.1-7.git.784d4d3%{?dist}
-BuildRequires: symb-devel          = 1.6.13-4.git.1c92ce0%{?dist}
-BuildRequires: vmi5588-devel       = 1.3-1.git.d50b510%{?dist}
+BuildRequires: epics-base-devel    = 7.0.7-0.git.f9e3717%{?dist}
+BuildRequires: sequencer-devel     = 2.2.9.e5e3615-4.git.7b11f25%{?dist}
+BuildRequires: autosave-devel      = 5.10.2-0.git.57f0212%{?dist}
+BuildRequires: bancomm-devel       = 1.6.13-4.git.6f4ba7b%{?dist}
+BuildRequires: geminiRec-devel     = 4.1.13-3.git.6f58677%{?dist}
+BuildRequires: timelib-devel       = 2.1.4-3.git.a504360%{?dist}
+BuildRequires: slalib-devel        = 1.9.7-6.git.54d124d%{?dist}
+BuildRequires: xycom-devel         = 2.1.12-2.git.e8d8b00%{?dist}
+BuildRequires: gemUtil-devel       = 1.6.13-2.git.9268b49%{?dist}
+BuildRequires: timeProbe-devel     = 1.1.16-3.git.1bb32b7%{?dist}
+BuildRequires: tcslib-devel        = 1.1.1-9.git.b18a9b9%{?dist}
+BuildRequires: pvload-devel        = 1.2.1-7.git.6df46ce%{?dist}
+BuildRequires: symb-devel          = 1.6.13-4.git.d097ef5%{?dist}
+BuildRequires: vmi5588-devel       = 1.3-1.git.6fe16cd%{?dist}
 ## No runtime Requires on the main package.
 ## The artifacts shipped here are cross-compiled for the VME target
 ## (CROSS_COMPILER_TARGET_ARCHS = RTEMS-mvme2700) and are network-booted
@@ -66,20 +66,20 @@ Group: Development/Gemini
 Requires: %{name} = %{version}-%{release}
 Requires: tdct
 Requires: re2c
-Requires: epics-base-devel = 7.0.7-0.git.1159d86%{?dist}
-Requires: sequencer-devel  = 2.2.9.e5e3615-4.git.cc55bbd%{?dist}
-Requires: autosave-devel   = 5.10.2-0.git.65653e7%{?dist}
-Requires: bancomm-devel    = 1.6.13-4.git.2127c0a%{?dist}
-Requires: geminiRec-devel  = 4.1.13-3.git.b85c7fe%{?dist}
-Requires: timelib-devel    = 2.1.4-3.git.4b1e6d2%{?dist}
-Requires: slalib-devel     = 1.9.7-6.git.21692df%{?dist}
-Requires: xycom-devel      = 2.1.12-2.git.535250e%{?dist}
-Requires: gemUtil-devel    = 1.6.13-2.git.19379e6%{?dist}
-Requires: timeProbe-devel  = 1.1.16-3.git.79cc814%{?dist}
-Requires: tcslib-devel     = 1.1.1-9.git.abd5764%{?dist}
-Requires: pvload-devel     = 1.2.1-7.git.784d4d3%{?dist}
-Requires: symb-devel       = 1.6.13-4.git.1c92ce0%{?dist}
-Requires: vmi5588-devel    = 1.3-1.git.d50b510%{?dist}
+Requires: epics-base-devel = 7.0.7-0.git.f9e3717%{?dist}
+Requires: sequencer-devel  = 2.2.9.e5e3615-4.git.7b11f25%{?dist}
+Requires: autosave-devel   = 5.10.2-0.git.57f0212%{?dist}
+Requires: bancomm-devel    = 1.6.13-4.git.6f4ba7b%{?dist}
+Requires: geminiRec-devel  = 4.1.13-3.git.6f58677%{?dist}
+Requires: timelib-devel    = 2.1.4-3.git.a504360%{?dist}
+Requires: slalib-devel     = 1.9.7-6.git.54d124d%{?dist}
+Requires: xycom-devel      = 2.1.12-2.git.e8d8b00%{?dist}
+Requires: gemUtil-devel    = 1.6.13-2.git.9268b49%{?dist}
+Requires: timeProbe-devel  = 1.1.16-3.git.1bb32b7%{?dist}
+Requires: tcslib-devel     = 1.1.1-9.git.b18a9b9%{?dist}
+Requires: pvload-devel     = 1.2.1-7.git.6df46ce%{?dist}
+Requires: symb-devel       = 1.6.13-4.git.d097ef5%{?dist}
+Requires: vmi5588-devel    = 1.3-1.git.6fe16cd%{?dist}
 %description devel
 This is the module %{name}.
 
