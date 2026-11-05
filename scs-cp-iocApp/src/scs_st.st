@@ -129,7 +129,7 @@
    %%#include <car.h>
    %%#define CMD_RESPONSE_TIMEOUT    13.0 /* command acknowledgement timeout in 
                                              units equal to ~0.33 seconds */
-   %%#define INIT_COMPLETE_TIMEOUT 400.0 /* init execution timeout in units
+   %%#define INIT_COMPLETE_TIMEOUT 1200.0 /* init execution timeout in units
                                              equal to ~0.33 seconds */
    %%#define TIMEOUT                66.0 /* normal command execution timeout in units equal to ~0.33 seconds */
    %%#define PARK_TIMEOUT                132.0 /* normal command execution timeout in units equal to ~0.33 seconds */
@@ -1930,23 +1930,23 @@ ss CADprocessor {
 
          puts("init push tolerance data and wait 6.0 seconds...");
          /* Submit tolerance data to CEM prior to base move*/
-         tolDir = 0;
+         tolDir = 1;
          pvPut(tolDir);
-         tolDir = 2;
+         tolDir = 0;
          pvPut(tolDir);
          tolDir = 3;
          pvPut(tolDir);
 
-         setCont = 0;
+         setCont = 1;
          pvPut(setCont);
-         setCont = 2;
+         setCont = 0;
          pvPut(setCont);
          setCont = 3;
          pvPut(setCont);
 
-         guideConfReset = 0;
+         guideConfReset = 1;
          pvPut(guideConfReset);
-         guideConfReset = 2;
+         guideConfReset = 0;
          pvPut(guideConfReset);
          guideConfReset = 3;
          pvPut(guideConfReset);
@@ -2070,9 +2070,9 @@ ss CADprocessor {
 
          /* send controller command to set up pid values */
 
-         pidDir = 0;
+         pidDir = 1;
          pvPut(pidDir);
-         pidDir = 2;
+         pidDir = 0;
          pvPut(pidDir);
          pidDir = 3;
          pvPut(pidDir);
@@ -4216,6 +4216,10 @@ ss rebootScs {
 
          followOn = OFF;
 
+	 /* turning off RM interrupts */
+	 	    
+        %%vmi5588_reboot(NULL);
+
          /* Doing this without turning off servos, causes actators
             to fail. 
 
@@ -4298,10 +4302,6 @@ ss rebootScs {
 
      /*    if(loggingNow != OFF)
             %%scsLogDestruct(); */
-
-	 /* turning off RM interrupts */
-	 	    
-     /*vmi5588_reboot(NULL);*/
 
          /* %%reboot(BOOT_QUICK_AUTOBOOT); */
 	 /* rebootIocStat = REBOOT_VALUE;
