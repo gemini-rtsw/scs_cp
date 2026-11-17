@@ -435,7 +435,7 @@ typedef struct                  /* data from m2 to log */
 } m2History;
 
 
-#define HS_RECORD_LENGTH 4000
+#define HS_RECORD_LENGTH 2000
 
 typedef struct {
     double xTiltPosHS[HS_RECORD_LENGTH]; /*Set FTV<output> to numsamples*/
